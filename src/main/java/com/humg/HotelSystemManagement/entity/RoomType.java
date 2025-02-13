@@ -5,6 +5,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -33,12 +35,35 @@ public class RoomType {
     @Column(name = "full_week_price", nullable = false)
     Long fullWeekPrice;
 
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<Room> rooms;
+
     @PrePersist
     public void setHalfDayPrice(){
         if(halfDayPrice == null){
             this.halfDayPrice = switch (roomTypes){
-                case Room
-            }
+                case RoomTypes.STANDARD -> halfDayPrice = 500000L;
+                case RoomTypes.SUPERIOR -> halfDayPrice = 700000L;
+                case RoomTypes.DELUXE -> halfDayPrice = 1000000L;
+            };
         }
+    }
+
+    @PrePersist
+    public void setFullDayPrice(){
+        this.fullDayPrice = switch (roomTypes){
+            case RoomTypes.STANDARD -> fullDayPrice = 800000L;
+            case RoomTypes.SUPERIOR -> fullDayPrice = 1200000L;
+            case RoomTypes.DELUXE -> fullDayPrice = 1800000L;
+        };
+    }
+
+    @PrePersist
+    public void setFullWeekPrice(){
+        this.fullWeekPrice = switch (roomTypes){
+            case RoomTypes.STANDARD -> fullWeekPrice = 5000000L;
+            case RoomTypes.SUPERIOR -> fullWeekPrice = 7500000L;
+            case RoomTypes.DELUXE -> fullWeekPrice = 12000000L;
+        };
     }
 }
