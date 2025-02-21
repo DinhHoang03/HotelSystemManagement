@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.entity;
+package com.humg.HotelSystemManagement.entity.booking;
 
 import jakarta.persistence.*;
 import lombok.*;
@@ -26,10 +26,10 @@ public class BookingBill {
     @Column(name = "grand_total", nullable = false)
     Long grandTotal;
 
-    @OneToOne
-    @JoinColumn(name = "booking_id", referencedColumnName = "booking_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", referencedColumnName = "booking_id", unique = true)
     Booking booking;
 
-    @OneToOne(mappedBy = "bookingBill", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "bookingBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
     Payment payment;
 }

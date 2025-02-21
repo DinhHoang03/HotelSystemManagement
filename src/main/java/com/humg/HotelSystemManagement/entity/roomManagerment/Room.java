@@ -1,9 +1,13 @@
-package com.humg.HotelSystemManagement.entity;
+package com.humg.HotelSystemManagement.entity.roomManagerment;
 
+import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
 import com.humg.HotelSystemManagement.entity.enums.RoomStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -25,7 +29,13 @@ public class Room {
     @Enumerated(EnumType.STRING)
     RoomStatus roomStatus;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_type_id", nullable = false)
     RoomType roomType;
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
+    List<BookingRoom> bookingRooms = new ArrayList<>();
+
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
+    List<RoomService> roomServices = new ArrayList<>();
 }

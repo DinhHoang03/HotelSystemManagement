@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.entity;
+package com.humg.HotelSystemManagement.entity.booking;
 
 import com.humg.HotelSystemManagement.entity.enums.PaymentMethod;
 import com.humg.HotelSystemManagement.entity.enums.PaymentStatus;
@@ -42,7 +42,7 @@ public class Payment {
     @Column(name = "update_at", nullable = false)
     LocalDate updateAt;
 
-    @OneToOne
-    @JoinColumn(name = "booking_bill_id", referencedColumnName =  "booking_bill_id")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_bill_id", referencedColumnName =  "booking_bill_id", unique = true)
     BookingBill bookingBill;
 }

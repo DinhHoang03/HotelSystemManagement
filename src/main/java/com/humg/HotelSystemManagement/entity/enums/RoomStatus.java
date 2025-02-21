@@ -1,11 +1,11 @@
 package com.humg.HotelSystemManagement.entity.enums;
 
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@AllArgsConstructor
+@RequiredArgsConstructor
 public enum RoomStatus {
     AVAILABLE("Phòng trống, có thể đặt"),
     BOOKED("Đã được đặt trước, nhưng khách chưa check-in"),

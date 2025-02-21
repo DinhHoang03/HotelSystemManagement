@@ -1,12 +1,10 @@
 application:
   name: hotel-system-management
-profiles:
-  active: dev
 
-sever:
+server:
   port: 8080
   servlet:
-    context-path: /system
+    context-path: /hotel
 
 spring:
   datasource:
@@ -15,7 +13,7 @@ spring:
     password: dinh1012
     driver-class-name: com.mysql.cj.jdbc.Driver
 
-jpa:
-  hibernate:
-    ddl-auto: update
-  show-sql: true
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true

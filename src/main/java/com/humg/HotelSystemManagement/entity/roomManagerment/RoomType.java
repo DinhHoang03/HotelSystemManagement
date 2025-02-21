@@ -1,10 +1,11 @@
-package com.humg.HotelSystemManagement.entity;
+package com.humg.HotelSystemManagement.entity.roomManagerment;
 
 import com.humg.HotelSystemManagement.entity.enums.RoomTypes;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -35,11 +36,12 @@ public class RoomType {
     @Column(name = "full_week_price", nullable = false)
     Long fullWeekPrice;
 
-    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<Room> rooms;
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    List<Room> rooms = new ArrayList<>();
 
+    //Refactor this block of code
     @PrePersist
-    public void setHalfDayPrice(){
+    public void setPrices(){
         if(halfDayPrice == null){
             this.halfDayPrice = switch (roomTypes){
                 case RoomTypes.STANDARD -> halfDayPrice = 500000L;
@@ -47,23 +49,21 @@ public class RoomType {
                 case RoomTypes.DELUXE -> halfDayPrice = 1000000L;
             };
         }
-    }
 
-    @PrePersist
-    public void setFullDayPrice(){
-        this.fullDayPrice = switch (roomTypes){
-            case RoomTypes.STANDARD -> fullDayPrice = 800000L;
-            case RoomTypes.SUPERIOR -> fullDayPrice = 1200000L;
-            case RoomTypes.DELUXE -> fullDayPrice = 1800000L;
-        };
-    }
+        if(fullDayPrice == null){
+            this.fullDayPrice = switch (roomTypes){
+                case RoomTypes.STANDARD -> fullDayPrice = 800000L;
+                case RoomTypes.SUPERIOR -> fullDayPrice = 1200000L;
+                case RoomTypes.DELUXE -> fullDayPrice = 1800000L;
+            };
+        }
 
-    @PrePersist
-    public void setFullWeekPrice(){
-        this.fullWeekPrice = switch (roomTypes){
-            case RoomTypes.STANDARD -> fullWeekPrice = 5000000L;
-            case RoomTypes.SUPERIOR -> fullWeekPrice = 7500000L;
-            case RoomTypes.DELUXE -> fullWeekPrice = 12000000L;
-        };
+        if(fullWeekPrice == null){
+            this.fullWeekPrice = switch (roomTypes){
+                case RoomTypes.STANDARD -> fullWeekPrice = 5000000L;
+                case RoomTypes.SUPERIOR -> fullWeekPrice = 7500000L;
+                case RoomTypes.DELUXE -> fullWeekPrice = 12000000L;
+            };
+        }
     }
 }

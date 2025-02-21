@@ -1,9 +1,11 @@
-package com.humg.HotelSystemManagement.entity;
+package com.humg.HotelSystemManagement.entity.booking;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -13,24 +15,28 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@Table(name = "customers")
 public class Customer {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "customer_id")
     Long customerId;
 
-    @Column(name = "identity_id", nullable = false, unique = true, length = 12)
+    @Column(name = "identity_id", nullable = false, unique = true)
     String identityId;
+
     @Column(nullable = false)
     String name;
-    @Column(nullable = false, length = 11)
+
+    @Column(nullable = false)
     String phone;
+
     @Column(nullable = false)
     String email;
+
+    @JsonIgnore
     @Column(nullable = false)
     String password;
 
-    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<Booking> bookings;
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    List<Booking> bookings = new ArrayList<>();
 }

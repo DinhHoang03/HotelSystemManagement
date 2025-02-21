@@ -1,10 +1,12 @@
-package com.humg.HotelSystemManagement.entity;
+package com.humg.HotelSystemManagement.entity.totalServices;
 
+import com.humg.HotelSystemManagement.entity.booking.BookingService;
 import com.humg.HotelSystemManagement.entity.enums.ServiceTypes;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -14,11 +16,11 @@ import java.util.List;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Service {
+public class HotelService {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "service_id")
-    Long serviceId;
+    @Column(name = "hotel_service_id")
+    Long hotelServiceId;
 
     @Column(name = "service_type", nullable = false)
     @Enumerated(EnumType.STRING)
@@ -27,10 +29,12 @@ public class Service {
     @Column(name = "price", nullable = false)
     Long price;
 
-    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
-    List<BookingService> bookingServices;
+    @OneToMany(mappedBy = "hotelService",cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    List<BookingService> bookingServices = new ArrayList<>();
 
+    /**
     //Dòng code này sẽ tự động gán giá khi lưu vào database
+     //Một cách viết thủ công nhất
     public void setDefaultPrice() {
         if(price == null){
             switch(serviceTypes){
@@ -50,6 +54,20 @@ public class Service {
                     price = 200000L;
                     break;
             }
+        }
+    }
+     **/
+
+    @PrePersist
+    public void setDefaultPrice(){
+        if(price == null){
+            this.price = switch (serviceTypes){
+                case ServiceTypes.LAUNDRY -> 100000l;
+                case ServiceTypes.BREAKFAST ->  80000L;
+                case ServiceTypes.SPA_AND_MASSAGE -> 300000L;
+                case ServiceTypes.MINIBAR -> 150000L;
+                case ServiceTypes.LATE_CHECK_OUT -> 200000L;
+            };
         }
     }
 }

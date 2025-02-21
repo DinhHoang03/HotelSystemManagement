@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.entity;
+package com.humg.HotelSystemManagement.entity.booking;
 
 import com.humg.HotelSystemManagement.entity.enums.BookingStatus;
 import jakarta.persistence.*;
@@ -38,13 +38,16 @@ public class Booking {
     @Column(name = "grand_total", nullable = false)
     Long grandTotal;
 
-    @ManyToOne
-    @JoinColumn(name = "customer_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
     Customer customer;
 
-    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
     BookingBill bookingBill;
 
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<BookingService> bookingServices;
+
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
+    List<BookingRoom> bookingRooms;
 }
