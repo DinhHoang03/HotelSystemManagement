@@ -35,7 +35,8 @@ public class CustomerService {
                 .email(request.getEmail())
                 .password(request.getPassword())
                 .build());
-        return customer;
+
+        return customerRepository.save(customer);
     }
 
     //Get all customers account
@@ -54,5 +55,28 @@ public class CustomerService {
                 .phone(customer.getPhone()).build();
     }
 
+    //update User by Id
+    public CustomerResponse updateUserById(Long id, CustomerResponse request){
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
+        if(request != null) {
+            customer.setIdentityId(request.getIdentityId());
+            customer.setName(request.getName());
+            customer.setEmail(request.getEmail());
+            customer.setPhone(request.getPhone());
+        }else{
+            throw new AppException(AppErrorCode.REQUEST_NULL);
+        }
+
+
+        Customer updatedCustomer = customerRepository.save(customer);
+
+        return new CustomerResponse(
+                updatedCustomer.getIdentityId(),
+                updatedCustomer.getName(),
+                updatedCustomer.getEmail(),
+                updatedCustomer.getPhone()
+        );
+    }
 }
