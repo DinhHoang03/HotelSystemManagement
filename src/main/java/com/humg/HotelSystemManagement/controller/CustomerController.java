@@ -48,4 +48,9 @@ public class CustomerController {
                 .build();
     }
     */
+
+    @GetMapping("/list")
+    List<Customer> getAllCustomers(){
+        return customerService.getAllUSers();
+    }
 }
