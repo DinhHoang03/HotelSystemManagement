@@ -1,10 +1,10 @@
 package com.humg.HotelSystemManagement.service;
 
-import com.humg.HotelSystemManagement.dto.request.CustomerCreationRequest;
-import com.humg.HotelSystemManagement.dto.response.CustomerResponse;
+import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
+import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
 import com.humg.HotelSystemManagement.entity.booking.Customer;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
-import com.humg.HotelSystemManagement.exception.enums.booking.CustomerErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.booking.CustomerRepository;
 import lombok.AccessLevel;
@@ -56,27 +56,24 @@ public class CustomerService {
     }
 
     //update User by Id
-    public CustomerResponse updateUserById(Long id, CustomerResponse request){
+    public CustomerResponse updateUserById(Long id, CustomerUpdateRequest request){
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        if(request != null) {
-            customer.setIdentityId(request.getIdentityId());
-            customer.setName(request.getName());
             customer.setEmail(request.getEmail());
             customer.setPhone(request.getPhone());
-        }else{
-            throw new AppException(AppErrorCode.REQUEST_NULL);
-        }
-
 
         Customer updatedCustomer = customerRepository.save(customer);
 
-        return new CustomerResponse(
-                updatedCustomer.getIdentityId(),
-                updatedCustomer.getName(),
-                updatedCustomer.getEmail(),
-                updatedCustomer.getPhone()
-        );
+        return CustomerResponse.builder()
+                .identityId(updatedCustomer.getIdentityId())
+                .name(updatedCustomer.getName())
+                .email(updatedCustomer.getEmail())
+                .phone(updatedCustomer.getPhone())
+                .build();
+    }
+
+    public void deleteUserById(Long id){
+        customerRepository.deleteById(id);
     }
 }

@@ -1,8 +1,9 @@
 package com.humg.HotelSystemManagement.controller;
 
-import com.humg.HotelSystemManagement.dto.request.CustomerCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.CustomerResponse;
+import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
 import com.humg.HotelSystemManagement.entity.booking.Customer;
 import com.humg.HotelSystemManagement.service.CustomerService;
 import jakarta.validation.Valid;
@@ -63,5 +64,20 @@ public class CustomerController {
                 .build();
     }
 
+    @PutMapping("/{customerId}")
+    APIResponse<CustomerResponse> updateCustomer(@PathVariable("customerId")Long customerId,@RequestBody CustomerUpdateRequest request){
+        return APIResponse.<CustomerResponse>builder()
+                .result(customerService.updateUserById(customerId, request))
+                .message("Update customer information successfully")
+                .build();
+    }
 
+    @DeleteMapping("/del/{customerId}")
+    APIResponse<String> deleteCustomer(@PathVariable("customerId") Long customerId){
+        customerService.deleteUserById(customerId);
+
+        return APIResponse.<String>builder()
+                .message("Delete customer number id " + customerId + " successfully!")
+                .build();
+    }
 }
