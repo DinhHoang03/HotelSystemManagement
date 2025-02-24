@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.service;
 
+import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
@@ -10,6 +11,8 @@ import com.humg.HotelSystemManagement.repository.booking.CustomerRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,6 +23,7 @@ import java.util.List;
 public class CustomerService {
     //Call Repository
     CustomerRepository customerRepository;
+    SecurityConfig  securityConfig;
 
     //Create customer account
     public Customer createCustomer(CustomerCreationRequest request) {
@@ -27,14 +31,19 @@ public class CustomerService {
         if (customerRepository.existsByEmail(request.getEmail())) {
             throw new AppException(AppErrorCode.USER_EXISTED);
         }
-        //Create a customer
-        return customerRepository.save(Customer.builder()
+
+        //Mã hóa mật khẩu với thuật toán BCrypt
+        String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
+
+        Customer customer = Customer.builder()
                 .identityId(request.getIdentityId())
                 .name(request.getName())
                 .phone(request.getPhone())
                 .email(request.getEmail())
-                .password(request.getPassword())
-                .build());
+                .password(encodedPassword)
+                .build();
+        //Create a customer
+        return customerRepository.save(customer);
     }
 
     //Get all customers account

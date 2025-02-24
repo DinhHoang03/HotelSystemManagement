@@ -20,11 +20,9 @@ import java.util.List;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class CustomerController {
-    @Autowired
     CustomerService customerService;
 
-
-    @PostMapping("/users")
+    @PostMapping("/create-account")
     APIResponse<Customer> createCustomer(@Valid @RequestBody CustomerCreationRequest request){
         return APIResponse.<Customer>builder()
                 .result(customerService.createCustomer(request))
@@ -50,8 +48,8 @@ public class CustomerController {
                 .build();
     }
 
-    @PutMapping("/{customerId}")
-    APIResponse<CustomerResponse> updateCustomer(@PathVariable("customerId")Long customerId,@RequestBody CustomerUpdateRequest request){
+    @PutMapping("/update/{customerId}")
+    APIResponse<CustomerResponse> updateCustomer(@PathVariable("customerId")Long customerId,@Valid @RequestBody CustomerUpdateRequest request){
         return APIResponse.<CustomerResponse>builder()
                 .result(customerService.updateUserById(customerId, request))
                 .message("Update customer information successfully")

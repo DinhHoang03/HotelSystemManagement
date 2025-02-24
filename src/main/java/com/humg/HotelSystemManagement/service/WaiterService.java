@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.service;
 
+import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.waiter.WaiterCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.waiter.WaiterUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.waiter.WaiterResponse;
@@ -21,19 +22,23 @@ import java.util.List;
 public class WaiterService {
 
     WaiterRepository waiterRepository;
-    private final CustomerRepository customerRepository;
+    SecurityConfig securityConfig;
 
     public Waiter createWaiter(WaiterCreationRequest request) {
         if (waiterRepository.existsByEmail(request.getEmail())) {
             throw new AppException(AppErrorCode.USER_EXISTED);
         }
 
-        return waiterRepository.save(Waiter.builder()
+        String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
+
+        Waiter waiter = Waiter.builder()
                 .name(request.getName())
                 .email(request.getEmail())
                 .phone(request.getPhone())
-                .password(request.getPassword())
-                .build());
+                .password(encodedPassword)
+                .build();
+
+        return waiterRepository.save(waiter);
     }
 
     public List<WaiterResponse> getAllWaiters() {
