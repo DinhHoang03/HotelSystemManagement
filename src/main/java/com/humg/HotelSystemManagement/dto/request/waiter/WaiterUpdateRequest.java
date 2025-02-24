@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.request.customer;
+package com.humg.HotelSystemManagement.dto.request.waiter;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -10,7 +10,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class CustomerUpdateRequest {
+public class WaiterUpdateRequest {
 
     @Email(message = "INVALID_EMAIL")
     String email;

@@ -12,8 +12,8 @@ import lombok.experimental.FieldDefaults;
 public enum AppErrorCode {
     USER_EXISTED(1001, "This account currently exists!"),
     USER_NOT_EXISTED(1002, "This account does not exist!"),
-    REQUEST_NULL(1003, "Request is null!");
-
+    LIST_EMPTY(1003, "List is empty!"),
+    REQUEST_NULL(1010, "Request is null!");
 
     int code;
     String message;

@@ -22,31 +22,48 @@ public class CustomerService {
     CustomerRepository customerRepository;
 
     //Create customer account
-    public Customer createCustomer(CustomerCreationRequest request){
+    public Customer createCustomer(CustomerCreationRequest request) {
         //Check if the email was registered with this customer account
-        if(customerRepository.existsByEmail(request.getEmail())){
+        if (customerRepository.existsByEmail(request.getEmail())) {
             throw new AppException(AppErrorCode.USER_EXISTED);
         }
         //Create a customer
-        Customer customer = customerRepository.save(Customer.builder()
+        return customerRepository.save(Customer.builder()
                 .identityId(request.getIdentityId())
                 .name(request.getName())
                 .phone(request.getPhone())
                 .email(request.getEmail())
                 .password(request.getPassword())
                 .build());
-
-        return customerRepository.save(customer);
     }
 
     //Get all customers account
-    public List<Customer> getAllUSers(){
-        return customerRepository.findAll();
+    public List<CustomerResponse> getAllUSers() {
+        //Tạo list để luu trữ list dữ liệu, gọi service để lấy hàm findAll lấy toàn bộ dũ liệu của user
+        List<CustomerResponse> list = customerRepository.findAll()
+                //Chuyển từ list thành một stream(Luồng dũ liệu)
+                .stream()
+                //Dùng map để chuyển từng Customer thành CustomerResponse
+                .map(customer -> new CustomerResponse(
+                        //Lấy nhũng dữ liệu cần thiết của entity Customer
+                        customer.getIdentityId(),
+                        customer.getName(),
+                        customer.getPhone(),
+                        customer.getEmail()
+
+                )).toList();//Chuyển tù luồng dũ liệu(stream) thành một list
+
+        if (list == null) {
+            throw new AppException(AppErrorCode.LIST_EMPTY);
+        }
+
+        return list;
     }
 
     //Get User by Id
-    public CustomerResponse findUserById(Long id){
-        Customer customer = customerRepository.findById(id).orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
+    public CustomerResponse findUserById(Long id) {
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         return CustomerResponse.builder()
                 .identityId(customer.getIdentityId())
@@ -56,12 +73,12 @@ public class CustomerService {
     }
 
     //update User by Id
-    public CustomerResponse updateUserById(Long id, CustomerUpdateRequest request){
+    public CustomerResponse updateUserById(Long id, CustomerUpdateRequest request) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-            customer.setEmail(request.getEmail());
-            customer.setPhone(request.getPhone());
+        customer.setEmail(request.getEmail());
+        customer.setPhone(request.getPhone());
 
         Customer updatedCustomer = customerRepository.save(customer);
 
@@ -73,7 +90,7 @@ public class CustomerService {
                 .build();
     }
 
-    public void deleteUserById(Long id){
+    public void deleteUserById(Long id) {
         customerRepository.deleteById(id);
     }
 }

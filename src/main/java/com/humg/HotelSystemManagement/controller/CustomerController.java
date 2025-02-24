@@ -44,22 +44,8 @@ public class CustomerController {
     @GetMapping("/list")
     //API trả về thông báo theo kiểu List chứa dữ liệu của lớp dto trên
     APIResponse<List<CustomerResponse>> getAllCustomers(){
-        //Tạo list để luu trữ list dữ liệu, gọi service để lấy hàm getAll lấy toàn bộ dũ liệu của user
-        List<CustomerResponse> customerResponses = customerService.getAllUSers()
-                //Chuyển từ list thành một stream(Luồng dũ liệu)
-                .stream()
-                //Dùng map để chuyển từng Customer thành CustomerResponse
-                .map(customer -> new CustomerResponse(
-                //Lấy nhũng dữ liệu cần thiết của entity Customer
-                customer.getIdentityId(),
-                customer.getName(),
-                customer.getEmail(),
-                customer.getPhone()
-        )).toList();//Chuyển tù luồng dũ liệu(stream) thành một list
-
-        //Trả lại APIResponse
         return APIResponse.<List<CustomerResponse>>builder()
-                .result(customerResponses)
+                .result(customerService.getAllUSers())
                 .message("Successfully get all customers!")
                 .build();
     }
