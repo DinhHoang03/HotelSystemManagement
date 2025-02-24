@@ -67,7 +67,21 @@ public class WaiterService {
         Waiter waiter = waiterRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
+        waiter.setEmail(request.getEmail());
+        waiter.setPhone(request.getPhone());
+        Waiter updatedWaiter = waiterRepository.save(waiter);
 
-        return null;
+        return WaiterResponse.builder()
+                .name(updatedWaiter.getName())
+                .phone(updatedWaiter.getPhone())
+                .email(updatedWaiter.getEmail())
+                .build();
+    }
+
+    public void deleteWaiterById(Long id) {
+        Waiter waiter = waiterRepository.findById(id)
+                .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
+
+        waiterRepository.delete(waiter);
     }
 }

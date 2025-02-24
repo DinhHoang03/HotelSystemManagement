@@ -91,6 +91,9 @@ public class CustomerService {
     }
 
     public void deleteUserById(Long id) {
-        customerRepository.deleteById(id);
+        Customer customer = customerRepository.findById(id)
+                .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
+
+        customerRepository.delete(customer);
     }
 }
