@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.response.waiter;
+package com.humg.HotelSystemManagement.dto.response.admin;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,8 +8,8 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class WaiterResponse {
-    Long waiterId;
+public class AdminResponse {
+    Long adminId;
 
     String name;
 

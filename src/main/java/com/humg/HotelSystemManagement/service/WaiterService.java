@@ -25,18 +25,24 @@ public class WaiterService {
     SecurityConfig securityConfig;
 
     public Waiter createWaiter(WaiterCreationRequest request) {
+        Waiter waiter;
+
         if (waiterRepository.existsByEmail(request.getEmail())) {
             throw new AppException(AppErrorCode.USER_EXISTED);
         }
 
         String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
 
-        Waiter waiter = Waiter.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .phone(request.getPhone())
-                .password(encodedPassword)
-                .build();
+        if (request != null) {
+            waiter = Waiter.builder()
+                    .name(request.getName())
+                    .email(request.getEmail())
+                    .phone(request.getPhone())
+                    .password(encodedPassword)
+                    .build();
+        } else {
+            throw new AppException(AppErrorCode.REQUEST_NULL);
+        }
 
         return waiterRepository.save(waiter);
     }
@@ -45,6 +51,7 @@ public class WaiterService {
         List<WaiterResponse> list = waiterRepository.findAll()
                 .stream()
                 .map(waiter -> new WaiterResponse(
+                        waiter.getWaiterId(),
                         waiter.getName(),
                         waiter.getEmail(),
                         waiter.getPhone()
@@ -68,19 +75,27 @@ public class WaiterService {
                 .build();
     }
 
-    public WaiterResponse updateUserById(Long id, WaiterUpdateRequest request){
-        Waiter waiter = waiterRepository.findById(id)
+    public WaiterResponse updateUserById(Long id, WaiterUpdateRequest request) {
+        Waiter waiterRequest = waiterRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        waiter.setEmail(request.getEmail());
-        waiter.setPhone(request.getPhone());
-        Waiter updatedWaiter = waiterRepository.save(waiter);
+        if (waiterRequest != null) {
+            waiterRequest.setEmail(request.getEmail());
+            waiterRequest.setPhone(request.getPhone());
+        } else {
+            throw new AppException(AppErrorCode.REQUEST_NULL);
+        }
 
-        return WaiterResponse.builder()
+        Waiter updatedWaiter = waiterRepository.save(waiterRequest);
+
+        WaiterResponse result = WaiterResponse.builder()
+                .waiterId(updatedWaiter.getWaiterId())
                 .name(updatedWaiter.getName())
                 .phone(updatedWaiter.getPhone())
                 .email(updatedWaiter.getEmail())
                 .build();
+
+        return result;
     }
 
     public void deleteWaiterById(Long id) {

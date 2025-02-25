@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.exception.enums.booking;
+package com.humg.HotelSystemManagement.exception.enums;
 
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @Getter
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public enum CustomerErrorCode {
+public enum ValidationErrorCode {
     INVALID_IDENTITY_ID(101, "Please enter right format of your identity ID!"),
     INVALID_PHONE_NUMBER(102, "Please enter your phone number valid!"),
     INVALID_EMAIL(103, "Please enter the valid email!"),

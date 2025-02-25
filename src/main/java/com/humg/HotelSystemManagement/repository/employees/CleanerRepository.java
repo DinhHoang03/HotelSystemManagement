@@ -6,5 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface CleanerRepository extends JpaRepository<Cleaner, Long> {
-
+    boolean existsByEmail(String email);
 }

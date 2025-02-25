@@ -11,8 +11,6 @@ import com.humg.HotelSystemManagement.repository.booking.CustomerRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -55,6 +53,7 @@ public class CustomerService {
                 //Dùng map để chuyển từng Customer thành CustomerResponse
                 .map(customer -> new CustomerResponse(
                         //Lấy nhũng dữ liệu cần thiết của entity Customer
+                        customer.getCustomerId(),
                         customer.getIdentityId(),
                         customer.getName(),
                         customer.getPhone(),
@@ -83,20 +82,27 @@ public class CustomerService {
 
     //update User by Id
     public CustomerResponse updateUserById(Long id, CustomerUpdateRequest request) {
-        Customer customer = customerRepository.findById(id)
+        Customer customerRequest = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        customer.setEmail(request.getEmail());
-        customer.setPhone(request.getPhone());
+        if(customerRequest != null) {
+            customerRequest.setEmail(request.getEmail());
+            customerRequest.setPhone(request.getPhone());
+        }else {
+            throw new AppException(AppErrorCode.REQUEST_NULL);
+        }
 
-        Customer updatedCustomer = customerRepository.save(customer);
+        Customer updatedCustomer = customerRepository.save(customerRequest);
 
-        return CustomerResponse.builder()
+        CustomerResponse result = CustomerResponse.builder()
+                .customerId(updatedCustomer.getCustomerId())
                 .identityId(updatedCustomer.getIdentityId())
                 .name(updatedCustomer.getName())
                 .email(updatedCustomer.getEmail())
                 .phone(updatedCustomer.getPhone())
                 .build();
+
+        return result;
     }
 
     public void deleteUserById(Long id) {

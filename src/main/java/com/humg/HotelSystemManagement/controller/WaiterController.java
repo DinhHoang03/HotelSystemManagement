@@ -31,6 +31,15 @@ public class WaiterController {
     APIResponse<WaiterResponse> updateWaiter(@PathVariable("waiterId") Long waiterId,@Valid @RequestBody WaiterUpdateRequest request){
         return APIResponse.<WaiterResponse>builder()
                 .result(waiterService.updateUserById(waiterId, request))
-                .message("Update waiter successfully!").build();
+                .message("Update waiter successfully!")
+                .build();
+    }
+
+    @DeleteMapping("/del/{waiterId}")
+    APIResponse<String> deleteWaiter(@PathVariable("waiterId") Long waiterId){
+        waiterService.deleteWaiterById(waiterId);
+        return APIResponse.<String>builder()
+                .message("Delete waiter number id " + waiterId + " successfully!")
+                .build();
     }
 }

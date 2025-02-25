@@ -2,7 +2,7 @@ package com.humg.HotelSystemManagement.exception;
 
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
-import com.humg.HotelSystemManagement.exception.enums.booking.CustomerErrorCode;
+import com.humg.HotelSystemManagement.exception.enums.ValidationErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,12 +29,12 @@ public class GlobalExceptionHandler {
             //Lấy nội dung message trong các annotation validation
             String errorCode = error.getDefaultMessage();
             //Lấy Enum errorCode để lấy code và message của lỗi đó
-            CustomerErrorCode customerErrorCode = getCustomerErrorCode(errorCode);
+            ValidationErrorCode validationErrorCode = getCustomerErrorCode(errorCode);
 
             //Nếu biến này có chứa enum thì sẽ được setup vào hashmap để print lỗi, chứa cặp code và message
-            if(customerErrorCode != null){
-                errors.put(error.getField(), customerErrorCode.getMessage());
-                code = customerErrorCode.getCode();
+            if(validationErrorCode != null){
+                errors.put(error.getField(), validationErrorCode.getMessage());
+                code = validationErrorCode.getCode();
             }else{
                 //nếu không được thì sẽ lấy hẳn lỗi và message trong annotation validation luôn
                 errors.put(error.getField(), "Invalid input: " + error.getDefaultMessage());
@@ -50,14 +50,14 @@ public class GlobalExceptionHandler {
     }
 
     //Hàm này sẽ lấy giá trị message của FieldError để xử lý so sánh và ánh xạ đổi sang dạng Enum
-    private CustomerErrorCode getCustomerErrorCode(String code){
-        for(CustomerErrorCode errorCode : CustomerErrorCode.values()){
+    private ValidationErrorCode getCustomerErrorCode(String code){
+        for(ValidationErrorCode errorCode : ValidationErrorCode.values()){
             if(errorCode.name().equals(code)){
                 return errorCode;
             }
         }
         //Nếu không tìm thấy chuỗi tương ứng với Enum thì sẽ ra là unknown error(Lỗi kĩ thuật của hệ thống do báo sai)
-        return CustomerErrorCode.UNKNOWN_ERROR;
+        return ValidationErrorCode.UNKNOWN_ERROR;
     }
     
     //Hàm xủ lý App Exception của hệ thống
