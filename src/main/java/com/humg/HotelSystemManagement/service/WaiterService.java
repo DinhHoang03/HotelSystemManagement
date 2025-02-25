@@ -26,14 +26,13 @@ public class WaiterService {
 
     public Waiter createWaiter(WaiterCreationRequest request) {
         Waiter waiter;
-
-        if (waiterRepository.existsByEmail(request.getEmail())) {
-            throw new AppException(AppErrorCode.USER_EXISTED);
-        }
-
-        String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
-
         if (request != null) {
+            if (waiterRepository.existsByEmail(request.getEmail())) {
+                throw new AppException(AppErrorCode.USER_EXISTED);
+            }
+
+            String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
+
             waiter = Waiter.builder()
                     .name(request.getName())
                     .email(request.getEmail())
@@ -57,7 +56,7 @@ public class WaiterService {
                         waiter.getPhone()
                 )).toList();
 
-        if (list == null) {
+        if (list.isEmpty()) {
             throw new AppException(AppErrorCode.LIST_EMPTY);
         }
 
@@ -68,11 +67,13 @@ public class WaiterService {
         Waiter waiter = waiterRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        return WaiterResponse.builder()
+        WaiterResponse response = WaiterResponse.builder()
                 .name(waiter.getName())
                 .phone(waiter.getPhone())
                 .email(waiter.getEmail())
                 .build();
+
+        return response;
     }
 
     public WaiterResponse updateUserById(Long id, WaiterUpdateRequest request) {

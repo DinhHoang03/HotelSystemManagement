@@ -25,19 +25,19 @@ public class AdminService {
     public Admin createAdmin(AdminCreationRequest request) {
         Admin admin;
 
-        if (adminRepository.existsByEmail(request.getEmail())) {
-            throw new AppException(AppErrorCode.USER_EXISTED);
-        }
-
-        String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
-
         if (request != null) {
+            if (adminRepository.existsByEmail(request.getEmail())) {
+                throw new AppException(AppErrorCode.USER_EXISTED);
+            }
+
+            String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
+
             admin = Admin.builder()
                     .name(request.getName())
                     .email(request.getEmail())
                     .password(encodedPassword)
                     .build();
-        }else {
+        } else {
             throw new AppException(AppErrorCode.REQUEST_NULL);
         }
 
@@ -54,7 +54,7 @@ public class AdminService {
                         admin.getPhone()
                 )).toList();
 
-        if (list == null) {
+        if (list.isEmpty()) {
             throw new AppException(AppErrorCode.LIST_EMPTY);
         }
 
@@ -65,12 +65,14 @@ public class AdminService {
         Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        return AdminResponse.builder()
+        AdminResponse response = AdminResponse.builder()
                 .adminId(admin.getAdminId())
                 .name(admin.getName())
                 .phone(admin.getPhone())
                 .email(admin.getEmail())
                 .build();
+
+        return response;
     }
 
     public AdminResponse updateUserById(Long id, AdminUpdateRequest request) {

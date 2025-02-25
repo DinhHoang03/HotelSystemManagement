@@ -21,25 +21,31 @@ import java.util.List;
 public class CustomerService {
     //Call Repository
     CustomerRepository customerRepository;
-    SecurityConfig  securityConfig;
+    SecurityConfig securityConfig;
 
     //Create customer account
     public Customer createCustomer(CustomerCreationRequest request) {
+        Customer customer;
         //Check if the email was registered with this customer account
-        if (customerRepository.existsByEmail(request.getEmail())) {
-            throw new AppException(AppErrorCode.USER_EXISTED);
+        if (request != null) {
+
+            if (customerRepository.existsByEmail(request.getEmail())) {
+                throw new AppException(AppErrorCode.USER_EXISTED);
+            }
+
+            //Mã hóa mật khẩu với thuật toán BCrypt
+            String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
+
+            customer = Customer.builder()
+                    .identityId(request.getIdentityId())
+                    .name(request.getName())
+                    .phone(request.getPhone())
+                    .email(request.getEmail())
+                    .password(encodedPassword)
+                    .build();
+        }else {
+            throw new AppException(AppErrorCode.REQUEST_NULL);
         }
-
-        //Mã hóa mật khẩu với thuật toán BCrypt
-        String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
-
-        Customer customer = Customer.builder()
-                .identityId(request.getIdentityId())
-                .name(request.getName())
-                .phone(request.getPhone())
-                .email(request.getEmail())
-                .password(encodedPassword)
-                .build();
         //Create a customer
         return customerRepository.save(customer);
     }
@@ -61,7 +67,7 @@ public class CustomerService {
 
                 )).toList();//Chuyển tù luồng dũ liệu(stream) thành một list
 
-        if (list == null) {
+        if (list.isEmpty()) {
             throw new AppException(AppErrorCode.LIST_EMPTY);
         }
 
@@ -73,11 +79,14 @@ public class CustomerService {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        return CustomerResponse.builder()
+        CustomerResponse response = CustomerResponse.builder()
                 .identityId(customer.getIdentityId())
                 .name(customer.getName())
                 .email(customer.getEmail())
-                .phone(customer.getPhone()).build();
+                .phone(customer.getPhone())
+                .build();
+
+        return response;
     }
 
     //update User by Id
@@ -85,10 +94,10 @@ public class CustomerService {
         Customer customerRequest = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        if(customerRequest != null) {
+        if (customerRequest != null) {
             customerRequest.setEmail(request.getEmail());
             customerRequest.setPhone(request.getPhone());
-        }else {
+        } else {
             throw new AppException(AppErrorCode.REQUEST_NULL);
         }
 
