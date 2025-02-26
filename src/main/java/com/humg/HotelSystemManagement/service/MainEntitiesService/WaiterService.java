@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service;
+package com.humg.HotelSystemManagement.service.MainEntitiesService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.waiter.WaiterCreationRequest;
@@ -7,7 +7,6 @@ import com.humg.HotelSystemManagement.dto.response.waiter.WaiterResponse;
 import com.humg.HotelSystemManagement.entity.employees.Waiter;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
-import com.humg.HotelSystemManagement.repository.booking.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.employees.WaiterRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -26,8 +25,11 @@ public class WaiterService {
 
     public Waiter createWaiter(WaiterCreationRequest request) {
         Waiter waiter;
+
         if (request != null) {
-            if (waiterRepository.existsByEmail(request.getEmail())) {
+
+            if (waiterRepository.existsByEmail(request.getEmail()) ||
+                    waiterRepository.existsByPhone(request.getPhone())) {
                 throw new AppException(AppErrorCode.USER_EXISTED);
             }
 
@@ -40,7 +42,7 @@ public class WaiterService {
                     .password(encodedPassword)
                     .build();
         } else {
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
         return waiterRepository.save(waiter);
@@ -77,17 +79,17 @@ public class WaiterService {
     }
 
     public WaiterResponse updateUserById(Long id, WaiterUpdateRequest request) {
-        Waiter waiterRequest = waiterRepository.findById(id)
+        Waiter waiter = waiterRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        if (waiterRequest != null) {
-            waiterRequest.setEmail(request.getEmail());
-            waiterRequest.setPhone(request.getPhone());
+        if (request != null) {
+            waiter.setEmail(request.getEmail());
+            waiter.setPhone(request.getPhone());
         } else {
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
-        Waiter updatedWaiter = waiterRepository.save(waiterRequest);
+        Waiter updatedWaiter = waiterRepository.save(waiter);
 
         WaiterResponse result = WaiterResponse.builder()
                 .waiterId(updatedWaiter.getWaiterId())

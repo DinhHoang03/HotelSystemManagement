@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service;
+package com.humg.HotelSystemManagement.service.MainEntitiesService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
@@ -29,7 +29,8 @@ public class CustomerService {
         //Check if the email was registered with this customer account
         if (request != null) {
 
-            if (customerRepository.existsByEmail(request.getEmail())) {
+            if (customerRepository.existsByEmail(request.getEmail()) ||
+                    customerRepository.existsByPhone(request.getPhone())) {
                 throw new AppException(AppErrorCode.USER_EXISTED);
             }
 
@@ -43,8 +44,8 @@ public class CustomerService {
                     .email(request.getEmail())
                     .password(encodedPassword)
                     .build();
-        }else {
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+        } else {
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
         //Create a customer
         return customerRepository.save(customer);
@@ -91,17 +92,17 @@ public class CustomerService {
 
     //update User by Id
     public CustomerResponse updateUserById(Long id, CustomerUpdateRequest request) {
-        Customer customerRequest = customerRepository.findById(id)
+        Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        if (customerRequest != null) {
-            customerRequest.setEmail(request.getEmail());
-            customerRequest.setPhone(request.getPhone());
+        if (request != null) {
+            customer.setEmail(request.getEmail());
+            customer.setPhone(request.getPhone());
         } else {
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
-        Customer updatedCustomer = customerRepository.save(customerRequest);
+        Customer updatedCustomer = customerRepository.save(customer);
 
         CustomerResponse result = CustomerResponse.builder()
                 .customerId(updatedCustomer.getCustomerId())

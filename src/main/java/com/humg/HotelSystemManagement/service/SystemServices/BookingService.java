@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service;
+package com.humg.HotelSystemManagement.service.SystemServices;
 
 import com.humg.HotelSystemManagement.repository.booking.BookingRepository;
 import lombok.AccessLevel;

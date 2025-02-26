@@ -5,7 +5,7 @@ import com.humg.HotelSystemManagement.dto.request.cleaner.CleanerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.cleaner.CleanerResponse;
 import com.humg.HotelSystemManagement.entity.employees.Cleaner;
-import com.humg.HotelSystemManagement.service.CleanerService;
+import com.humg.HotelSystemManagement.service.MainEntitiesService.CleanerService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class CleanerController {
     CleanerService cleanerService;
 
-    @PostMapping("/create-account")
+    @PostMapping("/register")
     APIResponse<Cleaner> createCleaner(@Valid @RequestBody CleanerCreationRequest request){
         return APIResponse.<Cleaner>builder()
                 .result(cleanerService.createCleaner(request))
@@ -37,6 +37,7 @@ public class CleanerController {
 
     @DeleteMapping("/del/{cleanerId}")
     APIResponse<String> deleteCleaner(@PathVariable("cleanerId") Long cleanerId){
+        cleanerService.deleteCleanerById(cleanerId);
         return APIResponse.<String>builder()
                 .message("Delete cleaner number id " + cleanerId + " successfully!")
                 .build();

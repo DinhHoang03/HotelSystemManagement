@@ -5,12 +5,11 @@ import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
 import com.humg.HotelSystemManagement.entity.booking.Customer;
-import com.humg.HotelSystemManagement.service.CustomerService;
+import com.humg.HotelSystemManagement.service.MainEntitiesService.CustomerService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -22,7 +21,7 @@ import java.util.List;
 public class CustomerController {
     CustomerService customerService;
 
-    @PostMapping("/create-account")
+    @PostMapping("/register")
     APIResponse<Customer> createCustomer(@Valid @RequestBody CustomerCreationRequest request){
         return APIResponse.<Customer>builder()
                 .result(customerService.createCustomer(request))
@@ -59,7 +58,6 @@ public class CustomerController {
     @DeleteMapping("/del/{customerId}")
     APIResponse<String> deleteCustomer(@PathVariable("customerId") Long customerId){
         customerService.deleteUserById(customerId);
-
         return APIResponse.<String>builder()
                 .message("Delete customer number id " + customerId + " successfully!")
                 .build();

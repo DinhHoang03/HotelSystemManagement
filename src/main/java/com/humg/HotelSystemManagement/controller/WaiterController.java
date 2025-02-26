@@ -5,7 +5,7 @@ import com.humg.HotelSystemManagement.dto.request.waiter.WaiterUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.waiter.WaiterResponse;
 import com.humg.HotelSystemManagement.entity.employees.Waiter;
-import com.humg.HotelSystemManagement.service.WaiterService;
+import com.humg.HotelSystemManagement.service.MainEntitiesService.WaiterService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class WaiterController {
     WaiterService  waiterService;
 
-    @PostMapping("/create-account")
+    @PostMapping("/register")
     APIResponse<Waiter> createWaiter(@Valid @RequestBody WaiterCreationRequest request){
         return APIResponse.<Waiter>builder()
                 .result(waiterService.createWaiter(request))

@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service;
+package com.humg.HotelSystemManagement.service.MainEntitiesService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.receptionist.ReceptionistCreationRequest;
@@ -27,7 +27,9 @@ public class ReceptionistService {
         Receptionist receptionist;
 
         if (request != null) {
-            if (receptionistRepository.existsByEmail(request.getEmail())) {
+
+            if (receptionistRepository.existsByEmail(request.getEmail()) ||
+                    receptionistRepository.existsByPhone(request.getPhone())) {
                 throw new AppException(AppErrorCode.USER_EXISTED);
             }
 
@@ -40,7 +42,7 @@ public class ReceptionistService {
                     .password(encodedPassword)
                     .build();
         } else {
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
         return receptionistRepository.save(receptionist);
     }
@@ -84,7 +86,7 @@ public class ReceptionistService {
             receptionist.setEmail(request.getEmail());
             receptionist.setPhone(request.getPhone());
         }else{
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
         Receptionist updatedReceptionist = receptionistRepository.save(receptionist);
@@ -99,7 +101,6 @@ public class ReceptionistService {
         return result;
     }
 
-    //Tối nay phải làm nốt controller của receptionist và build nốt API CRUD cho Accountant
     public void deleteReceptionistById(Long id){
         Receptionist receptionist = receptionistRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_EXISTED));

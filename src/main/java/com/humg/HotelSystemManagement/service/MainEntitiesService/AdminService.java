@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service;
+package com.humg.HotelSystemManagement.service.MainEntitiesService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.admin.AdminCreationRequest;
@@ -26,7 +26,9 @@ public class AdminService {
         Admin admin;
 
         if (request != null) {
-            if (adminRepository.existsByEmail(request.getEmail())) {
+
+            if (adminRepository.existsByEmail(request.getEmail()) ||
+                    adminRepository.existsByPhone(request.getPhone())) {
                 throw new AppException(AppErrorCode.USER_EXISTED);
             }
 
@@ -38,7 +40,7 @@ public class AdminService {
                     .password(encodedPassword)
                     .build();
         } else {
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
         return adminRepository.save(admin);
@@ -79,11 +81,11 @@ public class AdminService {
         Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_EXISTED));
 
-        if (admin != null) {
+        if (request != null) {
             admin.setEmail(request.getEmail());
             admin.setPhone(request.getPhone());
         } else {
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
         Admin updatedAdmin = adminRepository.save(admin);

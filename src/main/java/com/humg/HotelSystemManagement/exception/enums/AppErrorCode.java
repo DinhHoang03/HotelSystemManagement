@@ -10,10 +10,10 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 
 public enum AppErrorCode {
+    OBJECT_IS_NULL(1000, "Object is null!"),
     USER_EXISTED(1001, "This account currently exists!"),
     USER_NOT_EXISTED(1002, "This account does not exist!"),
-    LIST_EMPTY(1003, "List is empty!"),
-    REQUEST_NULL(1010, "Request is null!");
+    LIST_EMPTY(1003, "List is empty!");
 
     int code;
     String message;

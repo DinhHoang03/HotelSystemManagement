@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service;
+package com.humg.HotelSystemManagement.service.MainEntitiesService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.cleaner.CleanerCreationRequest;
@@ -26,7 +26,9 @@ public class CleanerService {
         Cleaner cleaner;
 
         if (request != null) {
-            if (cleanerRepository.existsByEmail(request.getEmail())) {
+
+            if (cleanerRepository.existsByEmail(request.getEmail()) ||
+                    cleanerRepository.existsByPhone(request.getPhone())) {
                 throw new AppException(AppErrorCode.USER_EXISTED);
             }
 
@@ -39,7 +41,7 @@ public class CleanerService {
                     .password(encodedPassword)
                     .build();
         } else {
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
         return cleanerRepository.save(cleaner);
@@ -84,7 +86,7 @@ public class CleanerService {
             cleaner.setEmail(request.getEmail());
             cleaner.setPhone(request.getPhone());
         } else {
-            throw new AppException(AppErrorCode.REQUEST_NULL);
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
         Cleaner updatedCleaner = cleanerRepository.save(cleaner);

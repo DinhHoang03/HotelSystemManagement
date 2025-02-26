@@ -5,4 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface WaiterRepository extends JpaRepository<Waiter, Long> {
     boolean existsByEmail(String email);
+    boolean existsByPhone(String phone);
 }

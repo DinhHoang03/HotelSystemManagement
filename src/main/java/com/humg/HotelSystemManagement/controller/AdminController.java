@@ -5,7 +5,7 @@ import com.humg.HotelSystemManagement.dto.request.admin.AdminUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.admin.AdminResponse;
 import com.humg.HotelSystemManagement.entity.employees.Admin;
-import com.humg.HotelSystemManagement.service.AdminService;
+import com.humg.HotelSystemManagement.service.MainEntitiesService.AdminService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -19,7 +19,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
     AdminService adminService;
 
-    @PostMapping("/create-account")
+    @PostMapping("/register")
     APIResponse<Admin> createAdmin(@Valid @RequestBody AdminCreationRequest request){
         return APIResponse.<Admin>builder()
                 .result(adminService.createAdmin(request))
