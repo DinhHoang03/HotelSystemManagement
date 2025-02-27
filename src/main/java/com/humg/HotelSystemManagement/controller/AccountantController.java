@@ -12,7 +12,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins = "http://localhost:5500") //Cổng của font-end
 @RestController
 @RequestMapping("/employee/accountant")
 @RequiredArgsConstructor
