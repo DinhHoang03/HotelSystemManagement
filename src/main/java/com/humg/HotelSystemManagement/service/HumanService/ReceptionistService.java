@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service.MainEntitiesService;
+package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.receptionist.ReceptionistCreationRequest;
@@ -18,12 +18,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class ReceptionistService {
+public class ReceptionistService implements IGeneralHumanCRUDService<ReceptionistResponse, ReceptionistCreationRequest, ReceptionistUpdateRequest> {
 
     ReceptionistRepository receptionistRepository;
     SecurityConfig securityConfig;
 
-    public Receptionist createReceptionist(ReceptionistCreationRequest request) {
+    public ReceptionistResponse create(ReceptionistCreationRequest request) {
         Receptionist receptionist;
 
         if (request != null) {
@@ -44,14 +44,22 @@ public class ReceptionistService {
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
-        return receptionistRepository.save(receptionist);
+
+        receptionist = receptionistRepository.save(receptionist);
+
+        return ReceptionistResponse.builder()
+                .receptionistId(receptionist.getId())
+                .name(receptionist.getName())
+                .email(receptionist.getEmail())
+                .phone(receptionist.getPhone())
+                .build();
     }
 
-    public List<ReceptionistResponse> getAllReceptionists() {
+    public List<ReceptionistResponse> getAll() {
         List<ReceptionistResponse> list = receptionistRepository.findAll()
                 .stream()
                 .map(receptionist -> new ReceptionistResponse(
-                        receptionist.getReceptionistId(),
+                        receptionist.getId(),
                         receptionist.getName(),
                         receptionist.getEmail(),
                         receptionist.getPhone()
@@ -64,12 +72,12 @@ public class ReceptionistService {
         return list;
     }
 
-    public ReceptionistResponse findReceptionistById(Long id){
+    public ReceptionistResponse getById(Long id){
         Receptionist receptionist = receptionistRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         ReceptionistResponse response = ReceptionistResponse.builder()
-                .receptionistId(receptionist.getReceptionistId())
+                .receptionistId(receptionist.getId())
                 .name(receptionist.getName())
                 .email(receptionist.getEmail())
                 .phone(receptionist.getPhone())
@@ -78,7 +86,7 @@ public class ReceptionistService {
         return response;
     }
 
-    public ReceptionistResponse updateReceptionist(Long id, ReceptionistUpdateRequest request){
+    public ReceptionistResponse updateById(Long id, ReceptionistUpdateRequest request){
         Receptionist receptionist = receptionistRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_EXISTED));
 
@@ -92,7 +100,7 @@ public class ReceptionistService {
         Receptionist updatedReceptionist = receptionistRepository.save(receptionist);
 
         ReceptionistResponse result = ReceptionistResponse.builder()
-                .receptionistId(updatedReceptionist.getReceptionistId())
+                .receptionistId(updatedReceptionist.getId())
                 .name(updatedReceptionist.getName())
                 .email(updatedReceptionist.getEmail())
                 .phone(updatedReceptionist.getPhone())
@@ -101,7 +109,7 @@ public class ReceptionistService {
         return result;
     }
 
-    public void deleteReceptionistById(Long id){
+    public void deleteById(Long id){
         Receptionist receptionist = receptionistRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_EXISTED));
 

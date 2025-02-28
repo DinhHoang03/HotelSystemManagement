@@ -1,11 +1,10 @@
-package com.humg.HotelSystemManagement.controller;
+package com.humg.HotelSystemManagement.controller.HumanController;
 
 import com.humg.HotelSystemManagement.dto.request.accountant.AccountantCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.accountant.AccountantUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.accountant.AccountantResponse;
-import com.humg.HotelSystemManagement.entity.employees.Accountant;
-import com.humg.HotelSystemManagement.service.MainEntitiesService.AccountantService;
+import com.humg.HotelSystemManagement.service.HumanService.AccountantService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -21,9 +20,9 @@ public class AccountantController {
     AccountantService accountantService;
 
     @PostMapping("/register")
-    APIResponse<Accountant> createAccountant(@Valid @RequestBody AccountantCreationRequest request){
-        return APIResponse.<Accountant>builder()
-                .result(accountantService.createAccountant(request))
+    APIResponse<AccountantResponse> createAccountant(@Valid @RequestBody AccountantCreationRequest request){
+        return APIResponse.<AccountantResponse>builder()
+                .result(accountantService.create(request))
                 .message("This accountant account is successfully created")
                 .build();
     }
@@ -31,14 +30,14 @@ public class AccountantController {
     @PutMapping("/update/{accountantId}")
     APIResponse<AccountantResponse> updateAccountant(@PathVariable("accountantId") Long id, @Valid @RequestBody AccountantUpdateRequest request){
         return APIResponse.<AccountantResponse>builder()
-                .result(accountantService.updateAccountantResponse(id, request))
+                .result(accountantService.updateById(id, request))
                 .message("Update accountant successfully!")
                 .build();
     }
 
     @DeleteMapping("del/{accountantId}")
     APIResponse<String> deleteAccountant(@PathVariable("accountantId") Long id){
-        accountantService.deleteAccountantById(id);
+        accountantService.deleteById(id);
         return APIResponse.<String>builder()
                 .message("Delete accountant number id " + id + " successfully!")
                 .build();

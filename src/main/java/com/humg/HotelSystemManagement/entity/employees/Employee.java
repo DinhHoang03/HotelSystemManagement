@@ -1,56 +1,32 @@
 package com.humg.HotelSystemManagement.entity.employees;
 
-import com.humg.HotelSystemManagement.entity.staffManagerment.Attendance;
-import com.humg.HotelSystemManagement.entity.staffManagerment.Contract;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
-import java.util.ArrayList;
-import java.util.List;
+import lombok.experimental.SuperBuilder;
 
 @Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Employee {
+public abstract class Employee {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "emp_id")
-    Long empId;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "waiter_id", nullable = false)
-    Waiter waiter;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "admin_id", nullable = false)
-    Admin admin;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "receptionist_id", nullable = false)
-    Receptionist receptionist;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "cleaner_id", nullable = false)
-    Cleaner cleaner;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "accountant_id", nullable = false)
-    Accountant accountant;
-
-    @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    List<Attendance> attendances = new ArrayList<>();
-
-    @OneToOne(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    Contract contract;
+    Long id;
 
     @Column(nullable = false)
     String name;
 
+    @Column(nullable = false, unique = true)
+    String email;
+
+    @Column(nullable = false, unique = true, length = 12)
+    String phone;
+
     @Column(nullable = false)
-    String role;
+    String password;
 }

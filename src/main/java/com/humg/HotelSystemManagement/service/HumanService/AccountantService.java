@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service.MainEntitiesService;
+package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.accountant.AccountantCreationRequest;
@@ -18,15 +18,15 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AccountantService {
+public class AccountantService implements IGeneralHumanCRUDService<AccountantResponse, AccountantCreationRequest, AccountantUpdateRequest> {
     AccountantRepository accountantRepository;
     SecurityConfig securityConfig;
 
-    public Accountant createAccountant(AccountantCreationRequest request) {
+    public AccountantResponse create(AccountantCreationRequest request) {
+        // Khai báo đúng kiểu Accountant thay vì Employee
         Accountant accountant;
 
         if (request != null) {
-
             if (accountantRepository.existsByEmail(request.getEmail()) ||
                     accountantRepository.existsByPhone(request.getPhone())) {
                 throw new AppException(AppErrorCode.USER_EXISTED);
@@ -40,23 +40,30 @@ public class AccountantService {
                     .email(request.getEmail())
                     .password(encodedPassword)
                     .build();
-
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
-        return accountantRepository.save(accountant);
+        accountant = accountantRepository.save(accountant);
+
+        return AccountantResponse.builder()
+                .accountantId(accountant.getId()) // Thay getAccountantId() bằng getId()
+                .name(accountant.getName())
+                .phone(accountant.getPhone())
+                .email(accountant.getEmail())
+                .build();
     }
 
-    public List<AccountantResponse> getAllAccountants() {
+    public List<AccountantResponse> getAll() {
         List<AccountantResponse> list = accountantRepository.findAll()
                 .stream()
                 .map(accountant -> new AccountantResponse(
-                        accountant.getAccountantId(),
+                        accountant.getId(), // Thay getAccountantId() bằng getId()
                         accountant.getName(),
                         accountant.getEmail(),
                         accountant.getPhone()
-                )).toList();
+                ))
+                .toList();
 
         if (list.isEmpty()) {
             throw new AppException(AppErrorCode.LIST_EMPTY);
@@ -65,21 +72,19 @@ public class AccountantService {
         return list;
     }
 
-    public AccountantResponse findAccountantById(Long id) {
+    public AccountantResponse getById(Long id) {
         Accountant accountant = accountantRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        AccountantResponse response = AccountantResponse.builder()
-                .accountantId(accountant.getAccountantId())
+        return AccountantResponse.builder()
+                .accountantId(accountant.getId()) // Thay getAccountantId() bằng getId()
                 .name(accountant.getName())
                 .phone(accountant.getPhone())
                 .email(accountant.getEmail())
                 .build();
-
-        return response;
     }
 
-    public AccountantResponse updateAccountantResponse(Long id, AccountantUpdateRequest request) {
+    public AccountantResponse updateById(Long id, AccountantUpdateRequest request) {
         Accountant accountant = accountantRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -92,17 +97,15 @@ public class AccountantService {
 
         Accountant updatedAccountant = accountantRepository.save(accountant);
 
-        AccountantResponse result = AccountantResponse.builder()
-                .accountantId(updatedAccountant.getAccountantId())
+        return AccountantResponse.builder()
+                .accountantId(updatedAccountant.getId()) // Thay getAccountantId() bằng getId()
                 .name(updatedAccountant.getName())
                 .email(updatedAccountant.getEmail())
                 .phone(updatedAccountant.getPhone())
                 .build();
-
-        return result;
     }
 
-    public void deleteAccountantById(Long id) {
+    public void deleteById(Long id) {
         Accountant accountant = accountantRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 

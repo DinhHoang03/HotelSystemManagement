@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service.MainEntitiesService;
+package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.admin.AdminCreationRequest;
@@ -18,11 +18,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class AdminService {
+public class AdminService implements IGeneralHumanCRUDService<AdminResponse, AdminCreationRequest, AdminUpdateRequest> {
     AdminRepository adminRepository;
     SecurityConfig securityConfig;
 
-    public Admin createAdmin(AdminCreationRequest request) {
+    public AdminResponse create(AdminCreationRequest request) {
         Admin admin;
 
         if (request != null) {
@@ -43,14 +43,20 @@ public class AdminService {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
-        return adminRepository.save(admin);
+        admin = adminRepository.save(admin);
+        return AdminResponse.builder()
+                .adminId(admin.getId())
+                .name(admin.getName())
+                .phone(admin.getPhone())
+                .email(admin.getEmail())
+                .build();
     }
 
-    public List<AdminResponse> getAllAdmin() {
+    public List<AdminResponse> getAll() {
         List<AdminResponse> list = adminRepository.findAll()
                 .stream()
                 .map(admin -> new AdminResponse(
-                        admin.getAdminId(),
+                        admin.getId(),
                         admin.getName(),
                         admin.getEmail(),
                         admin.getPhone()
@@ -63,12 +69,12 @@ public class AdminService {
         return list;
     }
 
-    public AdminResponse findAdminById(Long id) {
+    public AdminResponse getById(Long id) {
         Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         AdminResponse response = AdminResponse.builder()
-                .adminId(admin.getAdminId())
+                .adminId(admin.getId())
                 .name(admin.getName())
                 .phone(admin.getPhone())
                 .email(admin.getEmail())
@@ -77,7 +83,7 @@ public class AdminService {
         return response;
     }
 
-    public AdminResponse updateUserById(Long id, AdminUpdateRequest request) {
+    public AdminResponse updateById(Long id, AdminUpdateRequest request) {
         Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_EXISTED));
 
@@ -91,7 +97,7 @@ public class AdminService {
         Admin updatedAdmin = adminRepository.save(admin);
 
         AdminResponse result = AdminResponse.builder()
-                .adminId(admin.getAdminId())
+                .adminId(admin.getId())
                 .name(admin.getName())
                 .email(admin.getEmail())
                 .phone(admin.getPhone())
@@ -100,7 +106,7 @@ public class AdminService {
         return result;
     }
 
-    public void deleteAdminById(Long id) {
+    public void deleteById(Long id) {
         Admin admin = adminRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 

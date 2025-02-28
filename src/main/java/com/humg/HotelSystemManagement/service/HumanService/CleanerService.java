@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service.MainEntitiesService;
+package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.cleaner.CleanerCreationRequest;
@@ -18,11 +18,11 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class CleanerService {
+public class CleanerService implements IGeneralHumanCRUDService<CleanerResponse, CleanerCreationRequest, CleanerUpdateRequest> {
     CleanerRepository cleanerRepository;
     SecurityConfig securityConfig;
 
-    public Cleaner createCleaner(CleanerCreationRequest request) {
+    public CleanerResponse create(CleanerCreationRequest request) {
         Cleaner cleaner;
 
         if (request != null) {
@@ -44,14 +44,21 @@ public class CleanerService {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
-        return cleanerRepository.save(cleaner);
+        cleaner = cleanerRepository.save(cleaner);
+
+        return CleanerResponse.builder()
+                .cleanerId(cleaner.getId())
+                .name(cleaner.getName())
+                .email(cleaner.getEmail())
+                .phone(cleaner.getPhone())
+                .build();
     }
 
-    public List<CleanerResponse> getAllCleaners() {
+    public List<CleanerResponse> getAll() {
         List<CleanerResponse> list = cleanerRepository.findAll()
                 .stream()
                 .map(cleaner -> new CleanerResponse(
-                        cleaner.getCleanerId(),
+                        cleaner.getId(),
                         cleaner.getName(),
                         cleaner.getEmail(),
                         cleaner.getPhone()
@@ -63,12 +70,12 @@ public class CleanerService {
         return list;
     }
 
-    public CleanerResponse findCleanerById(Long id) {
+    public CleanerResponse getById(Long id) {
         Cleaner cleaner = cleanerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         CleanerResponse response = CleanerResponse.builder()
-                .cleanerId(cleaner.getCleanerId())
+                .cleanerId(cleaner.getId())
                 .name(cleaner.getName())
                 .email(cleaner.getEmail())
                 .phone(cleaner.getPhone())
@@ -77,7 +84,7 @@ public class CleanerService {
         return response;
     }
 
-    public CleanerResponse updateCleaner(Long id, CleanerUpdateRequest request) {
+    public CleanerResponse updateById(Long id, CleanerUpdateRequest request) {
 
         Cleaner cleaner = cleanerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
@@ -92,7 +99,7 @@ public class CleanerService {
         Cleaner updatedCleaner = cleanerRepository.save(cleaner);
 
         CleanerResponse response = CleanerResponse.builder()
-                .cleanerId(updatedCleaner.getCleanerId())
+                .cleanerId(updatedCleaner.getId())
                 .name(updatedCleaner.getName())
                 .phone(updatedCleaner.getPhone())
                 .email(updatedCleaner.getEmail())
@@ -101,7 +108,7 @@ public class CleanerService {
         return response;
     }
 
-    public void deleteCleanerById(Long id) {
+    public void deleteById(Long id) {
         Cleaner cleaner = cleanerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 

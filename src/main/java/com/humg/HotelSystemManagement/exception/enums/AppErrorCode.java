@@ -13,7 +13,10 @@ public enum AppErrorCode {
     OBJECT_IS_NULL(1000, "Object is null!"),
     USER_EXISTED(1001, "This account currently exists!"),
     USER_NOT_EXISTED(1002, "This account does not exist!"),
-    LIST_EMPTY(1003, "List is empty!");
+    LIST_EMPTY(1003, "List is empty!"),
+    UNAUTHENTICATED(1004, "Password is incorrect! Please try again"),
+    SIGN_TOKEN_ERROR(1005, "Cannot create token")
+    ;
 
     int code;
     String message;

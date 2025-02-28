@@ -1,11 +1,10 @@
-package com.humg.HotelSystemManagement.controller;
+package com.humg.HotelSystemManagement.controller.HumanController;
 
 import com.humg.HotelSystemManagement.dto.request.receptionist.ReceptionistCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.receptionist.ReceptionistUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.receptionist.ReceptionistResponse;
-import com.humg.HotelSystemManagement.entity.employees.Receptionist;
-import com.humg.HotelSystemManagement.service.MainEntitiesService.ReceptionistService;
+import com.humg.HotelSystemManagement.service.HumanService.ReceptionistService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +19,9 @@ public class ReceptionistController {
     ReceptionistService receptionistService;
 
     @PostMapping("/register")
-    public APIResponse<Receptionist> createReceptionist(@Valid @RequestBody ReceptionistCreationRequest request){
-        return APIResponse.<Receptionist>builder()
-                .result(receptionistService.createReceptionist(request))
+    public APIResponse<ReceptionistResponse> createReceptionist(@Valid @RequestBody ReceptionistCreationRequest request){
+        return APIResponse.<ReceptionistResponse>builder()
+                .result(receptionistService.create(request))
                 .message("The receptionist account is successfully created!")
                 .build();
     }
@@ -30,14 +29,14 @@ public class ReceptionistController {
     @PutMapping("/update/{receptionistId}")
     public APIResponse<ReceptionistResponse> updateReceptionist(@PathVariable("receptionistId") Long id, @Valid @RequestBody ReceptionistUpdateRequest request){
         return APIResponse.<ReceptionistResponse>builder()
-                .result(receptionistService.updateReceptionist(id, request))
+                .result(receptionistService.updateById(id, request))
                 .message("Successfully updated user!")
                 .build();
     }
 
     @DeleteMapping("/del/{receptionistId}")
     public APIResponse<String> deleteReceptionist(@PathVariable("receptionistID") Long id){
-        receptionistService.deleteReceptionistById(id);
+        receptionistService.deleteById(id);
         return APIResponse.<String>builder()
                 .message("Delete receptionist number id " + id + " successfully!")
                 .build();

@@ -39,7 +39,6 @@ public class RoomType {
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<Room> rooms = new ArrayList<>();
 
-    //Refactor this block of code
     @PrePersist
     public void setPrices(){
         if(halfDayPrice == null){

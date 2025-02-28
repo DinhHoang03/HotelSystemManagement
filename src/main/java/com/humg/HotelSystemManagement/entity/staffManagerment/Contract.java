@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.entity.staffManagerment;
 
-import com.humg.HotelSystemManagement.entity.employees.Employee;
+import com.humg.HotelSystemManagement.entity.employees.EmployeeList;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -31,7 +31,7 @@ public class Contract {
 
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "emp_id", unique = true)
-    Employee employee;
+    EmployeeList employee;
 
     @OneToOne(mappedBy = "contract", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     Payroll payroll;

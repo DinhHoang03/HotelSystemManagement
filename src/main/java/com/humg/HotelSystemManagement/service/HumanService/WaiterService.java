@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service.MainEntitiesService;
+package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.waiter.WaiterCreationRequest;
@@ -18,12 +18,12 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class WaiterService {
+public class WaiterService implements IGeneralHumanCRUDService<WaiterResponse, WaiterCreationRequest, WaiterUpdateRequest> {
 
     WaiterRepository waiterRepository;
     SecurityConfig securityConfig;
 
-    public Waiter createWaiter(WaiterCreationRequest request) {
+    public WaiterResponse create(WaiterCreationRequest request) {
         Waiter waiter;
 
         if (request != null) {
@@ -45,10 +45,16 @@ public class WaiterService {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
-        return waiterRepository.save(waiter);
+        waiter = waiterRepository.save(waiter);
+
+        return WaiterResponse.builder()
+                .name(waiter.getName())
+                .phone(waiter.getPhone())
+                .email(waiter.getEmail())
+                .build();
     }
 
-    public List<WaiterResponse> getAllWaiters() {
+    public List<WaiterResponse> getAll() {
         List<WaiterResponse> list = waiterRepository.findAll()
                 .stream()
                 .map(waiter -> new WaiterResponse(
@@ -65,7 +71,7 @@ public class WaiterService {
         return list;
     }
 
-    public WaiterResponse findWaiterById(Long id) {
+    public WaiterResponse getById(Long id) {
         Waiter waiter = waiterRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -78,7 +84,7 @@ public class WaiterService {
         return response;
     }
 
-    public WaiterResponse updateUserById(Long id, WaiterUpdateRequest request) {
+    public WaiterResponse updateById(Long id, WaiterUpdateRequest request) {
         Waiter waiter = waiterRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -101,7 +107,7 @@ public class WaiterService {
         return result;
     }
 
-    public void deleteWaiterById(Long id) {
+    public void deleteById(Long id) {
         Waiter waiter = waiterRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 

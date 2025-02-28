@@ -3,6 +3,7 @@ package com.humg.HotelSystemManagement.entity.employees;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,25 +13,9 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
+@SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Receptionist {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    Long receptionistId;
-
-    @Column(nullable = false)
-    String name;
-
-    @Column(nullable = false, unique = true)
-    String email;
-
-    @Column(nullable = false, unique = true, length = 12)
-    String phone;
-
-    @Column(nullable = false)
-    String password;
-
+public class Receptionist extends Employee{
     @OneToMany(mappedBy = "receptionist", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
-    List<Employee> employees = new ArrayList<>();
+    List<EmployeeList> employees = new ArrayList<>();
 }

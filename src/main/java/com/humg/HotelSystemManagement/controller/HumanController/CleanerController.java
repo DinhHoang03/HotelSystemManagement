@@ -1,11 +1,10 @@
-package com.humg.HotelSystemManagement.controller;
+package com.humg.HotelSystemManagement.controller.HumanController;
 
 import com.humg.HotelSystemManagement.dto.request.cleaner.CleanerCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.cleaner.CleanerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.cleaner.CleanerResponse;
-import com.humg.HotelSystemManagement.entity.employees.Cleaner;
-import com.humg.HotelSystemManagement.service.MainEntitiesService.CleanerService;
+import com.humg.HotelSystemManagement.service.HumanService.CleanerService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -20,9 +19,9 @@ public class CleanerController {
     CleanerService cleanerService;
 
     @PostMapping("/register")
-    APIResponse<Cleaner> createCleaner(@Valid @RequestBody CleanerCreationRequest request){
-        return APIResponse.<Cleaner>builder()
-                .result(cleanerService.createCleaner(request))
+    APIResponse<CleanerResponse> createCleaner(@Valid @RequestBody CleanerCreationRequest request){
+        return APIResponse.<CleanerResponse>builder()
+                .result(cleanerService.create(request))
                 .message("The cleaner account is successfully created!")
                 .build();
     }
@@ -30,14 +29,14 @@ public class CleanerController {
     @PutMapping("/update/{cleanerId}")
     APIResponse<CleanerResponse> updateCleaner(@PathVariable("cleanerId") Long cleanerId,@Valid @RequestBody CleanerUpdateRequest request){
         return APIResponse.<CleanerResponse>builder()
-                .result(cleanerService.updateCleaner(cleanerId, request))
+                .result(cleanerService.updateById(cleanerId, request))
                 .message("Successfully updated user!")
                 .build();
     }
 
     @DeleteMapping("/del/{cleanerId}")
     APIResponse<String> deleteCleaner(@PathVariable("cleanerId") Long cleanerId){
-        cleanerService.deleteCleanerById(cleanerId);
+        cleanerService.deleteById(cleanerId);
         return APIResponse.<String>builder()
                 .message("Delete cleaner number id " + cleanerId + " successfully!")
                 .build();

@@ -1,11 +1,10 @@
-package com.humg.HotelSystemManagement.controller;
+package com.humg.HotelSystemManagement.controller.HumanController;
 
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
-import com.humg.HotelSystemManagement.entity.booking.Customer;
-import com.humg.HotelSystemManagement.service.MainEntitiesService.CustomerService;
+import com.humg.HotelSystemManagement.service.HumanService.CustomerService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -22,9 +21,9 @@ public class CustomerController {
     CustomerService customerService;
 
     @PostMapping("/register")
-    APIResponse<Customer> createCustomer(@Valid @RequestBody CustomerCreationRequest request){
-        return APIResponse.<Customer>builder()
-                .result(customerService.createCustomer(request))
+    APIResponse<CustomerResponse> createCustomer(@Valid @RequestBody CustomerCreationRequest request){
+        return APIResponse.<CustomerResponse>builder()
+                .result(customerService.create(request))
                 .message("The customer account is successfully created!")
                 .build();
     }
@@ -32,7 +31,7 @@ public class CustomerController {
     @GetMapping("/user/{customerId}")
     APIResponse<CustomerResponse> getCustomerById(@PathVariable("customerId") Long customerId){
         return APIResponse.<CustomerResponse>builder()
-                .result(customerService.findUserById(customerId))
+                .result(customerService.getById(customerId))
                 .message("Successfully get user by follow id!")
                 .build();
     }
@@ -42,7 +41,7 @@ public class CustomerController {
     //API trả về thông báo theo kiểu List chứa dữ liệu của lớp dto trên
     APIResponse<List<CustomerResponse>> getAllCustomers(){
         return APIResponse.<List<CustomerResponse>>builder()
-                .result(customerService.getAllUSers())
+                .result(customerService.getAll())
                 .message("Successfully get all customers!")
                 .build();
     }
@@ -50,14 +49,14 @@ public class CustomerController {
     @PutMapping("/update/{customerId}")
     APIResponse<CustomerResponse> updateCustomer(@PathVariable("customerId")Long customerId,@Valid @RequestBody CustomerUpdateRequest request){
         return APIResponse.<CustomerResponse>builder()
-                .result(customerService.updateUserById(customerId, request))
+                .result(customerService.updateById(customerId, request))
                 .message("Update customer information successfully")
                 .build();
     }
 
     @DeleteMapping("/del/{customerId}")
     APIResponse<String> deleteCustomer(@PathVariable("customerId") Long customerId){
-        customerService.deleteUserById(customerId);
+        customerService.deleteById(customerId);
         return APIResponse.<String>builder()
                 .message("Delete customer number id " + customerId + " successfully!")
                 .build();

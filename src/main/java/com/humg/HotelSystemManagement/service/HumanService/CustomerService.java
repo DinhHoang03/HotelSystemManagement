@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service.MainEntitiesService;
+package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
@@ -18,13 +18,13 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class CustomerService {
+public class CustomerService implements IGeneralHumanCRUDService<CustomerResponse, CustomerCreationRequest, CustomerUpdateRequest> {
     //Call Repository
     CustomerRepository customerRepository;
     SecurityConfig securityConfig;
 
     //Create customer account
-    public Customer createCustomer(CustomerCreationRequest request) {
+    public CustomerResponse create(CustomerCreationRequest request) {
         Customer customer;
         //Check if the email was registered with this customer account
         if (request != null) {
@@ -47,12 +47,19 @@ public class CustomerService {
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
+
+        customer = customerRepository.save(customer);
         //Create a customer
-        return customerRepository.save(customer);
+        return CustomerResponse.builder()
+                .identityId(customer.getIdentityId())
+                .name(customer.getName())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .build();
     }
 
     //Get all customers account
-    public List<CustomerResponse> getAllUSers() {
+    public List<CustomerResponse> getAll() {
         //Tạo list để luu trữ list dữ liệu, gọi service để lấy hàm findAll lấy toàn bộ dũ liệu của user
         List<CustomerResponse> list = customerRepository.findAll()
                 //Chuyển từ list thành một stream(Luồng dũ liệu)
@@ -60,7 +67,7 @@ public class CustomerService {
                 //Dùng map để chuyển từng Customer thành CustomerResponse
                 .map(customer -> new CustomerResponse(
                         //Lấy nhũng dữ liệu cần thiết của entity Customer
-                        customer.getCustomerId(),
+                        customer.getId(),
                         customer.getIdentityId(),
                         customer.getName(),
                         customer.getPhone(),
@@ -76,7 +83,7 @@ public class CustomerService {
     }
 
     //Get User by Id
-    public CustomerResponse findUserById(Long id) {
+    public CustomerResponse getById(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -91,7 +98,7 @@ public class CustomerService {
     }
 
     //update User by Id
-    public CustomerResponse updateUserById(Long id, CustomerUpdateRequest request) {
+    public CustomerResponse updateById(Long id, CustomerUpdateRequest request) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -105,7 +112,7 @@ public class CustomerService {
         Customer updatedCustomer = customerRepository.save(customer);
 
         CustomerResponse result = CustomerResponse.builder()
-                .customerId(updatedCustomer.getCustomerId())
+                .id(updatedCustomer.getId())
                 .identityId(updatedCustomer.getIdentityId())
                 .name(updatedCustomer.getName())
                 .email(updatedCustomer.getEmail())
@@ -115,7 +122,7 @@ public class CustomerService {
         return result;
     }
 
-    public void deleteUserById(Long id) {
+    public void deleteById(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
