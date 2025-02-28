@@ -82,7 +82,6 @@
     <div class="form-container">
         <h2 class="title">Register</h2>
         <form id="register-form">
-
             <div class="form-group">
                 <label for="name">Name</label>
                 <input type="text" id="name" name="name" required>
@@ -116,6 +115,7 @@
             <div class="form-group">
                 <label for="accountType">Account Type</label>
                 <select class="selection-role" id="accountType" name="accountType" required>
+                    <option value="customer">Customer</option>
                     <option value="admin">Admin</option>
                     <option value="waiter">Waiter</option>
                     <option value="receptionist">Receptionist</option>
@@ -135,60 +135,59 @@
                 event.preventDefault(); // Ngăn reload trang
                 
                 let accountType = $("#accountType").val();
-                let registerUrl = "http://localhost:8080/hotel/employee/";
-        
-                if(accountType === "admin"){
-                    registerUrl += "admin/register";
-                } else if(accountType === "waiter"){
-                    registerUrl += "waiter/register";
-                } else if(accountType === "receptionist"){
-                    registerUrl += "receptionist/register";
-                } else if(accountType === "cleaner"){
-                    registerUrl += "cleaner/register";
-                } else if(accountType === "accountant"){
-                    registerUrl += "accountant/register";
+                let registerUrl = "http://localhost:8080/hotel/";
+                
+                // Xác định URL dựa trên accountType
+                if (accountType === "customer") {
+                    registerUrl += "customer/register";
+                } else {
+                    registerUrl += "employee/" + accountType + "/register";
                 }
         
+                // Dữ liệu gửi lên backend
                 let formData = {
                     name: $("#name").val(),
                     phone: $("#phone").val(),
                     email: $("#email").val(),
                     password: $("#password").val(),
-                    confirmPassword: $("#confirmPassword").val()
+                    role: accountType.toUpperCase() // Gửi role dựa trên accountType
                 };
         
                 // Kiểm tra mật khẩu nhập lại
-                if (formData.password !== formData.confirmPassword) {
+                if (formData.password !== $("#confirmPassword").val()) {
                     $("#error-confirmPassword").text("Passwords do not match!");
                     return false; 
                 } else {
                     $("#error-confirmPassword").text(""); 
                 }
         
-                // Gửi REQUEST đến API
+                // Gửi request đến API
                 $.ajax({
                     url: registerUrl,
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(formData),
-                    success: function (response){
+                    success: function(response) {
                         $("#success-message").text(response.message);
                         $(".error").text("");
+                        // Reset form sau khi đăng ký thành công
+                        $("#register-form")[0].reset();
                     },
-                    error: function (xhr){
-                        if(xhr.responseJSON && xhr.responseJSON.result){
+                    error: function(xhr) {
+                        let errorMsg = xhr.responseJSON ? xhr.responseJSON.message : "An error occurred";
+                        $(".error").text(""); // Xóa lỗi cũ
+                        if (xhr.responseJSON && xhr.responseJSON.result) {
                             let errors = xhr.responseJSON.result;
-                            $(".error").text("");
-        
-                            for(let field in errors){
+                            for (let field in errors) {
                                 $("#error-" + field).text(errors[field]);
                             }
+                        } else {
+                            $("#error-email").text(errorMsg); // Hiển thị lỗi chung
                         }
                     }
                 });
             });
         });
-        
     </script>
 </body>
 </html>

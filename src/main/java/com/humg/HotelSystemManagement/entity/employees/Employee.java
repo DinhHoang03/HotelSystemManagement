@@ -29,4 +29,7 @@ public abstract class Employee {
 
     @Column(nullable = false)
     String password;
+
+    @Column(nullable = false)
+    String role;
 }

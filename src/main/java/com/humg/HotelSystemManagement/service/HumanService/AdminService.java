@@ -38,6 +38,7 @@ public class AdminService implements IGeneralHumanCRUDService<AdminResponse, Adm
                     .name(request.getName())
                     .email(request.getEmail())
                     .password(encodedPassword)
+                    .role("ADMIN")
                     .build();
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
@@ -45,10 +46,11 @@ public class AdminService implements IGeneralHumanCRUDService<AdminResponse, Adm
 
         admin = adminRepository.save(admin);
         return AdminResponse.builder()
-                .adminId(admin.getId())
+                .id(admin.getId())
                 .name(admin.getName())
                 .phone(admin.getPhone())
                 .email(admin.getEmail())
+                .role(admin.getRole())
                 .build();
     }
 
@@ -59,7 +61,8 @@ public class AdminService implements IGeneralHumanCRUDService<AdminResponse, Adm
                         admin.getId(),
                         admin.getName(),
                         admin.getEmail(),
-                        admin.getPhone()
+                        admin.getPhone(),
+                        admin.getRole()
                 )).toList();
 
         if (list.isEmpty()) {
@@ -74,10 +77,11 @@ public class AdminService implements IGeneralHumanCRUDService<AdminResponse, Adm
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         AdminResponse response = AdminResponse.builder()
-                .adminId(admin.getId())
+                .id(admin.getId())
                 .name(admin.getName())
                 .phone(admin.getPhone())
                 .email(admin.getEmail())
+                .role(admin.getRole())
                 .build();
 
         return response;
@@ -97,10 +101,11 @@ public class AdminService implements IGeneralHumanCRUDService<AdminResponse, Adm
         Admin updatedAdmin = adminRepository.save(admin);
 
         AdminResponse result = AdminResponse.builder()
-                .adminId(admin.getId())
-                .name(admin.getName())
-                .email(admin.getEmail())
-                .phone(admin.getPhone())
+                .id(updatedAdmin.getId())
+                .name(updatedAdmin.getName())
+                .email(updatedAdmin.getEmail())
+                .phone(updatedAdmin.getPhone())
+                .role(updatedAdmin.getRole())
                 .build();
 
         return result;

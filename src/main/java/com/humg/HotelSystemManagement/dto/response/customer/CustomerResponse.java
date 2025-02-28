@@ -20,4 +20,6 @@ public class CustomerResponse {
     String email;
 
     String phone;
+
+    String role;
 }

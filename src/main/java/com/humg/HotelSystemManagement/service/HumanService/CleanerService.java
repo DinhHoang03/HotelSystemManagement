@@ -39,6 +39,7 @@ public class CleanerService implements IGeneralHumanCRUDService<CleanerResponse,
                     .phone(request.getPhone())
                     .email(request.getEmail())
                     .password(encodedPassword)
+                    .role("CLEANER")
                     .build();
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
@@ -47,7 +48,7 @@ public class CleanerService implements IGeneralHumanCRUDService<CleanerResponse,
         cleaner = cleanerRepository.save(cleaner);
 
         return CleanerResponse.builder()
-                .cleanerId(cleaner.getId())
+                .id(cleaner.getId())
                 .name(cleaner.getName())
                 .email(cleaner.getEmail())
                 .phone(cleaner.getPhone())
@@ -75,7 +76,7 @@ public class CleanerService implements IGeneralHumanCRUDService<CleanerResponse,
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         CleanerResponse response = CleanerResponse.builder()
-                .cleanerId(cleaner.getId())
+                .id(cleaner.getId())
                 .name(cleaner.getName())
                 .email(cleaner.getEmail())
                 .phone(cleaner.getPhone())
@@ -99,7 +100,7 @@ public class CleanerService implements IGeneralHumanCRUDService<CleanerResponse,
         Cleaner updatedCleaner = cleanerRepository.save(cleaner);
 
         CleanerResponse response = CleanerResponse.builder()
-                .cleanerId(updatedCleaner.getId())
+                .id(updatedCleaner.getId())
                 .name(updatedCleaner.getName())
                 .phone(updatedCleaner.getPhone())
                 .email(updatedCleaner.getEmail())

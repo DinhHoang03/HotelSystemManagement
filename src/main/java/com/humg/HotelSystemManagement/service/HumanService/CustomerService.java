@@ -29,8 +29,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         //Check if the email was registered with this customer account
         if (request != null) {
 
-            if (customerRepository.existsByEmail(request.getEmail()) ||
-                    customerRepository.existsByPhone(request.getPhone())) {
+            if (customerRepository.existsByEmail(request.getEmail())) {
                 throw new AppException(AppErrorCode.USER_EXISTED);
             }
 
@@ -55,6 +54,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                 .name(customer.getName())
                 .email(customer.getEmail())
                 .phone(customer.getPhone())
+                .role(customer.getRole())
                 .build();
     }
 
@@ -71,7 +71,8 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                         customer.getIdentityId(),
                         customer.getName(),
                         customer.getPhone(),
-                        customer.getEmail()
+                        customer.getEmail(),
+                        customer.getRole()
 
                 )).toList();//Chuyển tù luồng dũ liệu(stream) thành một list
 
@@ -92,6 +93,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                 .name(customer.getName())
                 .email(customer.getEmail())
                 .phone(customer.getPhone())
+                .role(customer.getRole())
                 .build();
 
         return response;
@@ -117,6 +119,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                 .name(updatedCustomer.getName())
                 .email(updatedCustomer.getEmail())
                 .phone(updatedCustomer.getPhone())
+                .role(updatedCustomer.getRole())
                 .build();
 
         return result;

@@ -40,6 +40,7 @@ public class ReceptionistService implements IGeneralHumanCRUDService<Receptionis
                     .email(request.getEmail())
                     .phone(request.getPhone())
                     .password(encodedPassword)
+                    .role("RECEPTIONIST")
                     .build();
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
@@ -48,10 +49,11 @@ public class ReceptionistService implements IGeneralHumanCRUDService<Receptionis
         receptionist = receptionistRepository.save(receptionist);
 
         return ReceptionistResponse.builder()
-                .receptionistId(receptionist.getId())
+                .id(receptionist.getId())
                 .name(receptionist.getName())
                 .email(receptionist.getEmail())
                 .phone(receptionist.getPhone())
+                .role(receptionist.getRole())
                 .build();
     }
 
@@ -62,7 +64,8 @@ public class ReceptionistService implements IGeneralHumanCRUDService<Receptionis
                         receptionist.getId(),
                         receptionist.getName(),
                         receptionist.getEmail(),
-                        receptionist.getPhone()
+                        receptionist.getPhone(),
+                        receptionist.getRole()
                 )).toList();
 
         if (list.isEmpty()) {
@@ -77,10 +80,11 @@ public class ReceptionistService implements IGeneralHumanCRUDService<Receptionis
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         ReceptionistResponse response = ReceptionistResponse.builder()
-                .receptionistId(receptionist.getId())
+                .id(receptionist.getId())
                 .name(receptionist.getName())
                 .email(receptionist.getEmail())
                 .phone(receptionist.getPhone())
+                .role(receptionist.getRole())
                 .build();
 
         return response;
@@ -100,10 +104,11 @@ public class ReceptionistService implements IGeneralHumanCRUDService<Receptionis
         Receptionist updatedReceptionist = receptionistRepository.save(receptionist);
 
         ReceptionistResponse result = ReceptionistResponse.builder()
-                .receptionistId(updatedReceptionist.getId())
+                .id(updatedReceptionist.getId())
                 .name(updatedReceptionist.getName())
                 .email(updatedReceptionist.getEmail())
                 .phone(updatedReceptionist.getPhone())
+                .role(updatedReceptionist.getRole())
                 .build();
 
         return result;

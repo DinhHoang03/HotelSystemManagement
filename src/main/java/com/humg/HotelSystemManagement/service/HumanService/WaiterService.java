@@ -40,6 +40,7 @@ public class WaiterService implements IGeneralHumanCRUDService<WaiterResponse, W
                     .email(request.getEmail())
                     .phone(request.getPhone())
                     .password(encodedPassword)
+                    .role("WAITER")
                     .build();
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
@@ -51,6 +52,7 @@ public class WaiterService implements IGeneralHumanCRUDService<WaiterResponse, W
                 .name(waiter.getName())
                 .phone(waiter.getPhone())
                 .email(waiter.getEmail())
+                .role(waiter.getRole())
                 .build();
     }
 
@@ -58,16 +60,16 @@ public class WaiterService implements IGeneralHumanCRUDService<WaiterResponse, W
         List<WaiterResponse> list = waiterRepository.findAll()
                 .stream()
                 .map(waiter -> new WaiterResponse(
-                        waiter.getWaiterId(),
+                        waiter.getId(),
                         waiter.getName(),
                         waiter.getEmail(),
-                        waiter.getPhone()
+                        waiter.getPhone(),
+                        waiter.getRole()
                 )).toList();
 
         if (list.isEmpty()) {
             throw new AppException(AppErrorCode.LIST_EMPTY);
         }
-
         return list;
     }
 
@@ -79,6 +81,7 @@ public class WaiterService implements IGeneralHumanCRUDService<WaiterResponse, W
                 .name(waiter.getName())
                 .phone(waiter.getPhone())
                 .email(waiter.getEmail())
+                .role(waiter.getRole())
                 .build();
 
         return response;
@@ -98,10 +101,11 @@ public class WaiterService implements IGeneralHumanCRUDService<WaiterResponse, W
         Waiter updatedWaiter = waiterRepository.save(waiter);
 
         WaiterResponse result = WaiterResponse.builder()
-                .waiterId(updatedWaiter.getWaiterId())
+                .id(updatedWaiter.getId())
                 .name(updatedWaiter.getName())
                 .phone(updatedWaiter.getPhone())
                 .email(updatedWaiter.getEmail())
+                .role(updatedWaiter.getRole())
                 .build();
 
         return result;

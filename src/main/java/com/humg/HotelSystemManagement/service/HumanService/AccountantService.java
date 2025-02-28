@@ -39,6 +39,7 @@ public class AccountantService implements IGeneralHumanCRUDService<AccountantRes
                     .phone(request.getPhone())
                     .email(request.getEmail())
                     .password(encodedPassword)
+                    .role("ACCOUNTANT")
                     .build();
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
@@ -47,10 +48,11 @@ public class AccountantService implements IGeneralHumanCRUDService<AccountantRes
         accountant = accountantRepository.save(accountant);
 
         return AccountantResponse.builder()
-                .accountantId(accountant.getId()) // Thay getAccountantId() bằng getId()
+                .id(accountant.getId()) // Thay getAccountantId() bằng getId()
                 .name(accountant.getName())
                 .phone(accountant.getPhone())
                 .email(accountant.getEmail())
+                .role(accountant.getRole())
                 .build();
     }
 
@@ -61,7 +63,8 @@ public class AccountantService implements IGeneralHumanCRUDService<AccountantRes
                         accountant.getId(), // Thay getAccountantId() bằng getId()
                         accountant.getName(),
                         accountant.getEmail(),
-                        accountant.getPhone()
+                        accountant.getPhone(),
+                        accountant.getRole()
                 ))
                 .toList();
 
@@ -77,10 +80,11 @@ public class AccountantService implements IGeneralHumanCRUDService<AccountantRes
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         return AccountantResponse.builder()
-                .accountantId(accountant.getId()) // Thay getAccountantId() bằng getId()
+                .id(accountant.getId()) // Thay getAccountantId() bằng getId()
                 .name(accountant.getName())
                 .phone(accountant.getPhone())
                 .email(accountant.getEmail())
+                .role(accountant.getRole())
                 .build();
     }
 
@@ -98,10 +102,11 @@ public class AccountantService implements IGeneralHumanCRUDService<AccountantRes
         Accountant updatedAccountant = accountantRepository.save(accountant);
 
         return AccountantResponse.builder()
-                .accountantId(updatedAccountant.getId()) // Thay getAccountantId() bằng getId()
+                .id(updatedAccountant.getId()) // Thay getAccountantId() bằng getId()
                 .name(updatedAccountant.getName())
                 .email(updatedAccountant.getEmail())
                 .phone(updatedAccountant.getPhone())
+                .role(updatedAccountant.getRole())
                 .build();
     }
 

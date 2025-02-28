@@ -9,11 +9,13 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class WaiterResponse {
-    Long waiterId;
+    Long id;
 
     String name;
 
     String email;
 
     String phone;
+
+    String role;
 }

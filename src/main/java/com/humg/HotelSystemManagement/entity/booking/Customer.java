@@ -33,9 +33,11 @@ public class Customer {
     @Column(nullable = false)
     String email;
 
-    @JsonIgnore
     @Column(nullable = false)
     String password;
+
+    @Column(nullable = false)
+    String role = "CUSTOMER";
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<Booking> bookings = new ArrayList<>();
