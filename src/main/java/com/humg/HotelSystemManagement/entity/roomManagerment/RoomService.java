@@ -1,6 +1,7 @@
 package com.humg.HotelSystemManagement.entity.roomManagerment;
 
 import com.humg.HotelSystemManagement.entity.enums.RoomServiceStatus;
+import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -28,5 +29,5 @@ public class RoomService {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "waiter_id", nullable = false)
-    Waiter waiter;
+    Employee employee;
 }
