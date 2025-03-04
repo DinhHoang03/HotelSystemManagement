@@ -12,6 +12,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class CustomerUpdateRequest {
 
+    @Size(max = 4, message = "INVALID_USERNAME")
+    String username;
+
     @Email(message = "INVALID_EMAIL")
     String email;
 

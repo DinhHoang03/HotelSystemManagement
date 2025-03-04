@@ -9,6 +9,7 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AuthenticationRequest {
-    String email;
+    //Chiều mở rộng thêm login có email hoặc phone
+    String username;
     String password;
 }

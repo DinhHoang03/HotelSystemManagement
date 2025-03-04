@@ -5,11 +5,11 @@ import com.humg.HotelSystemManagement.dto.request.jwt.AuthenticationRequest;
 import com.humg.HotelSystemManagement.dto.request.jwt.IntrospectRequest;
 import com.humg.HotelSystemManagement.dto.response.jwt.AuthenticationResponse;
 import com.humg.HotelSystemManagement.dto.response.jwt.IntrospectResponse;
-import com.humg.HotelSystemManagement.entity.employees.Employee;
+import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
-import com.humg.HotelSystemManagement.repository.booking.CustomerRepository;
-import com.humg.HotelSystemManagement.repository.employees.EmployeeRepository;
+import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
+import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -40,11 +40,11 @@ public class AuthenticationService {
     protected String SIGNER_KEY;
 
     public AuthenticationResponse authenticate(AuthenticationRequest request){
-        String email = request.getEmail();
+        String username = request.getUsername();
         String password = request.getPassword();
 
-        var customer = customerRepository.findByEmail(request.getEmail());
-        var employee = employeeRepository.findByEmail(request.getEmail());
+        var customer = customerRepository.findByUsername(request.getUsername());
+        var employee = employeeRepository.findByUsername(request.getUsername());
 
         if(customer.isEmpty() || employee.isEmpty()){
             throw new AppException(AppErrorCode.USER_NOT_EXISTED);
@@ -55,11 +55,11 @@ public class AuthenticationService {
 
         if(customer.isPresent()){
             passwordToCheck = customer.get().getPassword();
-            role = customer.get().getRole();
+            role = customer.get().getRole().toString();
         }else{
             Employee emp = employee.get();
             passwordToCheck = emp.getPassword();
-            role = emp.getRole();
+            role = emp.getRole().toString();
         }
 
         boolean authenticated = securityConfig.bcryptPasswordEncoder()
@@ -67,7 +67,7 @@ public class AuthenticationService {
 
         if(!authenticated) throw new AppException(AppErrorCode.UNAUTHENTICATED);
 
-        var token = generateToken(email, role);
+        var token = generateToken(username, role);
 
         return AuthenticationResponse.builder()
                 .token(token)
@@ -93,11 +93,11 @@ public class AuthenticationService {
                 .build();
     }
 
-    private String generateToken(String email, String role){
+    private String generateToken(String username, String role){
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(email)
+                .subject(username)
                 .issuer("hotel.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now()

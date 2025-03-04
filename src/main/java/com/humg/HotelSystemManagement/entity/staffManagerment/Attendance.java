@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.entity.staffManagerment;
 
-import com.humg.HotelSystemManagement.entity.employees.EmployeeList;
+import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -29,6 +29,6 @@ public class Attendance {
     Long workHour;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "emp_id", nullable = false)
-    EmployeeList employee;
+    @JoinColumn(name = "id", nullable = false)
+    Employee employee;
 }

@@ -28,24 +28,6 @@ public class CustomerController {
                 .build();
     }
 
-    @GetMapping("/user/{customerId}")
-    APIResponse<CustomerResponse> getCustomerById(@PathVariable("customerId") Long customerId){
-        return APIResponse.<CustomerResponse>builder()
-                .result(customerService.getById(customerId))
-                .message("Successfully get user by follow id!")
-                .build();
-    }
-
-
-    @GetMapping("/list")
-    //API trả về thông báo theo kiểu List chứa dữ liệu của lớp dto trên
-    APIResponse<List<CustomerResponse>> getAllCustomers(){
-        return APIResponse.<List<CustomerResponse>>builder()
-                .result(customerService.getAll())
-                .message("Successfully get all customers!")
-                .build();
-    }
-
     @PutMapping("/update/{customerId}")
     APIResponse<CustomerResponse> updateCustomer(@PathVariable("customerId")Long customerId,@Valid @RequestBody CustomerUpdateRequest request){
         return APIResponse.<CustomerResponse>builder()
@@ -54,7 +36,7 @@ public class CustomerController {
                 .build();
     }
 
-    @DeleteMapping("/del/{customerId}")
+    @DeleteMapping("/user/del/{customerId}")
     APIResponse<String> deleteCustomer(@PathVariable("customerId") Long customerId){
         customerService.deleteById(customerId);
         return APIResponse.<String>builder()

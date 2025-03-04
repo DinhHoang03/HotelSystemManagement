@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.request.accountant;
+package com.humg.HotelSystemManagement.dto.request.employee;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -10,7 +10,11 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AccountantUpdateRequest {
+public class EmployeeUpdateRequest {
+
+    @Size(max = 4, message = "INVALID_USERNAME")
+    String username;
+
     @Email(message = "INVALID_EMAIL")
     String email;
 

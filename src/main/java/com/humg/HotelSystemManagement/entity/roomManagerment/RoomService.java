@@ -1,6 +1,5 @@
 package com.humg.HotelSystemManagement.entity.roomManagerment;
 
-import com.humg.HotelSystemManagement.entity.employees.Waiter;
 import com.humg.HotelSystemManagement.entity.enums.RoomServiceStatus;
 import jakarta.persistence.*;
 import lombok.*;

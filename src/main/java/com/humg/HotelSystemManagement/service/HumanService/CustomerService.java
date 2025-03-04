@@ -4,10 +4,11 @@ import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
-import com.humg.HotelSystemManagement.entity.booking.Customer;
+import com.humg.HotelSystemManagement.entity.enums.Gender;
+import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
-import com.humg.HotelSystemManagement.repository.booking.CustomerRepository;
+import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -29,7 +30,8 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         //Check if the email was registered with this customer account
         if (request != null) {
 
-            if (customerRepository.existsByEmail(request.getEmail())) {
+            if (customerRepository.existsByEmail(request.getEmail()) ||
+                    customerRepository.existsByPhone(request.getPhone())) {
                 throw new AppException(AppErrorCode.USER_EXISTED);
             }
 
@@ -41,7 +43,12 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                     .name(request.getName())
                     .phone(request.getPhone())
                     .email(request.getEmail())
+                    .address(request.getAddress())
+                    .dob(request.getDob())
+                    .gender(Gender.valueOf(request.getGender()))
+                    .address(request.getAddress())
                     .password(encodedPassword)
+                    .role("CUSTOMER")
                     .build();
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
@@ -50,11 +57,16 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         customer = customerRepository.save(customer);
         //Create a customer
         return CustomerResponse.builder()
-                .identityId(customer.getIdentityId())
+                .id(customer.getId())
+                .username(customer.getUsername())
                 .name(customer.getName())
+                .gender(customer.getGender().toString())
+                .dob(customer.getDob())
                 .email(customer.getEmail())
                 .phone(customer.getPhone())
+                .identityId(customer.getIdentityId())
                 .role(customer.getRole())
+                .address(customer.getAddress())
                 .build();
     }
 
@@ -68,12 +80,15 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                 .map(customer -> new CustomerResponse(
                         //Lấy nhũng dữ liệu cần thiết của entity Customer
                         customer.getId(),
-                        customer.getIdentityId(),
+                        customer.getUsername(),
                         customer.getName(),
-                        customer.getPhone(),
+                        customer.getGender().toString(),
+                        customer.getDob(),
                         customer.getEmail(),
-                        customer.getRole()
-
+                        customer.getPhone(),
+                        customer.getIdentityId(),
+                        customer.getRole(),
+                        customer.getAddress()
                 )).toList();//Chuyển tù luồng dũ liệu(stream) thành một list
 
         if (list.isEmpty()) {
@@ -89,11 +104,16 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         CustomerResponse response = CustomerResponse.builder()
-                .identityId(customer.getIdentityId())
+                .id(customer.getId())
+                .username(customer.getUsername())
                 .name(customer.getName())
+                .gender(customer.getGender().toString())
+                .dob(customer.getDob())
                 .email(customer.getEmail())
                 .phone(customer.getPhone())
+                .identityId(customer.getIdentityId())
                 .role(customer.getRole())
+                .address(customer.getAddress())
                 .build();
 
         return response;
@@ -115,11 +135,15 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
 
         CustomerResponse result = CustomerResponse.builder()
                 .id(updatedCustomer.getId())
-                .identityId(updatedCustomer.getIdentityId())
+                .username(updatedCustomer.getUsername())
                 .name(updatedCustomer.getName())
+                .gender(updatedCustomer.getGender().toString())
+                .dob(updatedCustomer.getDob())
                 .email(updatedCustomer.getEmail())
                 .phone(updatedCustomer.getPhone())
+                .identityId(updatedCustomer.getIdentityId())
                 .role(updatedCustomer.getRole())
+                .address(updatedCustomer.getAddress())
                 .build();
 
         return result;

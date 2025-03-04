@@ -4,6 +4,8 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -13,13 +15,21 @@ import lombok.experimental.FieldDefaults;
 public class CustomerResponse {
     Long id;
 
-    String identityId;
+    String username;
 
     String name;
+
+    String gender;
+
+    LocalDate dob;
 
     String email;
 
     String phone;
 
+    String identityId;
+
     String role;
+
+    String address;
 }

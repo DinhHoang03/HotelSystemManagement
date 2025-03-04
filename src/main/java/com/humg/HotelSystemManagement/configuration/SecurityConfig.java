@@ -20,17 +20,15 @@ import javax.crypto.spec.SecretKeySpec;
 public class SecurityConfig {
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/employee/admin/register",
-            "/employee/cleaner/register",
-            "/employee/receptionist/register",
-            "/employee/waiter/register",
-            "/employee/accountant/register",
+            "/employee/register",
             "/customer/register",
             "/auth/login",
             "/auth/introspect"
     };
 
-    private static final String[] ADMIN_
+    private static final String[] ADMIN_ENDPOINTS = {
+            ""
+    };
 
     @Bean
     public PasswordEncoder bcryptPasswordEncoder(){
@@ -42,7 +40,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(
                 authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                                .requestMatchers(HttpMethod.)
+                               // .requestMatchers(HttpMethod.)
 
                                 .anyRequest()
                                 .authenticated()

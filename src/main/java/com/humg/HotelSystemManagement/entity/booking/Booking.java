@@ -1,6 +1,7 @@
 package com.humg.HotelSystemManagement.entity.booking;
 
 import com.humg.HotelSystemManagement.entity.enums.BookingStatus;
+import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

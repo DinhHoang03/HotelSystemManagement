@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.entity.staffManagerment;
 
-import com.humg.HotelSystemManagement.entity.employees.EmployeeList;
+import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -30,8 +30,8 @@ public class Contract {
     Long hourlyRate;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "emp_id", unique = true)
-    EmployeeList employee;
+    @JoinColumn(name = "id", unique = true)
+    Employee employee;
 
     @OneToOne(mappedBy = "contract", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     Payroll payroll;

@@ -1,10 +1,12 @@
-package com.humg.HotelSystemManagement.entity.booking;
+package com.humg.HotelSystemManagement.entity.humanEntity;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.humg.HotelSystemManagement.entity.booking.Booking;
+import com.humg.HotelSystemManagement.entity.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,23 +23,30 @@ public class Customer {
     @Column(name = "customer_id")
     Long id;
 
-    @Column(name = "identity_id", nullable = false, unique = true)
-    String identityId;
+    @Column(unique = true)
+    String username;
 
-    @Column(nullable = false)
-    String name;
-
-    @Column(nullable = false)
-    String phone;
-
-    @Column(nullable = false)
-    String email;
-
-    @Column(nullable = false)
     String password;
 
-    @Column(nullable = false)
-    String role = "CUSTOMER";
+    String name;
+
+    @Enumerated(EnumType.STRING)
+    Gender gender;
+
+    LocalDate dob;
+
+    @Column(unique = true)
+    String email;
+
+    @Column(unique = true)
+    String phone;
+
+    @Column(unique = true)
+    String identityId;
+
+    String role;
+
+    String address;
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<Booking> bookings = new ArrayList<>();
