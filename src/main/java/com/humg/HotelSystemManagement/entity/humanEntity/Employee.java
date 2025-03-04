@@ -47,6 +47,7 @@ public class Employee {
     @Column(unique = true, length = 12)
     String identityId;
 
+    @Enumerated(EnumType.STRING)
     Roles role;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
