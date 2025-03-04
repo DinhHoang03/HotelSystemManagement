@@ -15,7 +15,7 @@ import java.util.List;
 @NoArgsConstructor
 @SuperBuilder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Admin extends Employee{
+public class DepartmentHead extends Employee{
     @OneToMany(mappedBy = "admin", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<EmployeeList> employees = new ArrayList<>();
 }

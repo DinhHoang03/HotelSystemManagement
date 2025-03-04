@@ -31,7 +31,7 @@ public class EmployeeList {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "admin_id")
-    Admin admin;
+    DepartmentHead departmentHead;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "receptionist_id")
@@ -68,9 +68,9 @@ public class EmployeeList {
         }else if(accountant != null){
             this.role = accountant.getClass().getSimpleName().toUpperCase();
             this.name = accountant.getName();
-        }else if(admin != null){
-            this.role = admin.getClass().getSimpleName().toUpperCase();
-            this.name = admin.getName();
+        }else if(departmentHead != null){
+            this.role = departmentHead.getClass().getSimpleName().toUpperCase();
+            this.name = departmentHead.getName();
         }else if(cleaner != null){
             this.role = cleaner.getClass().getSimpleName().toUpperCase();
             this.name = cleaner.getName();

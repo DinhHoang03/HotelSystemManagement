@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.request.admin;
+package com.humg.HotelSystemManagement.dto.request.departmentHead;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
@@ -12,7 +12,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AdminCreationRequest {
+public class DepartmentHeadCreationRequest {
     @NotNull(message = "REQUEST_NULL")
     String name;
 

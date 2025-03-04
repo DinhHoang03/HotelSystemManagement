@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register</title>
+    <title>Register Employee</title>
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
     <style>
         body {
@@ -12,6 +12,7 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
+            margin: 0;
             background-color: #f4f4f4;
         }
 
@@ -32,25 +33,17 @@
             margin-bottom: 10px;
         }
 
-        .selection-role {
-            width: 100%;
-            padding: 8px;
-            margin-top: 5px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
         label {
             font-weight: bold;
         }
 
-        input {
+        input, select {
             width: 100%;
-            margin-left: -9px;
             padding: 8px;
             margin-top: 5px;
             border: 1px solid #ccc;
             border-radius: 4px;
+            box-sizing: border-box;
         }
 
         .error {
@@ -61,6 +54,7 @@
         .success {
             color: green;
             font-size: 16px;
+            margin-top: 10px;
         }
 
         button {
@@ -80,7 +74,7 @@
 </head>
 <body>
     <div class="form-container">
-        <h2 class="title">Register</h2>
+        <h2 class="title">Register Employee</h2>
         <form id="register-form">
             <div class="form-group">
                 <label for="name">Name</label>
@@ -113,15 +107,16 @@
             </div>
 
             <div class="form-group">
-                <label for="accountType">Account Type</label>
-                <select class="selection-role" id="accountType" name="accountType" required>
-                    <option value="customer">Customer</option>
+                <label for="accountType">Role</label>
+                <select id="accountType" name="accountType" required>
+                    <option value="">Select Role</option>
                     <option value="admin">Admin</option>
                     <option value="waiter">Waiter</option>
                     <option value="receptionist">Receptionist</option>
                     <option value="cleaner">Cleaner</option>
                     <option value="accountant">Accountant</option>
                 </select>
+                <div class="error" id="error-accountType"></div>
             </div>
 
             <button type="submit">Register</button>
@@ -132,57 +127,78 @@
     <script>
         $(document).ready(function(){
             $("#register-form").submit(function(event){
-                event.preventDefault(); // Ngăn reload trang
+                event.preventDefault();
                 
-                let accountType = $("#accountType").val();
-                let registerUrl = "http://localhost:8080/hotel/";
-                
-                // Xác định URL dựa trên accountType
-                if (accountType === "customer") {
-                    registerUrl += "customer/register";
-                } else {
-                    registerUrl += "employee/" + accountType + "/register";
-                }
-        
-                // Dữ liệu gửi lên backend
                 let formData = {
-                    name: $("#name").val(),
-                    phone: $("#phone").val(),
-                    email: $("#email").val(),
-                    password: $("#password").val(),
-                    role: accountType.toUpperCase() // Gửi role dựa trên accountType
+                    name: $("#name").val().trim(),
+                    phone: $("#phone").val().trim(),
+                    email: $("#email").val().trim(),
+                    password: $("#password").val().trim(),
+                    role: $("#accountType").val().trim()
                 };
-        
-                // Kiểm tra mật khẩu nhập lại
-                if (formData.password !== $("#confirmPassword").val()) {
-                    $("#error-confirmPassword").text("Passwords do not match!");
-                    return false; 
-                } else {
-                    $("#error-confirmPassword").text(""); 
+
+                console.log("Form Data:", formData); // Kiểm tra dữ liệu trước khi gửi
+
+                let isValid = true;
+
+                // Kiểm tra các trường bắt buộc
+                $(".error").text("");
+
+                if (!formData.name) {
+                    $("#error-name").text("Name is required!");
+                    isValid = false;
                 }
-        
-                // Gửi request đến API
+
+                if (!formData.phone) {
+                    $("#error-phone").text("Phone is required!");
+                    isValid = false;
+                }
+
+                if (!formData.email) {
+                    $("#error-email").text("Email is required!");
+                    isValid = false;
+                }
+
+                if (!formData.password) {
+                    $("#error-password").text("Password is required!");
+                    isValid = false;
+                }
+
+                let confirmPassword = $("#confirmPassword").val().trim();
+                if (formData.password !== confirmPassword) {
+                    $("#error-confirmPassword").text("Passwords do not match!");
+                    isValid = false;
+                }
+
+                if (!formData.role) {
+                    $("#error-accountType").text("Role is required!");
+                    isValid = false;
+                }
+
+                if (!isValid) {
+                    return;
+                }
+
+                let registerUrl = "http://localhost:8080/hotel/employee/" + formData.role + "/register";
+                
                 $.ajax({
                     url: registerUrl,
                     type: "POST",
                     contentType: "application/json",
                     data: JSON.stringify(formData),
                     success: function(response) {
-                        $("#success-message").text(response.message);
-                        $(".error").text("");
-                        // Reset form sau khi đăng ký thành công
+                        $("#success-message").text(response.message || "Employee registered successfully!");
                         $("#register-form")[0].reset();
                     },
                     error: function(xhr) {
                         let errorMsg = xhr.responseJSON ? xhr.responseJSON.message : "An error occurred";
-                        $(".error").text(""); // Xóa lỗi cũ
                         if (xhr.responseJSON && xhr.responseJSON.result) {
                             let errors = xhr.responseJSON.result;
                             for (let field in errors) {
                                 $("#error-" + field).text(errors[field]);
                             }
                         } else {
-                            $("#error-email").text(errorMsg); // Hiển thị lỗi chung
+                            $("#error-email").text(errorMsg);
                         }
                     }
                 });

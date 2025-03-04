@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.response.admin;
+package com.humg.HotelSystemManagement.dto.response.departmentHead;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class AdminResponse {
+public class DepartmentHeadResponse {
     Long id;
 
     String name;

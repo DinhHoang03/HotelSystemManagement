@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Customer</title>
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f4f4f4;
+        }
+        
+        .form-container{
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+        }
+        
+        .title{
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .form-group{
+            margin-bottom: 10px;
+        }
+        
+        label{
+            font-weight: bold;
+        }
+        
+        input{
+            width: 100%;
+            margin-left: -9px;
+            padding: 8px;
+            margin-top: 5px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+        }
+        
+        .error{
+            color: red;
+            font-size: 14px;
+        }
+        
+        .success{
+            color: green;
+            font-size: 16px;
+        }
+        
+        button{
+            width: 100%;
+            padding: 10px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        
+        button:hover{
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    <div class="form-container">
+        <h2 class="title">Register Customer</h2>
+        <form id="register-form">
+            <div class="form-group">
+                <label for="identityId">Identity ID</label>
+                <input type="text" id="identityId" name="identityId" required>
+                <div class="error" id="error-identityId"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+                <div class="error" id="error-name"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="phone">Phone</label>
+                <input type="text" id="phone" name="phone" required>
+                <div class="error" id="error-phone"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+                <div class="error" id="error-email"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required>
+                <div class="error" id="error-password"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required>
+                <div class="error" id="error-confirmPassword"></div>
+            </div>
+
+            <button type="submit">Register</button>
+        </form>
+        <div id="success-message" class="success"></div>
+    </div>
+
+    <script>
+        $(document).ready(function(){
+            $("#register-form").submit(function(event){
+                event.preventDefault(); // Ngăn reload trang
+                
+                let registerUrl = "http://localhost:8080/hotel/customer/register";
+        
+                let formData = {
+                    identityId: $("#identityId").val(),
+                    name: $("#name").val(),
+                    phone: $("#phone").val(),
+                    email: $("#email").val(),
+                    password: $("#password").val(),
+                    role: "CUSTOMER" // Gán cứng role cho Customer
+                };
+        
+                // Kiểm tra mật khẩu nhập lại
+                let confirmPassword = $("#confirmPassword").val();
+                if (formData.password !== confirmPassword) {
+                    $("#error-confirmPassword").text("Passwords do not match!");
+                    return false; 
+                } else {
+                    $("#error-confirmPassword").text(""); 
+                }
+        
+                // Gửi request đến API
+                $.ajax({
+                    url: registerUrl,
+                    type: "POST",
+                    contentType: "application/json",
+                    data: JSON.stringify(formData),
+                    success: function(response) {
+                        $("#success-message").text(response.message || "Customer registered successfully!");
+                        $(".error").text("");
+                        $("#register-form")[0].reset();
+                    },
+                    error: function(xhr) {
+                        let errorMsg = xhr.responseJSON ? xhr.responseJSON.message : "An error occurred";
+                        $(".error").text(""); 
+                        if (xhr.responseJSON && xhr.responseJSON.result) {
+                            let errors = xhr.responseJSON.result;
+                            for (let field in errors) {
+                                $("#error-" + field).text(errors[field]);
+                            }
+                        } else {
+                            $("#error-email").text(errorMsg);
+                        }
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
