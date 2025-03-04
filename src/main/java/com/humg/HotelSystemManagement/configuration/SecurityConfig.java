@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.configuration;
 
+import com.humg.HotelSystemManagement.entity.enums.Roles;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -27,7 +28,11 @@ public class SecurityConfig {
     };
 
     private static final String[] ADMIN_ENDPOINTS = {
-            ""
+            "/admin/get-customer/{customerId}",
+            "/admin/get-customers/list",
+            "/admin/get-employee/{employeeId}",
+            "/admin/get-employees/list"
+
     };
 
     @Bean
@@ -40,8 +45,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(
                 authorizationManagerRequestMatcherRegistry ->
                         authorizationManagerRequestMatcherRegistry.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                               // .requestMatchers(HttpMethod.)
-
+                                .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINTS).hasRole(Roles.ADMIN.name())
                                 .anyRequest()
                                 .authenticated()
         );
