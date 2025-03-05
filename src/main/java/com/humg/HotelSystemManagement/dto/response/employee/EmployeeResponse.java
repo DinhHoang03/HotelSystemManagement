@@ -27,5 +27,7 @@ public class EmployeeResponse {
 
     String identityId;
 
+    String userStatus;
+
     String role;
 }

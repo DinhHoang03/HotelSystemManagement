@@ -15,7 +15,8 @@ public class EmployeeCreationRequest {
     @NotNull(message = "REQUEST_NULL")
     String name;
 
-    @Size(max = 4, message = "INVALID_USERNAME")
+    @Size(min = 4, message = "INVALID_USERNAME")
+    @NotNull(message = "REQUEST_NULL")
     String username;
 
     @Email(message = "INVALID_EMAIL")

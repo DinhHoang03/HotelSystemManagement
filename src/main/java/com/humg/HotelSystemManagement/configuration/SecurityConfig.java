@@ -5,6 +5,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -20,6 +21,7 @@ import javax.crypto.spec.SecretKeySpec;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     @Value("${jwt.signerKey}")
@@ -32,6 +34,7 @@ public class SecurityConfig {
             "/auth/introspect"
     };//Các end-point được public mà không cần phải có sự can thiệp từ spring security
 
+    /*
     private static final String[] ADMIN_ENDPOINTS = {
             "/admin/get-customer/{customerId}",
             "/admin/get-customers/list",
@@ -39,6 +42,7 @@ public class SecurityConfig {
             "/admin/get-employees/list"
 
     };//Các end-point được chỉ định để phân quyền riêng cho role admin!
+    */
 
     @Bean
     public PasswordEncoder bcryptPasswordEncoder(){ //Hàm nâng cấp độ khó của mã hóa mật khẩu(Sử dụng thuật toán BCrypt)
@@ -52,7 +56,7 @@ public class SecurityConfig {
                         authorizationManagerRequestMatcherRegistry.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
                                 //Hàm requestMatchers sẽ có 2 tham số, tham số hàm http và tham số các end-point,
                                 //ở đây hàm này đã được ủy quyền bất kì ai có quyền truy cập do hàm này sử dụng permitAll
-                                .requestMatchers(HttpMethod.GET, ADMIN_ENDPOINTS).hasRole(Roles.ADMIN.name())
+                                //.requestMatchers(HttpMethod.GET, "/admin/**").hasRole(Roles.ADMIN.name())
                                 //Hàm này chỉ có role của admin mới có quyền được truy cập vào các endpoint này
                                 .anyRequest()
                                 .authenticated()//2 hàm anyRequest và authenticated đều yêu cầu cần xác thực

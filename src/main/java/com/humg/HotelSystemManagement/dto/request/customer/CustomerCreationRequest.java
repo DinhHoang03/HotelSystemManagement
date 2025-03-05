@@ -16,7 +16,8 @@ public class CustomerCreationRequest {
     @NotNull(message = "REQUEST_NULL")
     String identityId;
 
-    @Size(max = 4, message = "INVALID_USERNAME")
+    @Size(min = 4, message = "INVALID_USERNAME")
+    @NotNull(message = "REQUEST_NULL")
     String username;
 
     @NotNull(message = "REQUEST_NULL")

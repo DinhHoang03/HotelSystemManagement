@@ -22,7 +22,7 @@ public class EmployeeController {
     APIResponse<EmployeeResponse> createEmployee(@Valid @RequestBody EmployeeCreationRequest request){
         return APIResponse.<EmployeeResponse>builder()
                 .result(employeeService.create(request))
-                .message("The waiter account is successfully created!")
+                .message("Your employee account is successfully created!")
                 .build();
     }
 

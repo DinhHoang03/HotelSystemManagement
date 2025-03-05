@@ -143,7 +143,7 @@ public class AuthenticationService {
             return jwsObject.serialize();
         } catch (JOSEException e) {
             // Nếu lỗi khi ký, ném ngoại lệ SIGN_TOKEN_ERROR.
-            throw new AppException(AppErrorCode.SIGN_TOKEN_ERROR);
+            throw new AppException(AppErrorCode.SIGN_TOKEN_ERROR); //Check error code này
         }
     }
 }

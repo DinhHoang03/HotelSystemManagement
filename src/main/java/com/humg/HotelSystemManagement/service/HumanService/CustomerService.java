@@ -12,6 +12,8 @@ import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +27,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
     SecurityConfig securityConfig;
 
     //Create customer account
+    @PreAuthorize("hasRole('CUSTOMER')")
     public CustomerResponse create(CustomerCreationRequest request) {
         Customer customer;
         //Check if the email was registered with this customer account
@@ -43,7 +46,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                     .name(request.getName())
                     .phone(request.getPhone())
                     .email(request.getEmail())
-                    .address(request.getAddress())
+                    .username(request.getUsername())
                     .dob(request.getDob())
                     .gender(Gender.valueOf(request.getGender()))
                     .address(request.getAddress())
@@ -70,6 +73,28 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                 .build();
     }
 
+    public CustomerResponse getMyInfo(){
+        var context = SecurityContextHolder.getContext();
+        String username = context.getAuthentication().getName();
+
+        Customer customer = customerRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
+
+        return CustomerResponse.builder()
+                .id(customer.getId())
+                .username(customer.getUsername())
+                .name(customer.getName())
+                .gender(customer.getGender().toString())
+                .dob(customer.getDob())
+                .email(customer.getEmail())
+                .phone(customer.getPhone())
+                .identityId(customer.getIdentityId())
+                .role(customer.getRole())
+                .address(customer.getAddress())
+                .build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
     //Get all customers account
     public List<CustomerResponse> getAll() {
         //Tạo list để luu trữ list dữ liệu, gọi service để lấy hàm findAll lấy toàn bộ dũ liệu của user
@@ -98,6 +123,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         return list;
     }
 
+    @PreAuthorize("hasRole('ADMIN')")
     //Get User by Id
     public CustomerResponse getById(Long id) {
         Customer customer = customerRepository.findById(id)
@@ -119,6 +145,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         return response;
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     //update User by Id
     public CustomerResponse updateById(Long id, CustomerUpdateRequest request) {
         Customer customer = customerRepository.findById(id)
@@ -149,6 +176,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         return result;
     }
 
+    @PreAuthorize("hasRole('CUSTOMER')")
     public void deleteById(Long id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));

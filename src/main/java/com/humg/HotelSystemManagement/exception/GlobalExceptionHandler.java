@@ -64,11 +64,11 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = AppException.class)
     ResponseEntity<APIResponse> handlingAppException(AppException e){
         AppErrorCode appErrorCode = e.getAppErrorCode();
-
         APIResponse apiResponse = new APIResponse();
+
         apiResponse.setCode(appErrorCode.getCode());
         apiResponse.setMessage((appErrorCode.getMessage()));
 
-        return ResponseEntity.badRequest().body(apiResponse);
+        return ResponseEntity.status(appErrorCode.getHttpStatusCode()).body(apiResponse); //Return một response của API lỗi
     }
 }
