@@ -28,16 +28,17 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
     EmployeeRepository employeeRepository;
     SecurityConfig securityConfig;
 
-    @PreAuthorize("!hasRole('CUSTOMER')")
+    @PreAuthorize("!hasRole('CUSTOMER') and !hasRole('ADMIN')")
     public EmployeeResponse create(EmployeeCreationRequest request) {
         Employee employee;
 
         if (request != null) {
-
+            /**
             Roles requestedRole = Roles.valueOf(request.getRole().toUpperCase());
             if(requestedRole.equals(Roles.ADMIN)){
                 throw new AppException(AppErrorCode.ADMIN_CREATION_NOT_ALLOWED);
             }
+            */
 
             if (employeeRepository.existsByEmail(request.getEmail()) ||
                     employeeRepository.existsByPhone(request.getPhone())) {

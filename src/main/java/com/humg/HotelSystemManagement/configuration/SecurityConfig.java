@@ -67,6 +67,7 @@ public class SecurityConfig {
                 httpSecurityOAuth2ResourceServerConfigurer.jwt(jwtConfigurer -> jwtConfigurer
                         .decoder(jwtDecoder())//Sử dụng NimbusJwtDecoder để giải mã token JWT
                         .jwtAuthenticationConverter(jwtAuthenticationConverter())) //Chuyển đổi Token thành thông tin xác thực,
+                        .authenticationEntryPoint(new JWTAuthenticationEntryPoint()) // Chuyển đổi token JWT thành thông tin xác thực
                         //và chuyển đổi thông tin xác thực thành thông tin người dùng
                         //Sử dụng hàm jwtAuthenticationConverter để chuyển đổi thông tin xác thực thành thông tin người dùng
         );
