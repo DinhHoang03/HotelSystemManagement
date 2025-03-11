@@ -1,7 +1,7 @@
 package com.humg.HotelSystemManagement.entity.humanEntity;
 
+import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.enums.Gender;
-import com.humg.HotelSystemManagement.entity.enums.Roles;
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.entity.staffManagerment.Attendance;
 import com.humg.HotelSystemManagement.entity.staffManagerment.Contract;
@@ -12,6 +12,7 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -48,8 +49,8 @@ public class Employee {
     @Column(unique = true, length = 12)
     String identityId;
 
-    @Enumerated(EnumType.STRING)
-    Roles role;
+    @ManyToMany
+    Set<Role> roles;
 
     @OneToMany(mappedBy = "employee", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<Attendance> attendances = new ArrayList<>();

@@ -5,6 +5,7 @@ import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
+import com.humg.HotelSystemManagement.mapper.EmployeeMapper;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import org.springframework.stereotype.Service;
 public class AdminService {
 
     EmployeeRepository employeeRepository;
+    EmployeeMapper employeeMapper;
 
     @PreAuthorize("hasRole('ADMIN')")
     public EmployeeResponse approveEmployee(Long id){
@@ -31,18 +33,7 @@ public class AdminService {
             throw new AppException(AppErrorCode.INVALID_STATUS);
         }
 
-        return EmployeeResponse.builder()
-                .id(employee.getId())
-                .name(employee.getName())
-                .username(employee.getUsername())
-                .phone(employee.getPhone())
-                .email(employee.getEmail())
-                .role(employee.getRole().toString())
-                .identityId(employee.getIdentityId())
-                .dob(employee.getDob())
-                .gender(employee.getGender().toString())
-                .userStatus(employee.getUserStatus().toString())
-                .build();
+        return employeeMapper.toEmployeeResponse(employee);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -57,17 +48,6 @@ public class AdminService {
             throw new AppException(AppErrorCode.INVALID_STATUS);
         }
 
-        return EmployeeResponse.builder()
-                .id(employee.getId())
-                .name(employee.getName())
-                .username(employee.getUsername())
-                .phone(employee.getPhone())
-                .email(employee.getEmail())
-                .role(employee.getRole().toString())
-                .identityId(employee.getIdentityId())
-                .dob(employee.getDob())
-                .gender(employee.getGender().toString())
-                .userStatus(employee.getUserStatus().toString())
-                .build();
+        return employeeMapper.toEmployeeResponse(employee);
     }
 }

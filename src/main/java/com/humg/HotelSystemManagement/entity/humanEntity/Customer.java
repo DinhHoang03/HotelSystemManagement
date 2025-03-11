@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.entity.humanEntity;
 
+import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.booking.Booking;
 import com.humg.HotelSystemManagement.entity.enums.Gender;
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
@@ -10,6 +11,7 @@ import lombok.experimental.FieldDefaults;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Getter
@@ -45,7 +47,8 @@ public class Customer {
     @Column(unique = true)
     String identityId;
 
-    String role;
+    @ManyToMany
+    Set<Role> roles;
 
     String address;
 

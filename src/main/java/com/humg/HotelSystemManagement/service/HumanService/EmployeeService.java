@@ -4,12 +4,10 @@ import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.employee.EmployeeCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.employee.EmployeeUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.employee.EmployeeResponse;
-import com.humg.HotelSystemManagement.entity.enums.Gender;
-import com.humg.HotelSystemManagement.entity.enums.Roles;
-import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
+import com.humg.HotelSystemManagement.mapper.EmployeeMapper;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +16,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
 
 @Service
@@ -26,6 +25,7 @@ import java.util.List;
 public class EmployeeService implements IGeneralHumanCRUDService<EmployeeResponse, EmployeeCreationRequest, EmployeeUpdateRequest> {
 
     EmployeeRepository employeeRepository;
+    EmployeeMapper employeeMapper;
     SecurityConfig securityConfig;
 
     @PreAuthorize("!hasRole('CUSTOMER') and !hasRole('ADMIN')")
@@ -45,56 +45,27 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
                 throw new AppException(AppErrorCode.USER_EXISTED);
             }
 
-            String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
+            employee = employeeMapper.toEmployee(request);
 
-            employee = Employee.builder()
-                    .name(request.getName())
-                    .identityId(request.getIdentityId())
-                    .email(request.getEmail())
-                    .dob(request.getDob())
-                    .phone(request.getPhone())
-                    .password(encodedPassword)
-                    .gender(Gender.valueOf(request.getGender().toUpperCase()))
-                    .role(Roles.valueOf(request.getRole().toUpperCase()))
-                    .username(request.getUsername())
-                    .userStatus(UserStatus.PENDING)
-                    .build();
+            String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
+            employee.setPassword(encodedPassword);
+
+
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
         employee = employeeRepository.save(employee);
 
-        return EmployeeResponse.builder()
-                .id(employee.getId())
-                .name(employee.getName())
-                .username(employee.getUsername())
-                .phone(employee.getPhone())
-                .email(employee.getEmail())
-                .role(employee.getRole().toString())
-                .identityId(employee.getIdentityId())
-                .dob(employee.getDob())
-                .gender(employee.getGender().toString())
-                .userStatus(employee.getUserStatus().toString())
-                .build();
+        return employeeMapper.toEmployeeResponse(employee);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
     public List<EmployeeResponse> getAll() {
         List<EmployeeResponse> list = employeeRepository.findAll()
                 .stream()
-                .map(Employee -> new EmployeeResponse(
-                        Employee.getId(),
-                        Employee.getUsername(),
-                        Employee.getName(),
-                        Employee.getGender().toString(),
-                        Employee.getDob(),
-                        Employee.getEmail(),
-                        Employee.getPhone(),
-                        Employee.getIdentityId(),
-                        Employee.getUserStatus().toString(),
-                        Employee.getRole().toString()
-                )).toList();
+                .map(employeeMapper::toEmployeeResponse)
+                .toList();
 
         if (list.isEmpty()) {
             throw new AppException(AppErrorCode.LIST_EMPTY);
@@ -107,20 +78,7 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        EmployeeResponse response = EmployeeResponse.builder()
-                .id(employee.getId())
-                .name(employee.getName())
-                .username(employee.getUsername())
-                .phone(employee.getPhone())
-                .email(employee.getEmail())
-                .role(employee.getRole().toString())
-                .identityId(employee.getIdentityId())
-                .dob(employee.getDob())
-                .gender(employee.getGender().toString())
-                .userStatus(employee.getUserStatus().toString())
-                .build();
-
-        return response;
+        return employeeMapper.toEmployeeResponse(employee);
     }
 
     public EmployeeResponse getMyInfo(){
@@ -131,18 +89,7 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
         Employee employee = employeeRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        return EmployeeResponse.builder()
-                .id(employee.getId())
-                .name(employee.getName())
-                .username(employee.getUsername())
-                .phone(employee.getPhone())
-                .email(employee.getEmail())
-                .role(employee.getRole().toString())
-                .identityId(employee.getIdentityId())
-                .dob(employee.getDob())
-                .gender(employee.getGender().toString())
-                .userStatus(employee.getUserStatus().toString())
-                .build();
+        return employeeMapper.toEmployeeResponse(employee);
     }
 
     @PreAuthorize("!hasRole('ADMIN') and !hasRole('CUSTOMER')")
@@ -151,6 +98,7 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         if (request != null) {
+            //Demo update
             employee.setUsername(request.getUsername());
             employee.setEmail(request.getEmail());
             employee.setPhone(request.getPhone());
@@ -160,20 +108,7 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
 
         Employee updatedEmployee = employeeRepository.save(employee);
 
-        EmployeeResponse result = EmployeeResponse.builder()
-                .id(updatedEmployee.getId())
-                .name(updatedEmployee.getName())
-                .username(updatedEmployee.getUsername())
-                .phone(updatedEmployee.getPhone())
-                .email(updatedEmployee.getEmail())
-                .role(updatedEmployee.getRole().toString())
-                .identityId(updatedEmployee.getIdentityId())
-                .dob(updatedEmployee.getDob())
-                .gender(updatedEmployee.getGender().toString())
-                .userStatus(updatedEmployee.getUserStatus().toString())
-                .build();
-
-        return result;
+        return employeeMapper.toEmployeeResponse(updatedEmployee);
     }
 
     public void deleteById(Long id) {

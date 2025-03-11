@@ -20,8 +20,8 @@ public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException)
             throws IOException, ServletException {
 
-        // Gán mã lỗi UNAUTHORIZED (401) từ enum AppErrorCode
-        AppErrorCode appErrorCode = AppErrorCode.UNAUTHORIZED;
+        // Gán mã lỗi UNAUTHENTICATED (401) từ enum AppErrorCode
+        AppErrorCode appErrorCode = AppErrorCode.UNAUTHENTICATED;
 
         // Thiết lập mã trạng thái HTTP của phản hồi (ví dụ: 401) từ AppErrorCode
         response.setStatus(appErrorCode.getHttpStatusCode().value());
@@ -32,7 +32,7 @@ public class JWTAuthenticationEntryPoint implements AuthenticationEntryPoint {
         // Tạo đối tượng APIResponse sử dụng Builder pattern để định dạng phản hồi lỗi
         APIResponse<?> apiResponse = APIResponse.builder()
                 .code(appErrorCode.getCode()) // Gán mã lỗi (ví dụ: "401")
-                .message(appErrorCode.getMessage()) // Gán thông điệp lỗi (ví dụ: "Unauthorized")
+                .message(appErrorCode.getMessage()) // Gán thông điệp lỗi (ví dụ: "UNAUTHENTICATED")
                 .build(); // Hoàn thành xây dựng đối tượng APIResponse
 
         // Tạo instance của ObjectMapper để chuyển đổi APIResponse thành chuỗi JSON

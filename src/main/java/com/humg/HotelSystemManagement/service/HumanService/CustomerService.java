@@ -4,10 +4,10 @@ import com.humg.HotelSystemManagement.configuration.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
-import com.humg.HotelSystemManagement.entity.enums.Gender;
 import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
+import com.humg.HotelSystemManagement.mapper.CustomerMapper;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -24,6 +24,7 @@ import java.util.List;
 public class CustomerService implements IGeneralHumanCRUDService<CustomerResponse, CustomerCreationRequest, CustomerUpdateRequest> {
     //Call Repository
     CustomerRepository customerRepository;
+    CustomerMapper customerMapper;
     SecurityConfig securityConfig;
 
     //Create customer account
@@ -38,39 +39,18 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                 throw new AppException(AppErrorCode.USER_EXISTED);
             }
 
+            customer = customerMapper.toCustomer(request);
             //Mã hóa mật khẩu với thuật toán BCrypt
             String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
 
-            customer = Customer.builder()
-                    .identityId(request.getIdentityId())
-                    .name(request.getName())
-                    .phone(request.getPhone())
-                    .email(request.getEmail())
-                    .username(request.getUsername())
-                    .dob(request.getDob())
-                    .gender(Gender.valueOf(request.getGender()))
-                    .address(request.getAddress())
-                    .password(encodedPassword)
-                    .role("CUSTOMER")
-                    .build();
+            customer.setPassword(encodedPassword);
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
 
         customer = customerRepository.save(customer);
         //Create a customer
-        return CustomerResponse.builder()
-                .id(customer.getId())
-                .username(customer.getUsername())
-                .name(customer.getName())
-                .gender(customer.getGender().toString())
-                .dob(customer.getDob())
-                .email(customer.getEmail())
-                .phone(customer.getPhone())
-                .identityId(customer.getIdentityId())
-                .role(customer.getRole())
-                .address(customer.getAddress())
-                .build();
+        return customerMapper.toCustomerResponse(customer);
     }
 
     public CustomerResponse getMyInfo(){
@@ -80,18 +60,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         Customer customer = customerRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        return CustomerResponse.builder()
-                .id(customer.getId())
-                .username(customer.getUsername())
-                .name(customer.getName())
-                .gender(customer.getGender().toString())
-                .dob(customer.getDob())
-                .email(customer.getEmail())
-                .phone(customer.getPhone())
-                .identityId(customer.getIdentityId())
-                .role(customer.getRole())
-                .address(customer.getAddress())
-                .build();
+        return customerMapper.toCustomerResponse(customer);
     }
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -102,19 +71,8 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
                 //Chuyển từ list thành một stream(Luồng dũ liệu)
                 .stream()
                 //Dùng map để chuyển từng Customer thành CustomerResponse
-                .map(customer -> new CustomerResponse(
-                        //Lấy nhũng dữ liệu cần thiết của entity Customer
-                        customer.getId(),
-                        customer.getUsername(),
-                        customer.getName(),
-                        customer.getGender().toString(),
-                        customer.getDob(),
-                        customer.getEmail(),
-                        customer.getPhone(),
-                        customer.getIdentityId(),
-                        customer.getRole(),
-                        customer.getAddress()
-                )).toList();//Chuyển tù luồng dũ liệu(stream) thành một list
+                .map(customerMapper::toCustomerResponse)//Lấy nhũng dữ liệu cần thiết của entity Customer
+                .toList();//Chuyển tù luồng dũ liệu(stream) thành một list
 
         if (list.isEmpty()) {
             throw new AppException(AppErrorCode.LIST_EMPTY);
@@ -129,20 +87,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        CustomerResponse response = CustomerResponse.builder()
-                .id(customer.getId())
-                .username(customer.getUsername())
-                .name(customer.getName())
-                .gender(customer.getGender().toString())
-                .dob(customer.getDob())
-                .email(customer.getEmail())
-                .phone(customer.getPhone())
-                .identityId(customer.getIdentityId())
-                .role(customer.getRole())
-                .address(customer.getAddress())
-                .build();
-
-        return response;
+        return customerMapper.toCustomerResponse(customer);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
@@ -160,20 +105,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
 
         Customer updatedCustomer = customerRepository.save(customer);
 
-        CustomerResponse result = CustomerResponse.builder()
-                .id(updatedCustomer.getId())
-                .username(updatedCustomer.getUsername())
-                .name(updatedCustomer.getName())
-                .gender(updatedCustomer.getGender().toString())
-                .dob(updatedCustomer.getDob())
-                .email(updatedCustomer.getEmail())
-                .phone(updatedCustomer.getPhone())
-                .identityId(updatedCustomer.getIdentityId())
-                .role(updatedCustomer.getRole())
-                .address(updatedCustomer.getAddress())
-                .build();
-
-        return result;
+        return customerMapper.toCustomerResponse(updatedCustomer);
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")

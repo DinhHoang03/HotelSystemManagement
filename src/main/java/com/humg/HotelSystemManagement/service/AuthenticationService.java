@@ -5,6 +5,8 @@ import com.humg.HotelSystemManagement.dto.request.jwt.AuthenticationRequest;
 import com.humg.HotelSystemManagement.dto.request.jwt.IntrospectRequest;
 import com.humg.HotelSystemManagement.dto.response.jwt.AuthenticationResponse;
 import com.humg.HotelSystemManagement.dto.response.jwt.IntrospectResponse;
+import com.humg.HotelSystemManagement.entity.authorizezation.Role;
+import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
@@ -21,11 +23,16 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.StringJoiner;
 
 // Đánh dấu lớp này là một Spring Service, sẽ được quản lý bởi Spring IoC container.
 @Service
@@ -44,51 +51,6 @@ public class AuthenticationService {
     @NonFinal // Cho phép thay đổi giá trị trong runtime (từ @Value).
     @Value("${jwt.signerKey}") // Inject giá trị của "jwt.signerKey" từ cấu hình.
     protected String SIGNER_KEY;
-
-    // Hàm xác thực người dùng dựa trên username và password, trả về token nếu thành công.
-    public AuthenticationResponse authenticate(AuthenticationRequest request){
-        String username = request.getUsername();
-        String password = request.getPassword();
-
-        // Tìm user trong cả hai bảng Customer và Employee.
-        var customer = customerRepository.findByUsername(request.getUsername());
-        var employee = employeeRepository.findByUsername(request.getUsername());
-
-        // Nếu không tìm thấy user ở cả hai bảng, ném ngoại lệ USER_NOT_EXISTED.
-        if(customer.isEmpty() && employee.isEmpty()){
-            throw new AppException(AppErrorCode.USER_NOT_EXISTED);
-        }
-
-        // Biến để lưu mật khẩu và vai trò của user (Customer hoặc Employee).
-        String passwordToCheck;
-        String role;
-
-        // Kiểm tra user là Customer hay Employee, lấy mật khẩu và role tương ứng.
-        if(customer.isPresent()){
-            passwordToCheck = customer.get().getPassword();
-            role = customer.get().getRole().toString();
-        }else{
-            Employee emp = employee.get();
-            passwordToCheck = emp.getPassword();
-            role = emp.getRole().toString();
-        }
-
-        // So khớp mật khẩu người dùng nhập với mật khẩu đã mã hóa trong DB bằng bcrypt.
-        boolean authenticated = securityConfig.bcryptPasswordEncoder()
-                .matches(password, passwordToCheck);
-
-        // Nếu mật khẩu không khớp, ném ngoại lệ UNAUTHENTICATED.
-        if(!authenticated) throw new AppException(AppErrorCode.UNAUTHENTICATED);
-
-        // Tạo token JWT với username và role nếu xác thực thành công.
-        var token = generateToken(username, role);
-
-        // Trả về response chứa token và trạng thái xác thực.
-        return AuthenticationResponse.builder()
-                .token(token)
-                .authenticated(true)
-                .build();
-    }
 
     // Hàm kiểm tra tính hợp lệ của token JWT (introspection).
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
@@ -116,34 +78,124 @@ public class AuthenticationService {
     }
 
     // Hàm tạo token JWT với username và role, ký bằng HS512.
-    private String generateToken(String username, String role){
-        // Tạo header với thuật toán HS512.
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        String username = request.getUsername();
+        String password = request.getPassword();
+
+        // Tìm user trong cả hai bảng Customer và Employee.
+        var customer = customerRepository.findByUsername(username);
+        var employee = employeeRepository.findByUsername(username);
+
+        // Nếu không tìm thấy user ở cả hai bảng, ném ngoại lệ USER_NOT_EXISTED.
+        if (customer.isEmpty() && employee.isEmpty()) {
+            throw new AppException(AppErrorCode.USER_NOT_EXISTED);
+        }
+
+        // Biến để lưu mật khẩu và vai trò của user (Customer hoặc Employee).
+        String passwordToCheck;
+        Object user = null;  // Lưu đối tượng người dùng để truyền vào buildScope
+
+        // Kiểm tra user là Customer hay Employee, lấy mật khẩu và role tương ứng.
+        if (customer.isPresent()) {
+            user = customer.get();
+            passwordToCheck = customer.get().getPassword();
+        } else {
+            user = employee.get();
+            passwordToCheck = employee.get().getPassword();
+        }
+
+        // So khớp mật khẩu
+        boolean authenticated = securityConfig.bcryptPasswordEncoder()
+                .matches(password, passwordToCheck);
+
+        // Nếu mật khẩu không khớp, ném ngoại lệ UNAUTHENTICATED.
+        if (!authenticated) throw new AppException(AppErrorCode.UNAUTHENTICATED);
+
+        // Tạo token JWT với đối tượng user đã có
+        var token = generateToken(user);
+
+        // Trả về response chứa token và trạng thái xác thực.
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
+    }
+
+    // Thay đổi generateToken để chấp nhận đối tượng
+    private String generateToken(Object user) {
+        // Header và các thông tin chung như cũ
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
-        // Tạo payload chứa các claim: username, issuer, thời gian phát hành/hết hạn, và role.
+        String username;
+        if (user instanceof Customer) {
+            username = ((Customer) user).getUsername();
+        } else {
+            username = ((Employee) user).getUsername();
+        }
+
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username) // Username làm subject (principal).
-                .issuer("hotel.com") // Issuer của token.
-                .issueTime(new Date()) // Thời gian phát hành token.
+                .subject(username)
+                .issuer("hotel.com")
+                .issueTime(new Date())
                 .expirationTime(new Date(Instant.now()
-                        .plus(1, ChronoUnit.HOURS).toEpochMilli())) // Hết hạn sau 1 giờ.
-                .claim("role", role) // Lưu vai trò/quyền vào claim "role".
+                        .plus(1, ChronoUnit.HOURS).toEpochMilli()))
+                .claim("role", buildScope(user))  // Truyền đối tượng user vào buildScope
                 .build();
 
-        // Chuyển claims thành payload dạng JSON.
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
-
-        // Tạo JWSObject từ header và payload.
         JWSObject jwsObject = new JWSObject(header, payload);
-
         try {
-            // Ký token bằng khóa SIGNER_KEY và thuật toán HS512.
             jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
-            // Trả về token dưới dạng chuỗi serialized (header.payload.signature).
             return jwsObject.serialize();
         } catch (JOSEException e) {
-            // Nếu lỗi khi ký, ném ngoại lệ SIGN_TOKEN_ERROR.
-            throw new AppException(AppErrorCode.SIGN_TOKEN_ERROR); //Check error code này
+            throw new AppException(AppErrorCode.SIGN_TOKEN_ERROR);
         }
+    }
+
+    // Thay đổi buildScope để chấp nhận đối tượng user
+    private String buildScope(Object user) {
+        StringJoiner stringJoiner = new StringJoiner(" ");
+
+        if (user instanceof Employee) {
+            Employee emp = (Employee) user;
+            if (!CollectionUtils.isEmpty(emp.getRoles())) {
+                addRoleAndPermission(stringJoiner, emp.getRoles().stream().toList());
+            }
+        } else if (user instanceof Customer) {
+            Customer cus = (Customer) user;
+            if (!CollectionUtils.isEmpty(cus.getRoles())) {
+                addRoleAndPermission(stringJoiner, cus.getRoles().stream().toList());
+            }
+        }
+
+        // Bạn có thể quyết định loại bỏ ngoại lệ này hoặc giữ lại tùy trường hợp
+        if(stringJoiner.length() == 0){
+            // Có thể gán vai trò mặc định thay vì ném ngoại lệ
+            stringJoiner.add("ROLE_DEFAULT");
+            // Hoặc giữ nguyên ném ngoại lệ
+            // throw new AppException(AppErrorCode.NO_ROLES_ASSIGNED);
+        }
+
+        return stringJoiner.toString();
+    }
+    //Hàm lấy role và permission
+    private void addRoleAndPermission(StringJoiner stringJoiner, List<Role> roles) {
+        roles.forEach(
+                role -> {
+                    if (role != null && !StringUtils.isEmpty(role.getRoleName())) {
+                        stringJoiner.add("ROLE_" + role.getRoleName());
+
+                        if (!CollectionUtils.isEmpty(role.getPermissions())) {
+                            role.getPermissions().forEach(
+                                    permission -> {
+                                        if (permission != null && !StringUtils.isEmpty(permission.getPermissionName())) {
+                                            stringJoiner.add(permission.getPermissionName());
+                                        }
+                                    }
+                            );
+                        }
+                    }
+                }
+        );
     }
 }

@@ -1,6 +1,5 @@
 package com.humg.HotelSystemManagement.configuration;
 
-import com.humg.HotelSystemManagement.entity.enums.Roles;
 import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import lombok.AccessLevel;
@@ -11,8 +10,6 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
-
-import java.util.HashSet;
 
 @Configuration
 @RequiredArgsConstructor
@@ -28,8 +25,8 @@ public class ApplicationInitConfig {
             if(employeeRepository.findByUsername("admin").isEmpty()){
                 Employee admin = Employee.builder()
                         .username("admin")
-                        .password(passwordEncoder.encode("admin1234"))
-                        .role(Roles.ADMIN)
+                        .password(passwordEncoder.encode("admin"))
+                        //.role(Roles.ADMIN)
                         .build();
 
                 employeeRepository.save(admin);
