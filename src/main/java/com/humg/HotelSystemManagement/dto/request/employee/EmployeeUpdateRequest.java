@@ -5,19 +5,17 @@ import jakarta.validation.constraints.Size;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.time.LocalDate;
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EmployeeUpdateRequest {
-
-    @Size(max = 4, message = "INVALID_USERNAME")
-    String username;
-
-    @Email(message = "INVALID_EMAIL")
-    String email;
-
-    @Size(max = 12, message = "INVALID_PHONE_NUMBER")
-    String phone;
+    String password;
+    String name;
+    LocalDate dob;
+    List<String> roles;
 }

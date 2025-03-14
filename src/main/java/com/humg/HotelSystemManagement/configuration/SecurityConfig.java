@@ -93,9 +93,10 @@ public class SecurityConfig {
         // Tạo JwtGrantedAuthoritiesConverter để trích xuất quyền (authorities) từ JWT.
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         // Thiết lập tiền tố "ROLE_" cho mỗi quyền, ví dụ: "read" thành "ROLE_read".
-        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+        //jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
+        jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
         // Chỉ định claim "scope" trong JWT là nơi chứa danh sách quyền (thay vì mặc định "scope" hoặc "scp").
-        jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("role");
+        //jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("role");
 
         // Tạo JwtAuthenticationConverter để chuyển đổi toàn bộ JWT thành Authentication.
         JwtAuthenticationConverter jwtAuthenticationConverter = new JwtAuthenticationConverter();

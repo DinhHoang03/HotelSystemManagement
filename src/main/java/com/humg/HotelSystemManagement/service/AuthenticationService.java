@@ -1,17 +1,17 @@
 package com.humg.HotelSystemManagement.service;
 
 import com.humg.HotelSystemManagement.configuration.SecurityConfig;
+import com.humg.HotelSystemManagement.dto.UserPrincipal;
 import com.humg.HotelSystemManagement.dto.request.jwt.AuthenticationRequest;
 import com.humg.HotelSystemManagement.dto.request.jwt.IntrospectRequest;
 import com.humg.HotelSystemManagement.dto.response.jwt.AuthenticationResponse;
 import com.humg.HotelSystemManagement.dto.response.jwt.IntrospectResponse;
 import com.humg.HotelSystemManagement.entity.authorizezation.Role;
-import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
-import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
+import com.humg.HotelSystemManagement.repository.totalServices.RoleRepository;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -29,10 +29,7 @@ import org.springframework.util.StringUtils;
 import java.text.ParseException;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Date;
-import java.util.List;
-import java.util.Optional;
-import java.util.StringJoiner;
+import java.util.*;
 
 // Đánh dấu lớp này là một Spring Service, sẽ được quản lý bởi Spring IoC container.
 @Service
@@ -51,6 +48,7 @@ public class AuthenticationService {
     @NonFinal // Cho phép thay đổi giá trị trong runtime (từ @Value).
     @Value("${jwt.signerKey}") // Inject giá trị của "jwt.signerKey" từ cấu hình.
     protected String SIGNER_KEY;
+    private final RoleRepository roleRepository;
 
     // Hàm kiểm tra tính hợp lệ của token JWT (introspection).
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
@@ -93,15 +91,24 @@ public class AuthenticationService {
 
         // Biến để lưu mật khẩu và vai trò của user (Customer hoặc Employee).
         String passwordToCheck;
-        Object user = null;  // Lưu đối tượng người dùng để truyền vào buildScope
+        //Object user = null;  // Lưu đối tượng người dùng để truyền vào buildScope
+        UserPrincipal userPrincipal;
 
         // Kiểm tra user là Customer hay Employee, lấy mật khẩu và role tương ứng.
         if (customer.isPresent()) {
-            user = customer.get();
+            var user = customer.get();
             passwordToCheck = customer.get().getPassword();
+            userPrincipal = new UserPrincipal(
+                    username,
+                    user.getRoles().stream().toList()
+            );
         } else {
-            user = employee.get();
+            var user = employee.get();
             passwordToCheck = employee.get().getPassword();
+            userPrincipal = new UserPrincipal(
+                    username,
+                    user.getRoles().stream().toList()
+            );
         }
 
         // So khớp mật khẩu
@@ -112,7 +119,7 @@ public class AuthenticationService {
         if (!authenticated) throw new AppException(AppErrorCode.UNAUTHENTICATED);
 
         // Tạo token JWT với đối tượng user đã có
-        var token = generateToken(user);
+        var token = generateToken(userPrincipal);
 
         // Trả về response chứa token và trạng thái xác thực.
         return AuthenticationResponse.builder()
@@ -122,24 +129,17 @@ public class AuthenticationService {
     }
 
     // Thay đổi generateToken để chấp nhận đối tượng
-    private String generateToken(Object user) {
+    private String generateToken(UserPrincipal user) {
         // Header và các thông tin chung như cũ
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
-        String username;
-        if (user instanceof Customer) {
-            username = ((Customer) user).getUsername();
-        } else {
-            username = ((Employee) user).getUsername();
-        }
-
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
-                .subject(username)
+                .subject(user.getUsername())
                 .issuer("hotel.com")
                 .issueTime(new Date())
                 .expirationTime(new Date(Instant.now()
                         .plus(1, ChronoUnit.HOURS).toEpochMilli()))
-                .claim("role", buildScope(user))  // Truyền đối tượng user vào buildScope
+                .claim("scope", buildScope(user))  // Truyền đối tượng user vào buildScope
                 .build();
 
         Payload payload = new Payload(jwtClaimsSet.toJSONObject());
@@ -151,51 +151,25 @@ public class AuthenticationService {
             throw new AppException(AppErrorCode.SIGN_TOKEN_ERROR);
         }
     }
-
+    
     // Thay đổi buildScope để chấp nhận đối tượng user
-    private String buildScope(Object user) {
+    private String buildScope(UserPrincipal user) {
         StringJoiner stringJoiner = new StringJoiner(" ");
 
-        if (user instanceof Employee) {
-            Employee emp = (Employee) user;
-            if (!CollectionUtils.isEmpty(emp.getRoles())) {
-                addRoleAndPermission(stringJoiner, emp.getRoles().stream().toList());
-            }
-        } else if (user instanceof Customer) {
-            Customer cus = (Customer) user;
-            if (!CollectionUtils.isEmpty(cus.getRoles())) {
-                addRoleAndPermission(stringJoiner, cus.getRoles().stream().toList());
-            }
-        }
-
-        // Bạn có thể quyết định loại bỏ ngoại lệ này hoặc giữ lại tùy trường hợp
-        if(stringJoiner.length() == 0){
-            // Có thể gán vai trò mặc định thay vì ném ngoại lệ
-            stringJoiner.add("ROLE_DEFAULT");
-            // Hoặc giữ nguyên ném ngoại lệ
-            // throw new AppException(AppErrorCode.NO_ROLES_ASSIGNED);
-        }
-
-        return stringJoiner.toString();
-    }
-    //Hàm lấy role và permission
-    private void addRoleAndPermission(StringJoiner stringJoiner, List<Role> roles) {
-        roles.forEach(
-                role -> {
-                    if (role != null && !StringUtils.isEmpty(role.getRoleName())) {
-                        stringJoiner.add("ROLE_" + role.getRoleName());
-
-                        if (!CollectionUtils.isEmpty(role.getPermissions())) {
-                            role.getPermissions().forEach(
-                                    permission -> {
-                                        if (permission != null && !StringUtils.isEmpty(permission.getPermissionName())) {
-                                            stringJoiner.add(permission.getPermissionName());
-                                        }
-                                    }
-                            );
+        if(!CollectionUtils.isEmpty(user.getRoles())){
+            user.getRoles().forEach(
+                    role -> {
+                        stringJoiner.add("ROLE_" + role.getName());
+                        if (!CollectionUtils.isEmpty(role.getPermissions())){
+                            role.getPermissions().forEach(permission -> {
+                                stringJoiner.add(permission.getName());
+                            });
                         }
                     }
-                }
-        );
+            );
+        }else {
+            throw new AppException(AppErrorCode.NO_ROLES_ASSIGNED);
+        }
+        return stringJoiner.toString();
     }
 }

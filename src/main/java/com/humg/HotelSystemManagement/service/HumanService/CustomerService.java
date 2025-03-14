@@ -63,7 +63,8 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         return customerMapper.toCustomerResponse(customer);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasAuthority('GET_ALL_EMPLOYEE')")
     //Get all customers account
     public List<CustomerResponse> getAll() {
         //Tạo list để luu trữ list dữ liệu, gọi service để lấy hàm findAll lấy toàn bộ dũ liệu của user
@@ -81,7 +82,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         return list;
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
     //Get User by Id
     public CustomerResponse getById(Long id) {
         Customer customer = customerRepository.findById(id)

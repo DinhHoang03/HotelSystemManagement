@@ -13,10 +13,11 @@ import java.util.Set;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Role {
     @Id
-    String roleName;
+    String name;
     String description;
 
     @ManyToMany

@@ -15,5 +15,6 @@ public interface EmployeeMapper {
 
     EmployeeResponse toEmployeeResponse(Employee employee);
 
+    @Mapping(target = "roles", ignore = true)
     void updateEmployee(@MappingTarget Employee employee, EmployeeUpdateRequest request);
 }

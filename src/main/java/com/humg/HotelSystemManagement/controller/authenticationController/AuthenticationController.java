@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.controller;
+package com.humg.HotelSystemManagement.controller.authenticationController;
 
 import com.humg.HotelSystemManagement.dto.request.jwt.AuthenticationRequest;
 import com.humg.HotelSystemManagement.dto.request.jwt.IntrospectRequest;

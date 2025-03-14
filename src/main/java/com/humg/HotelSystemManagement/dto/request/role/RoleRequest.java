@@ -1,19 +1,17 @@
-package com.humg.HotelSystemManagement.entity.authorizezation;
+package com.humg.HotelSystemManagement.dto.request.role;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.Id;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-@Entity
-@Getter
-@Setter
+import java.util.Set;
+
+@Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-public class Permission{
-    @Id
+public class RoleRequest {
     String name;
     String description;
+    Set<String> permissions;
 }

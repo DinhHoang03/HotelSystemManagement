@@ -9,6 +9,7 @@ import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.EmployeeMapper;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
+import com.humg.HotelSystemManagement.repository.totalServices.RoleRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -25,6 +26,7 @@ import java.util.List;
 public class EmployeeService implements IGeneralHumanCRUDService<EmployeeResponse, EmployeeCreationRequest, EmployeeUpdateRequest> {
 
     EmployeeRepository employeeRepository;
+    RoleRepository roleRepository;
     EmployeeMapper employeeMapper;
     SecurityConfig securityConfig;
 
@@ -60,7 +62,8 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
         return employeeMapper.toEmployeeResponse(employee);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
+    //@PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAuthority('GET_ALL_EMPLOYEE')")
     public List<EmployeeResponse> getAll() {
         List<EmployeeResponse> list = employeeRepository.findAll()
                 .stream()
@@ -98,10 +101,12 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         if (request != null) {
-            //Demo update
-            employee.setUsername(request.getUsername());
-            employee.setEmail(request.getEmail());
-            employee.setPhone(request.getPhone());
+            employeeMapper.updateEmployee(employee ,request);
+            var updatedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
+
+            var roles = roleRepository.findAllById(request.getRoles());
+            employee.setRoles(new HashSet<>(roles));
+
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }
@@ -110,6 +115,7 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
 
         return employeeMapper.toEmployeeResponse(updatedEmployee);
     }
+
 
     public void deleteById(Long id) {
         Employee employee = employeeRepository.findById(id)
