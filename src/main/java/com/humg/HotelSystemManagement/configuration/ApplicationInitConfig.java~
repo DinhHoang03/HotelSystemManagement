@@ -3,7 +3,7 @@ package com.humg.HotelSystemManagement.configuration;
 import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
-import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
+import com.humg.HotelSystemManagement.repository.totalServices.RoleRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

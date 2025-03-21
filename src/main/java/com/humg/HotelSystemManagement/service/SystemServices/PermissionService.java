@@ -4,7 +4,7 @@ import com.humg.HotelSystemManagement.dto.request.permission.PermissionRequest;
 import com.humg.HotelSystemManagement.dto.response.authorizezation.PermissionResponse;
 import com.humg.HotelSystemManagement.entity.authorizezation.Permission;
 import com.humg.HotelSystemManagement.mapper.PermissionMapper;
-import com.humg.HotelSystemManagement.repository.totalServices.PermissionRepository;
+import com.humg.HotelSystemManagement.repository.authenticationRepository.PermissionRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

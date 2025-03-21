@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hệ Thống Quản Lý Khách Sạn - Đăng Nhập</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .login-container {
+            max-width: 400px;
+            margin: 190px auto;
+            padding: 20px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+        }
+        .login-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .login-header h2 {
+            color: #333;
+            font-weight: 600;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+        .btn-login {
+            width: 100%;
+            padding: 10px;
+            font-weight: 500;
+        }
+        .forgot-password {
+            text-align: right;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="login-container">
+            <div class="login-header">
+                <h2>Đăng Nhập</h2>
+            </div>
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">Tên đăng nhập</label>
+                    <input type="text" class="form-control" id="username" required>
+                </div>
+                <div class="mb-3">
+                    <label for="password" class="form-label">Mật khẩu</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+                <div class="mb-3 form-check">
+                    <input type="checkbox" class="form-check-input" id="rememberMe">
+                    <label class="form-check-label" for="rememberMe">Ghi nhớ đăng nhập</label>
+                </div>
+                <button type="submit" class="btn btn-primary btn-login">Đăng nhập</button>
+                <div class="forgot-password">
+                    <a href="#" class="text-primary">Quên mật khẩu?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JavaScript -->
+    <script>
+        $(document).ready(function() {
+            // Hàm helper để làm việc với cookie
+            const Cookies = {
+                set: function(name, value, days) {
+                    let expires = '';
+                    if (days) {
+                        const date = new Date();
+                        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                        expires = '; expires=' + date.toUTCString();
+                    }
+                    document.cookie = name + '=' + value + expires + '; path=/; Secure; SameSite=Strict';
+                },
+                get: function(name) {
+                    const nameEQ = name + '=';
+                    const ca = document.cookie.split(';');
+                    for (let i = 0; i < ca.length; i++) {
+                        let c = ca[i];
+                        while (c.charAt(0) === ' ') c = c.substring(1, c.length);
+                        if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
+                    }
+                    return null;
+                },
+                delete: function(name) {
+                    document.cookie = name + '=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+                }
+            };
+
+            // Kiểm tra nếu đã có token, chuyển hướng đến dashboard
+            const token = Cookies.get('token');
+            if (token) {
+                // Kiểm tra token có hợp lệ không
+                $.ajax({
+                    url: '/auth/introspect',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ token: token }),
+                    success: function(response) {
+                        if (response.result && response.result.active) {
+                            window.location.href = '/dashboard';
+                        } else {
+                            // Thử refresh token
+                            refreshToken();
+                        }
+                    },
+                    error: function() {
+                        // Thử refresh token
+                        refreshToken();
+                    }
+                });
+            }
+
+            // Hàm refresh token
+            function refreshToken() {
+                const token = Cookies.get('token');
+                if (token) {
+                    $.ajax({
+                        url: '/auth/refresh',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ token: token }),
+                        success: function(response) {
+                            if (response.result && response.result.token) {
+                                Cookies.set('token', response.result.token, 1); // Lưu token trong 1 ngày
+                                window.location.href = '/dashboard';
+                            } else {
+                                Cookies.delete('token');
+                            }
+                        },
+                        error: function() {
+                            Cookies.delete('token');
+                        }
+                    });
+                }
+            }
+
+            $('#loginForm').on('submit', function(e) {
+                e.preventDefault();
+                
+                const loginData = {
+                    username: $('#username').val(),
+                    password: $('#password').val()
+                };
+
+                // Hiển thị trạng thái loading
+                const $submitBtn = $(this).find('button[type="submit"]');
+                $submitBtn.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Đang đăng nhập...');
+                $submitBtn.prop('disabled', true);
+
+                // Gọi API đăng nhập
+                $.ajax({
+                    url: '/auth/login',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(loginData),
+                    success: function(response) {
+                        if (response.result && response.result.token) {
+                            // Lưu token vào cookie với các thuộc tính bảo mật
+                            Cookies.set('token', response.result.token, 1); // Lưu token trong 1 ngày
+                            // Chuyển hướng đến dashboard
+                            window.location.href = '/dashboard';
+                        } else {
+                            alert(response.message || 'Đăng nhập thất bại');
+                        }
+                    },
+                    error: function(xhr) {
+                        const response = xhr.responseJSON;
+                        alert(response.message || 'Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.');
+                    },
+                    complete: function() {
+                        // Reset trạng thái nút đăng nhập
+                        $submitBtn.html('Đăng nhập');
+                        $submitBtn.prop('disabled', false);
+                    }
+                });
+            });
+
+            // Xử lý đăng xuất
+            function logout() {
+                const token = Cookies.get('token');
+                if (token) {
+                    $.ajax({
+                        url: '/auth/logout',
+                        type: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ token: token }),
+                        complete: function() {
+                            Cookies.delete('token');
+                            window.location.href = '/login';
+                        }
+                    });
+                }
+            }
+        });
+    </script>
+</body>
+</html>

@@ -13,5 +13,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class UserPrincipal {
     String username;
+    String password;
     List<Role> roles;
 }

@@ -30,7 +30,8 @@ public class SecurityConfig {
             "/employee/register",
             "/customer/register",
             "/auth/login",
-            "/auth/introspect"
+            "/auth/introspect",
+            "/login",
     };//Các end-point được public mà không cần phải có sự can thiệp từ spring security
 
     /*

@@ -49,7 +49,7 @@ public class AuthenticationController {
         return APIResponse.<AuthenticationResponse>builder()
                 .result(result)
                 .build();
-    }
+    }`
 
     @PostMapping("/logout")
     APIResponse logout(@RequestBody LogOutRequest request) throws ParseException, JOSEException {

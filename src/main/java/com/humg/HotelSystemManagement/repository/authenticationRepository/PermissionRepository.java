@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.repository.totalServices;
+package com.humg.HotelSystemManagement.repository.authenticationRepository;
 
 import com.humg.HotelSystemManagement.entity.authorizezation.Permission;
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -9,7 +9,7 @@ import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.EmployeeMapper;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
-import com.humg.HotelSystemManagement.repository.totalServices.RoleRepository;
+import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

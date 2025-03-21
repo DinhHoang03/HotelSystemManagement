@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.repository.totalServices;
+package com.humg.HotelSystemManagement.repository;
 
 import com.humg.HotelSystemManagement.entity.totalServices.HotelService;
 import org.springframework.data.jpa.repository.JpaRepository;
