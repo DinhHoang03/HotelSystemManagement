@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.service.HumanService;
 
-import com.humg.HotelSystemManagement.configuration.SecurityConfig;
+import com.humg.HotelSystemManagement.configuration.security.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
@@ -9,9 +9,13 @@ import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.CustomerMapper;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
+import com.humg.HotelSystemManagement.service.IGeneralCRUDService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -21,7 +25,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class CustomerService implements IGeneralHumanCRUDService<CustomerResponse, CustomerCreationRequest, CustomerUpdateRequest> {
+public class CustomerService implements IGeneralCRUDService<CustomerResponse, CustomerCreationRequest, CustomerUpdateRequest, String> {
     //Call Repository
     CustomerRepository customerRepository;
     CustomerMapper customerMapper;
@@ -33,7 +37,6 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         Customer customer;
         //Check if the email was registered with this customer account
         if (request != null) {
-
             if (customerRepository.existsByEmail(request.getEmail()) ||
                     customerRepository.existsByPhone(request.getPhone())) {
                 throw new AppException(AppErrorCode.USER_EXISTED);
@@ -41,7 +44,11 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
 
             customer = customerMapper.toCustomer(request);
             //Mã hóa mật khẩu với thuật toán BCrypt
-            String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
+            String encodedPassword = securityConfig
+                    .bcryptPasswordEncoder()
+                    .encode(
+                            request.getPassword()
+                    );
 
             customer.setPassword(encodedPassword);
         } else {
@@ -82,9 +89,17 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
         return list;
     }
 
+    //Get All Sort by pages
+    public Page<CustomerResponse> getAll(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Customer> customerPage = customerRepository.findAll(pageable);
+
+        return customerPage.map(customerMapper::toCustomerResponse);
+    }
+
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     //Get User by Id
-    public CustomerResponse getById(Long id) {
+    public CustomerResponse getById(String id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -93,7 +108,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
 
     @PreAuthorize("hasRole('CUSTOMER')")
     //update User by Id
-    public CustomerResponse updateById(Long id, CustomerUpdateRequest request) {
+    public CustomerResponse update(String id, CustomerUpdateRequest request) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -110,7 +125,7 @@ public class CustomerService implements IGeneralHumanCRUDService<CustomerRespons
     }
 
     @PreAuthorize("hasRole('CUSTOMER')")
-    public void deleteById(Long id) {
+    public void delete(String id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 

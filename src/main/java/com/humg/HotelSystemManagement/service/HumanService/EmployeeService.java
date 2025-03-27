@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.service.HumanService;
 
-import com.humg.HotelSystemManagement.configuration.SecurityConfig;
+import com.humg.HotelSystemManagement.configuration.security.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.employee.EmployeeCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.employee.EmployeeUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.employee.EmployeeResponse;
@@ -10,9 +10,13 @@ import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.EmployeeMapper;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
+import com.humg.HotelSystemManagement.service.IGeneralCRUDService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -23,7 +27,7 @@ import java.util.List;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class EmployeeService implements IGeneralHumanCRUDService<EmployeeResponse, EmployeeCreationRequest, EmployeeUpdateRequest> {
+public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, EmployeeCreationRequest, EmployeeUpdateRequest, String> {
 
     EmployeeRepository employeeRepository;
     RoleRepository roleRepository;
@@ -76,8 +80,15 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
         return list;
     }
 
+    public Page<EmployeeResponse> getAll(int page, int size){
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Employee> employeePage = employeeRepository.findAll(pageable);
+
+        return employeePage.map(employeeMapper::toEmployeeResponse);
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
-    public EmployeeResponse getById(Long id) {
+    public EmployeeResponse getById(String id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -96,7 +107,7 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
     }
 
     @PreAuthorize("!hasRole('ADMIN') and !hasRole('CUSTOMER')")
-    public EmployeeResponse updateById(Long id, EmployeeUpdateRequest request) {
+    public EmployeeResponse update(String id, EmployeeUpdateRequest request) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -117,7 +128,7 @@ public class EmployeeService implements IGeneralHumanCRUDService<EmployeeRespons
     }
 
 
-    public void deleteById(Long id) {
+    public void delete(String id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 

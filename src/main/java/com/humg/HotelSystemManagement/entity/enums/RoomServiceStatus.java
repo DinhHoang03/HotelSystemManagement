@@ -6,7 +6,7 @@ import lombok.experimental.FieldDefaults;
 
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 @RequiredArgsConstructor
-public enum RoomServiceStatus {
+public enum RoomStatus {
     AVAILABLE("Phòng trống, có thể đặt"),
     OCCUPIED("Phòng đang có khách lưu trú"),
     CLEANING("Phòng đang được dọn dẹp"),

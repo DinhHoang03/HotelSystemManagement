@@ -22,7 +22,7 @@ public class AdminService {
     EmployeeMapper employeeMapper;
 
     @PreAuthorize("hasRole('ADMIN')")
-    public EmployeeResponse approveEmployee(Long id){
+    public EmployeeResponse approveEmployee(String id){
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
@@ -37,7 +37,7 @@ public class AdminService {
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    public EmployeeResponse rejectEmployee(Long id){
+    public EmployeeResponse rejectEmployee(String id){
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 

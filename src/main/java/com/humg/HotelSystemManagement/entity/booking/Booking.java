@@ -1,6 +1,7 @@
 package com.humg.HotelSystemManagement.entity.booking;
 
 import com.humg.HotelSystemManagement.entity.enums.BookingStatus;
+import com.humg.HotelSystemManagement.entity.enums.PaymentStatus;
 import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,16 +20,20 @@ import java.util.List;
 @Table(name = "bookings")
 public class Booking {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "booking_id")
-    Long bookingId;
+    String bookingId;
 
     @Column(name = "booking_date", nullable = false)
     LocalDate bookingDate;
 
-    @Column(name = "booking_status", nullable = false, unique = true)
+    @Column(name = "booking_status", nullable = false)
     @Enumerated(EnumType.STRING)
     BookingStatus bookingStatus;
+
+    @Column(name = "payment_status")
+    @Enumerated(EnumType.STRING)
+    PaymentStatus paymentStatus;
 
     @Column(name = "total_room_price", nullable = false)
     Long totalRoomPrice;
@@ -39,16 +44,19 @@ public class Booking {
     @Column(name = "grand_total", nullable = false)
     Long grandTotal;
 
+    @Column(name = "paypal_order_id")
+    String paypalOrderId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     Customer customer;
 
-    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
+    @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     BookingBill bookingBill;
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    List<BookingService> bookingServices;
+    List<BookingItems> bookingItems;
 
-    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<BookingRoom> bookingRooms;
 }

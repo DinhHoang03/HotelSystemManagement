@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.service;
 
-import com.humg.HotelSystemManagement.configuration.SecurityConfig;
+import com.humg.HotelSystemManagement.configuration.security.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.UserPrincipal;
 import com.humg.HotelSystemManagement.dto.request.jwt.AuthenticationRequest;
 import com.humg.HotelSystemManagement.dto.request.jwt.IntrospectRequest;
@@ -123,7 +123,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    public UserPrincipal findUser(String username) {
+    private UserPrincipal findUser(String username) {
         var customer = customerRepository.findByUsername(username);
         var employee = employeeRepository.findByUsername(username);
 

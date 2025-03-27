@@ -13,14 +13,15 @@ import org.springframework.http.HttpStatusCode;
 
 public enum AppErrorCode {
     OBJECT_IS_NULL(1000, "Object is null!", HttpStatus.BAD_REQUEST),
+    OBJECT_EXISTED(1011, "This object is existed!", HttpStatus.BAD_REQUEST),
     USER_EXISTED(1001, "This account currently exists!", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1002, "This account does not exist!", HttpStatus.NOT_FOUND),
     LIST_EMPTY(1003, "List is empty!", HttpStatus.BAD_REQUEST),
     UNAUTHENTICATED(1004, "Password or username is incorrect! Please try again", HttpStatus.UNAUTHORIZED),
-    UNAUTHORIZED(1005, "Access denined! You have no permission to access this service!", HttpStatus.FORBIDDEN),
+    UNAUTHORIZED(1005, "Access denied! You have no permission to access this service!", HttpStatus.FORBIDDEN),
     SIGN_TOKEN_ERROR(1006, "Cannot create token", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_STATUS(1007, "Status currently failed!", HttpStatus.BAD_REQUEST),
-    ADMIN_CREATION_NOT_ALLOWED(1008, "Only one admin account only in system management!", HttpStatus.FORBIDDEN),
+    REQUEST_IS_NULL(1008, "This request is null!", HttpStatus.BAD_REQUEST),
     NO_ROLES_ASSIGNED(1009, "No such role found on system!", HttpStatus.BAD_REQUEST),
     USERNAME_CONFLICT(1010, "Invalid duplicate user data!", HttpStatus.BAD_REQUEST)
     ;

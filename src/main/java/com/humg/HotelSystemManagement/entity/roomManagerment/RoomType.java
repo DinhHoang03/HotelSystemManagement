@@ -24,8 +24,8 @@ public class RoomType {
     Long roomTypeId;
 
     @Column(name = "room_types", nullable = false, unique = true)
-    @Enumerated(EnumType.STRING)
-    RoomTypes roomTypes;
+    //@Enumerated(EnumType.STRING)
+    String roomTypes;
 
     @Column(name = "half_day_price", nullable = false)
     Long halfDayPrice;
@@ -39,7 +39,8 @@ public class RoomType {
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<Room> rooms = new ArrayList<>();
 
-    @PrePersist
+    /**
+    //@PrePersist
     public void setPrices(){
         if(halfDayPrice == null){
             this.halfDayPrice = switch (roomTypes){
@@ -64,5 +65,5 @@ public class RoomType {
                 case RoomTypes.DELUXE -> fullWeekPrice = 12000000L;
             };
         }
-    }
+    }*/
 }

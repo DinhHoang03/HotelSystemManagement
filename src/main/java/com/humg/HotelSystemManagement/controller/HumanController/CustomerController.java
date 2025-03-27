@@ -11,8 +11,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/customer")
 @RequiredArgsConstructor
@@ -29,16 +27,16 @@ public class CustomerController {
     }
 
     @PutMapping("/update/{customerId}")
-    APIResponse<CustomerResponse> updateCustomer(@PathVariable("customerId")Long customerId,@Valid @RequestBody CustomerUpdateRequest request){
+    APIResponse<CustomerResponse> updateCustomer(@PathVariable("customerId")String customerId,@Valid @RequestBody CustomerUpdateRequest request){
         return APIResponse.<CustomerResponse>builder()
-                .result(customerService.updateById(customerId, request))
+                .result(customerService.update(customerId, request))
                 .message("Update customer information successfully")
                 .build();
     }
 
     @DeleteMapping("/user/del/{customerId}")
-    APIResponse<String> deleteCustomer(@PathVariable("customerId") Long customerId){
-        customerService.deleteById(customerId);
+    APIResponse<String> deleteCustomer(@PathVariable("customerId") String customerId){
+        customerService.delete(customerId);
         return APIResponse.<String>builder()
                 .message("Delete customer number id " + customerId + " successfully!")
                 .build();

@@ -2,8 +2,8 @@ package com.humg.HotelSystemManagement.entity.humanEntity;
 
 import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.booking.Booking;
+import com.humg.HotelSystemManagement.entity.booking.Payment;
 import com.humg.HotelSystemManagement.entity.enums.Gender;
-import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -54,4 +54,7 @@ public class Customer {
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<Booking> bookings = new ArrayList<>();
+
+    @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    List<Payment> payments = new ArrayList<>();
 }

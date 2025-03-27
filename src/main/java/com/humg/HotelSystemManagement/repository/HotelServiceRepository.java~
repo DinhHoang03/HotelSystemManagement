@@ -1,0 +1,16 @@
+package com.humg.HotelSystemManagement.repository;
+
+import com.humg.HotelSystemManagement.entity.totalServices.HotelService;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import java.util.Optional;
+
+@Repository
+public interface HotelServiceRepository extends JpaRepository<HotelService, String> {
+    @Query(value = "SELECT * FROM hotel_service WHERE service_type = :serviceType", nativeQuery = true)
+    Optional<HotelService> findServiceType(@Param(value = "serviceType") String serviceTypes);
+}

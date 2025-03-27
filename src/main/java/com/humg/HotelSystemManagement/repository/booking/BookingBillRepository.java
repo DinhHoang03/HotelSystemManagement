@@ -5,5 +5,5 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface BookingBillRepository extends JpaRepository<BookingBill, Long> {
+public interface BookingBillRepository extends JpaRepository<BookingBill, String> {
 }

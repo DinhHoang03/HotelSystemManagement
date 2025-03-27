@@ -27,16 +27,16 @@ public class EmployeeController {
     }
 
     @PutMapping("/update/{empId}")
-    APIResponse<EmployeeResponse> updateEmployee(@PathVariable("empId") Long empId, @Valid @RequestBody EmployeeUpdateRequest request){
+    APIResponse<EmployeeResponse> updateEmployee(@PathVariable("empId") String empId, @Valid @RequestBody EmployeeUpdateRequest request){
         return APIResponse.<EmployeeResponse>builder()
-                .result(employeeService.updateById(empId, request))
+                .result(employeeService.update(empId, request))
                 .message("Update waiter successfully!")
                 .build();
     }
 
     @DeleteMapping("/del/{empId}")
-    APIResponse<String> deleteEmployee(@PathVariable("empId") Long empId){
-        employeeService.deleteById(empId);
+    APIResponse<String> deleteEmployee(@PathVariable("empId") String empId){
+        employeeService.delete(empId);
         return APIResponse.<String>builder()
                 .message("Delete waiter number id " + empId + " successfully!")
                 .build();

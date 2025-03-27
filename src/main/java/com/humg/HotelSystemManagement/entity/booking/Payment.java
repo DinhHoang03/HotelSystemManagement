@@ -2,9 +2,9 @@ package com.humg.HotelSystemManagement.entity.booking;
 
 import com.humg.HotelSystemManagement.entity.enums.PaymentMethod;
 import com.humg.HotelSystemManagement.entity.enums.PaymentStatus;
+import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import jakarta.persistence.*;
 import lombok.*;
-import lombok.AccessLevel;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
@@ -18,9 +18,9 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Payment {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "payment_id")
-    Long paymentId;
+    String paymentId;
 
     @Column(name = "transaction_id", nullable = false, unique = true)
     String transactionId;
@@ -34,7 +34,7 @@ public class Payment {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "payment_method", nullable = false)
-    PaymentMethod  paymentMethod;
+    PaymentMethod paymentMethod;
 
     @Column(name = "create_at", nullable = false)
     LocalDate createAt;
@@ -42,7 +42,20 @@ public class Payment {
     @Column(name = "update_at", nullable = false)
     LocalDate updateAt;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_bill_id", referencedColumnName =  "booking_bill_id", unique = true)
+    @Column(name = "success_url")
+    String successUrl;
+
+    @Column(name = "cancel_url")
+    String cancelUrl;
+
+    @Column(name = "payment_response", columnDefinition = "TEXT")
+    String paymentResponse;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_bill_id", nullable = false)
     BookingBill bookingBill;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "customer_id", nullable = false)
+    Customer customer;
 }

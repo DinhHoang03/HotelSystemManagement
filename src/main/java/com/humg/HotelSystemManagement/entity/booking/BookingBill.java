@@ -5,6 +5,8 @@ import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -16,9 +18,9 @@ import java.time.LocalDate;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingBill {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "booking_bill_id")
-    Long bookingBillId;
+    String bookingBillId;
 
     @Column(name = "issue_date")
     LocalDate issueDate;
@@ -26,10 +28,16 @@ public class BookingBill {
     @Column(name = "grand_total", nullable = false)
     Long grandTotal;
 
+    @Column(name = "remaining_amount")
+    Long remainingAmount;
+
+    @Column(name = "payment_date")
+    LocalDate paymentDate;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", referencedColumnName = "booking_id", unique = true)
     Booking booking;
 
-    @OneToOne(mappedBy = "bookingBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
-    Payment payment;
+    @OneToMany(mappedBy = "bookingBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    List<Payment> payments = new ArrayList<>();
 }
