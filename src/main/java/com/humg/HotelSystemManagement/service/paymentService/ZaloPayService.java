@@ -28,5 +28,6 @@ public class ZaloPayService {
         orderData.put("app_id", String.valueOf(zaloPayContext.getAppId()));
         orderData.put("app_user", "user");
         orderData.put("app_trans_id", String.valueOf(now));
+        return null;
     }
 }

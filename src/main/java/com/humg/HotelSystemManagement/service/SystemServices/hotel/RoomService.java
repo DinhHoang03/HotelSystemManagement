@@ -2,11 +2,11 @@ package com.humg.HotelSystemManagement.service.SystemServices.hotel;
 
 import com.humg.HotelSystemManagement.dto.request.room.RoomRequest;
 import com.humg.HotelSystemManagement.dto.response.room.RoomResponse;
+import com.humg.HotelSystemManagement.entity.enums.RoomStatus;
 import com.humg.HotelSystemManagement.entity.roomManagerment.Room;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.roomManagerment.RoomRepository;
-import com.humg.HotelSystemManagement.repository.roomManagerment.RoomStatusRepository;
 import com.humg.HotelSystemManagement.repository.roomManagerment.RoomTypeRepository;
 import com.humg.HotelSystemManagement.service.ISimpleCRUDService;
 import com.humg.HotelSystemManagement.service.NormalizeString;
@@ -24,7 +24,7 @@ import org.springframework.stereotype.Service;
 public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest, Long> {
     RoomRepository roomRepository;
     RoomTypeRepository roomTypeRepository;
-    RoomStatusRepository roomStatusRepository;
+    //RoomStatusRepository roomStatusRepository;
     NormalizeString normalizeString;
 
     @Override
@@ -32,18 +32,19 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
         if(request == null) throw new AppException(AppErrorCode.REQUEST_IS_NULL);
 
         String roomTypeNormalized = normalizeString.normalizedString(request.getRoomType());
-        String roomStatusNormalized = normalizeString.normalizedString(request.getRoomStatus());
+        //String roomStatusNormalized = normalizeString.normalizedString(request.getRoomStatus());
 
+        var status = RoomStatus.AVAILABLE;
         if(roomRepository.existsByRoomNumber(request.getRoomNumber()))
             throw new AppException(AppErrorCode.OBJECT_EXISTED);
 
         var roomType = roomTypeRepository.findByRoomTypes(roomTypeNormalized);
-        var roomStatus = roomStatusRepository.findByRoomStatus(roomStatusNormalized);
+        //var roomStatus = roomStatusRepository.findByRoomStatus(roomStatusNormalized);
 
         Room room = Room.builder()
                 .roomNumber(request.getRoomNumber())
                 .roomType(roomType.get())
-                .roomStatus(roomStatus.get())
+                .roomStatus(status)
                 .build();
 
         var result = roomRepository.save(room);
@@ -69,7 +70,7 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
                     .roomId(room.getRoomId())
                     .roomNumber(room.getRoomNumber())
                     .roomType(room.getRoomType().getRoomTypes())
-                    .roomStatus(room.getRoomStatus().getRoomStatus())
+                    .roomStatus(room.getRoomStatus().toString())
                     .build();
         });
 
@@ -86,7 +87,7 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
                 .roomId(room.getRoomId())
                 .roomNumber(room.getRoomNumber())
                 .roomType(room.getRoomType().getRoomTypes())
-                .roomStatus(room.getRoomStatus().getRoomStatus())
+                .roomStatus(room.getRoomStatus().toString())
                 .build();
 
         return result;
@@ -101,12 +102,12 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
         );
 
         var roomTypeNormalized = normalizeString.normalizedString(request.getRoomType());
-        var roomStatusNormalized = normalizeString.normalizedString(request.getRoomStatus());
+        //var roomStatusNormalized = normalizeString.normalizedString(request.getRoomStatus());
 
-        var roomStatus = roomStatusRepository.findByRoomStatus(roomStatusNormalized);
+        //var roomStatus = roomStatusRepository.findByRoomStatus(roomStatusNormalized);
         var roomType = roomTypeRepository.findByRoomTypes(roomTypeNormalized);
 
-        room.setRoomStatus(roomStatus.get());
+        //room.setRoomStatus(roomStatus.get());
         room.setRoomType(roomType.get());
 
         var update = roomRepository.save(room);
@@ -114,7 +115,7 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
         RoomResponse result = RoomResponse.builder()
                 .roomId(update.getRoomId())
                 .roomNumber(update.getRoomNumber())
-                .roomStatus(update.getRoomStatus().getRoomStatus())
+                .roomStatus(update.getRoomStatus().toString())
                 .roomType(update.getRoomType().getRoomTypes())
                 .build();
 

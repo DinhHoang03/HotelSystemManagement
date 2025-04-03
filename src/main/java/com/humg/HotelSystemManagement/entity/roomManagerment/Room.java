@@ -1,6 +1,7 @@
 package com.humg.HotelSystemManagement.entity.roomManagerment;
 
 import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
+import com.humg.HotelSystemManagement.entity.enums.RoomStatus;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -32,12 +33,19 @@ public class Room {
     @JoinColumn(name = "room_type_id", nullable = false)
     RoomType roomType;
 
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
-    List<BookingRoom> bookingRooms = new ArrayList<>();
+//    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
+//    List<BookingRoom> bookingRooms = new ArrayList<>();
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_room_id", nullable = false)
+    BookingRoom bookingRoom;
 
 //    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)
 //    List<RoomStatus> roomStatus = new ArrayList<>();
 
-    @OneToOne(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+//    @OneToOne(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+//    RoomStatus roomStatus;
+
+    @Enumerated(EnumType.STRING)
     RoomStatus roomStatus;
 }

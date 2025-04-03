@@ -26,5 +26,6 @@ public class PayPalService {
         Amount amount = new Amount();
         amount.setCurrency(currency);
         amount.setTotal(String.valueOf(total));
+        return null;
     }
 }

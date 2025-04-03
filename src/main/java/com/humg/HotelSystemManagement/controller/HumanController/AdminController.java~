@@ -37,7 +37,6 @@ public class AdminController {
 
 
     @GetMapping("/get-customers/list")
-    @PreAuthorize("hasRole('ADMIN')")
     APIResponse<List<CustomerResponse>> getAllCustomers(){
         return APIResponse.<List<CustomerResponse>>builder()
                 .result(customerService.getAll())

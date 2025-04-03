@@ -10,6 +10,5 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoomRequest {
     String roomNumber;
-    String roomStatus;
     String roomType;
 }

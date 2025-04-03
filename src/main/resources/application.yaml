@@ -3,8 +3,24 @@ application:
 
 server:
   port: 8080
-  servlet:
-    context-path: /hotel
+
+spring:
+  mvc:
+    static-path-pattern: /**
+  web:
+    resources:
+      static-locations: classpath:/static/
+  datasource:
+    url: jdbc:mysql://localhost:3306/hotel_database_management
+    username: root
+    password: dinh1012
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+  autoconfigure:
+    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 paypal:
   client-id: "AVyeLvSbaACMA-l1jkzaROgl9OD8oJJ40k1UrxEgk_1lG7qB36JYxbAnGmfuzKs-HGkF8DqbTkNTwe_D"
@@ -16,21 +32,6 @@ zalo-pay:
   key1: "9phuAOYhan4urywHTh0ndEXiV3pKHr5Q"
   key2: "Iyz2habzyr7AG8SgvoBCbKwKi3UzlLi3"
   create-order-url: "https://sb-openapi.zalopay.vn/v2/create"
-
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/hotel_database_management
-    username: root
-    password: dinh1012
-    driver-class-name: com.mysql.cj.jdbc.Driver
-
-  jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: true
-
-  autoconfigure:
-    exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 jwt:
   signerKey: "rFpGwv/uscX+l9y5QCe6X5H`3Y825wsLAAuXHT2WgsBiibbVkUj/hrr9GFT+xoEDE"

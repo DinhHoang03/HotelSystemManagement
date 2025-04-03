@@ -17,13 +17,16 @@ public enum AppErrorCode {
     USER_EXISTED(1001, "This account currently exists!", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1002, "This account does not exist!", HttpStatus.NOT_FOUND),
     LIST_EMPTY(1003, "List is empty!", HttpStatus.BAD_REQUEST),
-    UNAUTHENTICATED(1004, "Password or username is incorrect! Please try again", HttpStatus.UNAUTHORIZED),
+    UNAUTHENTICATED(1004, "Unauthenticated!", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1005, "Access denied! You have no permission to access this service!", HttpStatus.FORBIDDEN),
     SIGN_TOKEN_ERROR(1006, "Cannot create token", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_STATUS(1007, "Status currently failed!", HttpStatus.BAD_REQUEST),
     REQUEST_IS_NULL(1008, "This request is null!", HttpStatus.BAD_REQUEST),
     NO_ROLES_ASSIGNED(1009, "No such role found on system!", HttpStatus.BAD_REQUEST),
-    USERNAME_CONFLICT(1010, "Invalid duplicate user data!", HttpStatus.BAD_REQUEST)
+    USERNAME_CONFLICT(1010, "Invalid duplicate user data!", HttpStatus.BAD_REQUEST),
+    INVALID_DATE(1011, "Date is invalid, try again!", HttpStatus.BAD_REQUEST),
+    ROOM_ALREADY_BOOKED(1012, "Room is already booked!", HttpStatus.BAD_REQUEST),
+    ROOM_NOT_AVAILABLE(1012, "Room is not avaiable now!", HttpStatus.BAD_REQUEST)
     ;
 
     int code;

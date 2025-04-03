@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.config.http.SessionCreationPolicy;
 
 import javax.crypto.spec.SecretKeySpec;
 
@@ -27,11 +28,25 @@ public class SecurityConfig {
     private String signerKey; //SECRET KEY(Không được phép để lộ!)
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/employee/register",
-            "/customer/register",
             "/auth/login",
             "/auth/introspect",
-            "/login",
+            "/auth/refresh",
+            "/auth/logout",
+            "/api/customers",
+            "/login.html",
+            "/register.html",
+            "/js/**",
+            "/css/**",
+            "/images/**",
+            "/*.html",
+            "/*.js",
+            "/*.css",
+            "/*.ico",
+            "/*.png",
+            "/*.jpg",
+            "/*.jpeg",
+            "/*.gif",
+            "/*.svg"
     };//Các end-point được public mà không cần phải có sự can thiệp từ spring security
 
     /*
@@ -51,29 +66,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{ //Hàm phân lọc end-point để thực hiện phân quyền trong hệ thống theo role
-        http.authorizeHttpRequests(//Sử dụng hàm authorizeHttpRequests để bắt đầu phân quyền(Hàm của lớp Http Security)
-                authorizationManagerRequestMatcherRegistry ->
-                        authorizationManagerRequestMatcherRegistry.requestMatchers(HttpMethod.POST, PUBLIC_ENDPOINTS).permitAll()
-                                //Hàm requestMatchers sẽ có 2 tham số, tham số hàm http và tham số các end-point,
-                                //ở đây hàm này đã được ủy quyền bất kì ai có quyền truy cập do hàm này sử dụng permitAll
-                                //.requestMatchers(HttpMethod.GET, "/admin/**").hasRole(Roles.ADMIN.name())
-                                //Hàm này chỉ có role của admin mới có quyền được truy cập vào các endpoint này
-                                .anyRequest()
-                                .authenticated()//2 hàm anyRequest và authenticated đều yêu cầu cần xác thực
-        );
-
-        //Cấu hình cho Jwt Resource Sever
-        http.oauth2ResourceServer(httpSecurityOAuth2ResourceServerConfigurer ->
-                httpSecurityOAuth2ResourceServerConfigurer.jwt(jwtConfigurer -> jwtConfigurer
-                        .decoder(jwtDecoder())//Sử dụng NimbusJwtDecoder để giải mã token JWT
-                        .jwtAuthenticationConverter(jwtAuthenticationConverter())) //Chuyển đổi Token thành thông tin xác thực,
-                        .authenticationEntryPoint(new JWTAuthenticationEntryPoint()) // Chuyển đổi token JWT thành thông tin xác thực
-                        //và chuyển đổi thông tin xác thực thành thông tin người dùng
-                        //Sử dụng hàm jwtAuthenticationConverter để chuyển đổi thông tin xác thực thành thông tin người dùng
-        );
-
-
-        http.csrf(httpSecurityCsrfConfigurer -> httpSecurityCsrfConfigurer.disable());
+        http
+            .authorizeHttpRequests(authorize -> authorize
+                .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                .anyRequest().authenticated()
+            )
+            .oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt
+                    .decoder(jwtDecoder())
+                    .jwtAuthenticationConverter(jwtAuthenticationConverter())
+                )
+            )
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+            )
+            .exceptionHandling(exception -> exception
+                .authenticationEntryPoint(new JWTAuthenticationEntryPoint())
+            );
 
         return http.build();
     }
@@ -94,7 +104,6 @@ public class SecurityConfig {
         // Tạo JwtGrantedAuthoritiesConverter để trích xuất quyền (authorities) từ JWT.
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
         // Thiết lập tiền tố "ROLE_" cho mỗi quyền, ví dụ: "read" thành "ROLE_read".
-        //jwtGrantedAuthoritiesConverter.setAuthorityPrefix("ROLE_");
         jwtGrantedAuthoritiesConverter.setAuthorityPrefix("");
         // Chỉ định claim "scope" trong JWT là nơi chứa danh sách quyền (thay vì mặc định "scope" hoặc "scp").
         //jwtGrantedAuthoritiesConverter.setAuthoritiesClaimName("role");

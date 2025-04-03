@@ -4,10 +4,12 @@ import com.humg.HotelSystemManagement.configuration.security.SecurityConfig;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
 import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
+import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.CustomerMapper;
+import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.service.IGeneralCRUDService;
 import lombok.AccessLevel;
@@ -20,7 +22,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -28,11 +32,12 @@ import java.util.List;
 public class CustomerService implements IGeneralCRUDService<CustomerResponse, CustomerCreationRequest, CustomerUpdateRequest, String> {
     //Call Repository
     CustomerRepository customerRepository;
+    RoleRepository roleRepository;
     CustomerMapper customerMapper;
     SecurityConfig securityConfig;
 
     //Create customer account
-    @PreAuthorize("hasRole('CUSTOMER')")
+    //@PreAuthorize("hasRole('CUSTOMER')")
     public CustomerResponse create(CustomerCreationRequest request) {
         Customer customer;
         //Check if the email was registered with this customer account
@@ -51,6 +56,10 @@ public class CustomerService implements IGeneralCRUDService<CustomerResponse, Cu
                     );
 
             customer.setPassword(encodedPassword);
+            var customerRole = roleRepository.findById("CUSTOMER")
+                    .orElseGet(() -> roleRepository.save(new Role("CUSTOMER", "Customer Role", new HashSet<>())));
+
+            customer.setRoles(new HashSet<>(Set.of(customerRole)));
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }

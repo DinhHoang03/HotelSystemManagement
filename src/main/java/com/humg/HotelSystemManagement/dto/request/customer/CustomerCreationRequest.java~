@@ -41,10 +41,10 @@ public class CustomerCreationRequest {
     @NotNull(message = "REQUEST_NULL")
     String address;
 
-//    @Pattern(regexp = "^CUSTOMER$",
-//            message = "INVALID_ROLE")
-//    @NotNull(message = "REQUEST_NULL")
-//    String role;
+    @Pattern(regexp = "^CUSTOMER$",
+            message = "INVALID_ROLE")
+    @NotNull(message = "REQUEST_NULL")
+    String role;
 
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,16}$",
             message = "INVALID_PASSWORD")

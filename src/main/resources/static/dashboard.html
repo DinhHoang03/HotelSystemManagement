@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="context-path" content="/hotel">
+    <title>Hotel Management System - Dashboard</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        .dashboard-container {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .dashboard-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .dashboard-header h2 {
+            color: #333;
+        }
+        .btn-logout {
+            width: 100%;
+            padding: 10px;
+            font-size: 16px;
+            margin-top: 20px;
+        }
+        .alert {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="dashboard-container">
+            <div class="dashboard-header">
+                <h2>Welcome to Dashboard</h2>
+                <p class="text-muted" id="userInfo">Loading user information...</p>
+            </div>
+            
+            <div class="alert alert-danger" id="errorAlert" role="alert"></div>
+            <div class="alert alert-success" id="successAlert" role="alert"></div>
+            
+            <div class="text-center">
+                <button class="btn btn-danger btn-logout" id="logoutBtn">Logout</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- API Handler -->
+    <script src="/js/api.js"></script>
+    <!-- Custom JS -->
+    <script>
+        $(document).ready(function() {
+            // Check if user is authenticated
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            // Show user info from token
+            try {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                $('#userInfo').text(`Logged in as: ${payload.sub}`);
+            } catch (e) {
+                console.error('Invalid token format');
+                localStorage.removeItem('token');
+                window.location.href = '/login.html';
+            }
+
+            // Handle logout
+            $('#logoutBtn').on('click', function() {
+                $.ajax({
+                    url: '/auth/logout',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ token: token }),
+                    success: function() {
+                        // Remove token and redirect
+                        localStorage.removeItem('token');
+                        window.location.href = '/login.html';
+                    },
+                    error: function() {
+                        // Even if logout fails, remove token and redirect
+                        localStorage.removeItem('token');
+                        window.location.href = '/login.html';
+                    }
+                });
+            });
+
+            // Function to show error message
+            function showError(message) {
+                $('#errorAlert').text(message).show();
+            }
+            
+            // Function to show success message
+            function showSuccess(message) {
+                $('#successAlert').text(message).show();
+            }
+        });
+    </script>
+</body>
+</html> 

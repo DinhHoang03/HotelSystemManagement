@@ -9,8 +9,7 @@ import org.springframework.stereotype.Service;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class BookingService {
+public class BookingService{
     BookingRepository bookingRepository;
-
 
 }

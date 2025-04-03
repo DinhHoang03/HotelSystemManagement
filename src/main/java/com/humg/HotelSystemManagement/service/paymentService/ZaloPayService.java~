@@ -22,7 +22,7 @@ public class ZaloPayService {
 
     public String createPayment(Long total, String description) {
         LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
-        String timePrefix = now.format(DateTimeFormatter.ofPattern("yymmdd"));
+        String timePrefix = now.format(DateTimeFormatter.ofPattern("yyMMdd"));
 
         Map<String, String> orderData = new HashMap<>();
         orderData.put("app_id", String.valueOf(zaloPayContext.getAppId()));

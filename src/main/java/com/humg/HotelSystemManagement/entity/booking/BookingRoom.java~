@@ -35,7 +35,6 @@ public class BookingRoom {
     Long totalRoomAmount;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
     BookingStatus bookingStatus;
 //    @Column(name = "price_type", nullable = false)
 //    @Enumerated(EnumType.STRING)

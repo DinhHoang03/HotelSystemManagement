@@ -44,8 +44,8 @@ public class Booking {
     @Column(name = "grand_total", nullable = false)
     Long grandTotal;
 
-    @Column(name = "paypal_order_id")
-    String paypalOrderId;
+    @Column(name = "payment_order_id")
+    String paymentOrderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
