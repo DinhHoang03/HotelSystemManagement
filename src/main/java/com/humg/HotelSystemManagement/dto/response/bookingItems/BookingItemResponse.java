@@ -12,6 +12,7 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingItemResponse {
+    Long bookingItemId;
     String hotelOffer;
     int quantity;
     Long totalItemsPrice;

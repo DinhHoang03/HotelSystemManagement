@@ -16,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -31,6 +32,7 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
     BookingRoomRepository bookingRoomRepository;
     RoomRepository roomRepository;
 
+    @Transactional
     @Override
     public BookingRoomResponse create(BookingRoomRequest request) {
 
