@@ -21,7 +21,7 @@ public class BookingResponse {
     Long totalRoomPrice;
     Long totalBookingServicePrice;
     Long grandTotal;
-    String customerId;
+    String customerName;
     List<BookingRoom> bookingRooms;
     List<BookingItems> bookingItems;
 }
