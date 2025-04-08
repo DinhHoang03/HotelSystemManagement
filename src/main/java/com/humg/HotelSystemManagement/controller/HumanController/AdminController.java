@@ -1,14 +1,10 @@
 package com.humg.HotelSystemManagement.controller.HumanController;
 
-import com.humg.HotelSystemManagement.dto.request.role.RoleRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.authorizezation.RoleResponse;
-import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
-import com.humg.HotelSystemManagement.dto.response.employee.EmployeeResponse;
+import com.humg.HotelSystemManagement.dto.response.humanEntity.customer.CustomerResponse;
+import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.service.HumanService.CustomerService;
 import com.humg.HotelSystemManagement.service.HumanService.EmployeeService;
-import com.humg.HotelSystemManagement.service.SystemServices.PermissionService;
-import com.humg.HotelSystemManagement.service.SystemServices.RoleService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

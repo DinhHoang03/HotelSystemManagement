@@ -15,6 +15,11 @@ public enum RoomStatus {
     OUT_OF_SERVICE("Phòng bị lỗi, không sử dụng được");
 
     String description;
+
+    @Override
+    public String toString() {
+        return name();
+    }
 }
 
 

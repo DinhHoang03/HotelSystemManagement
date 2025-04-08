@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - DinhRise Hotel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Auth Script -->
+    <script src="/js/auth.js"></script>
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+        .main-content {
+            transition: all 0.3s ease;
+        }
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #EF4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Sidebar -->
+    <div class="sidebar fixed h-screen bg-white shadow-lg w-64" id="sidebar">
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo" class="h-8 w-auto">
+                    <span class="ml-2 text-xl font-bold text-gray-800 sidebar-text">DinhRise Hotel</span>
+                </div>
+                <button id="toggleSidebar" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="space-y-2">
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100 active">
+                    <i class="fas fa-home w-6"></i>
+                    <span class="ml-3 sidebar-text">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-users w-6"></i>
+                    <span class="ml-3 sidebar-text">Employee Management</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bed w-6"></i>
+                    <span class="ml-3 sidebar-text">Room Management</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-concierge-bell w-6"></i>
+                    <span class="ml-3 sidebar-text">Service Management</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-chart-line w-6"></i>
+                    <span class="ml-3 sidebar-text">Reports & Analytics</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-cog w-6"></i>
+                    <span class="ml-3 sidebar-text">Settings</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bell w-6"></i>
+                    <span class="ml-3 sidebar-text">Notifications</span>
+                    <span class="notification-badge">3</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-user w-6"></i>
+                    <span class="ml-3 sidebar-text">Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content ml-64 p-8" id="mainContent">
+        <!-- Top Navigation -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Admin Dashboard</h1>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button id="userMenuButton" class="flex items-center text-gray-700 hover:text-gray-900">
+                        <i class="fas fa-user-circle text-2xl mr-2"></i>
+                        <span id="usernameDisplay" class="mr-2">Loading...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                        <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
+                        <i class="fas fa-users text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Total Employees</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="totalEmployees">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-bed text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Total Rooms</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="totalRooms">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-calendar-check text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Today's Bookings</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="todayBookings">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-dollar-sign text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Today's Revenue</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="todayRevenue">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+            <!-- Revenue Chart -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Revenue Overview</h2>
+                <div class="chart-container">
+                    <canvas id="revenueChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Occupancy Chart -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Room Occupancy</h2>
+                <div class="chart-container">
+                    <canvas id="occupancyChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Activities -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Recent Activities</h2>
+                <a href="#" class="text-indigo-600 hover:text-indigo-800">View All</a>
+            </div>
+            <div class="space-y-4" id="recentActivities">
+                <!-- Activities will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Quick Actions</h2>
+                <div class="space-y-4">
+                    <button class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                        <i class="fas fa-user-plus mr-2"></i> Add New Employee
+                    </button>
+                    <button class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700">
+                        <i class="fas fa-bed mr-2"></i> Add New Room
+                    </button>
+                    <button class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700">
+                        <i class="fas fa-file-alt mr-2"></i> Generate Report
+                    </button>
+                </div>
+            </div>
+
+            <!-- System Status -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">System Status</h2>
+                <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Database</span>
+                        <span class="text-green-600">Online</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">API Services</span>
+                        <span class="text-green-600">Online</span>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-gray-600">Backup Status</span>
+                        <span class="text-green-600">Up to date</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Notifications -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Recent Notifications</h2>
+                <div class="space-y-4" id="recentNotifications">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Check authentication
+        $(document).ready(function() {
+            checkAuth();
+            loadDashboardData();
+            initializeCharts();
+        });
+
+        // Toggle sidebar
+        $('#toggleSidebar').click(function() {
+            $('#sidebar').toggleClass('collapsed');
+            $('#mainContent').toggleClass('expanded');
+        });
+
+        // Toggle user menu
+        $('#userMenuButton').click(function() {
+            $('#userMenu').toggleClass('hidden');
+        });
+
+        // Initialize charts
+        function initializeCharts() {
+            // Revenue Chart
+            const revenueCtx = document.getElementById('revenueChart').getContext('2d');
+            new Chart(revenueCtx, {
+                type: 'line',
+                data: {
+                    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                    datasets: [{
+                        label: 'Revenue',
+                        data: [12000, 19000, 15000, 25000, 22000, 30000],
+                        borderColor: '#4F46E5',
+                        tension: 0.1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+
+            // Occupancy Chart
+            const occupancyCtx = document.getElementById('occupancyChart').getContext('2d');
+            new Chart(occupancyCtx, {
+                type: 'bar',
+                data: {
+                    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                    datasets: [{
+                        label: 'Occupancy Rate',
+                        data: [65, 59, 80, 81, 56, 95, 40],
+                        backgroundColor: '#10B981'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false
+                }
+            });
+        }
+
+        // Load dashboard data
+        function loadDashboardData() {
+            // Load total employees
+            $.ajax({
+                url: '/api/employees/count',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    $('#totalEmployees').text(response.count);
+                }
+            });
+
+            // Load total rooms
+            $.ajax({
+                url: '/api/rooms/count',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    $('#totalRooms').text(response.count);
+                }
+            });
+
+            // Load today's bookings
+            $.ajax({
+                url: '/api/bookings/today/count',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    $('#todayBookings').text(response.count);
+                }
+            });
+
+            // Load today's revenue
+            $.ajax({
+                url: '/api/revenue/today',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    $('#todayRevenue').text('$' + response.amount.toLocaleString());
+                }
+            });
+
+            // Load recent activities
+            $.ajax({
+                url: '/api/activities/recent',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    const activitiesHtml = response.map(activity => `
+                        <div class="flex items-start p-4 bg-gray-50 rounded-lg">
+                            <div class="flex-shrink-0">
+                                <i class="fas ${getActivityIcon(activity.type)} text-${getActivityColor(activity.type)}-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">${activity.title}</p>
+                                <p class="text-sm text-gray-500">${activity.description}</p>
+                                <p class="text-xs text-gray-400 mt-1">${activity.timestamp}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    $('#recentActivities').html(activitiesHtml);
+                }
+            });
+
+            // Load recent notifications
+            $.ajax({
+                url: '/api/notifications/recent',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    const notificationsHtml = response.map(notification => `
+                        <div class="flex items-start p-4 bg-gray-50 rounded-lg">
+                            <div class="flex-shrink-0">
+                                <i class="fas ${getNotificationIcon(notification.type)} text-${getNotificationColor(notification.type)}-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">${notification.title}</p>
+                                <p class="text-sm text-gray-500">${notification.message}</p>
+                                <p class="text-xs text-gray-400 mt-1">${notification.timestamp}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    $('#recentNotifications').html(notificationsHtml);
+                }
+            });
+        }
+
+        // Helper functions
+        function getActivityIcon(type) {
+            switch(type) {
+                case 'EMPLOYEE':
+                    return 'fa-user';
+                case 'BOOKING':
+                    return 'fa-calendar-check';
+                case 'ROOM':
+                    return 'fa-bed';
+                case 'SERVICE':
+                    return 'fa-concierge-bell';
+                default:
+                    return 'fa-bell';
+            }
+        }
+
+        function getActivityColor(type) {
+            switch(type) {
+                case 'EMPLOYEE':
+                    return 'blue';
+                case 'BOOKING':
+                    return 'green';
+                case 'ROOM':
+                    return 'yellow';
+                case 'SERVICE':
+                    return 'purple';
+                default:
+                    return 'gray';
+            }
+        }
+
+        function getNotificationIcon(type) {
+            switch(type) {
+                case 'SYSTEM':
+                    return 'fa-server';
+                case 'ALERT':
+                    return 'fa-exclamation-circle';
+                case 'UPDATE':
+                    return 'fa-sync';
+                default:
+                    return 'fa-bell';
+            }
+        }
+
+        function getNotificationColor(type) {
+            switch(type) {
+                case 'SYSTEM':
+                    return 'blue';
+                case 'ALERT':
+                    return 'red';
+                case 'UPDATE':
+                    return 'yellow';
+                default:
+                    return 'gray';
+            }
+        }
+    </script>
+</body>
+</html> 

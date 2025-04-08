@@ -1,13 +1,13 @@
 package com.humg.HotelSystemManagement.controller.authenticationController;
 
-import com.humg.HotelSystemManagement.dto.request.jwt.AuthenticationRequest;
-import com.humg.HotelSystemManagement.dto.request.jwt.IntrospectRequest;
-import com.humg.HotelSystemManagement.dto.request.jwt.LogOutRequest;
-import com.humg.HotelSystemManagement.dto.request.jwt.RefreshRequest;
+import com.humg.HotelSystemManagement.dto.request.security.jwt.AuthenticationRequest;
+import com.humg.HotelSystemManagement.dto.request.security.jwt.IntrospectRequest;
+import com.humg.HotelSystemManagement.dto.request.security.jwt.LogOutRequest;
+import com.humg.HotelSystemManagement.dto.request.security.jwt.RefreshRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.jwt.AuthenticationResponse;
-import com.humg.HotelSystemManagement.dto.response.jwt.IntrospectResponse;
-import com.humg.HotelSystemManagement.service.AuthenticationService;
+import com.humg.HotelSystemManagement.dto.response.security.jwt.AuthenticationResponse;
+import com.humg.HotelSystemManagement.dto.response.security.jwt.IntrospectResponse;
+import com.humg.HotelSystemManagement.service.SecurityService.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

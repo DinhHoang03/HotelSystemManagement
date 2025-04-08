@@ -1,13 +1,11 @@
 package com.humg.HotelSystemManagement.controller.HotelController.booking;
 
-import com.humg.HotelSystemManagement.dto.request.bookingRoom.BookingRoomRequest;
+import com.humg.HotelSystemManagement.dto.request.booking.bookingRoom.BookingRoomRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.bookingRoom.BookingRoomResponse;
-import com.humg.HotelSystemManagement.service.SystemServices.booking.BookingRoomService;
+import com.humg.HotelSystemManagement.dto.response.booking.bookingRoom.BookingRoomResponse;
+import com.humg.HotelSystemManagement.service.HotelService.booking.BookingRoomService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/booking-rooms")

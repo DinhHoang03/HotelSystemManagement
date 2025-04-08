@@ -39,6 +39,11 @@ public class RoomType {
     @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<Room> rooms = new ArrayList<>();
 
+    @Override
+    public String toString() {
+        return roomTypes;
+    }
+
     /**
     //@PrePersist
     public void setPrices(){

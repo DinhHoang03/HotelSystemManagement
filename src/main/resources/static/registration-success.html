@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration Successful - DinhRise Hotel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <style>
+        .success-container {
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.3));
+        }
+        .success-icon {
+            animation: bounce 1s infinite;
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .countdown {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex">
+        <!-- Left Side - Image -->
+        <div class="hidden lg:flex lg:w-1/2 relative">
+            <div class="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
+            <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
+                 alt="DinhRise Hotel" 
+                 class="w-full h-full object-cover">
+            <div class="absolute inset-0 flex items-center justify-center z-20 text-white px-12">
+                <div data-aos="fade-right">
+                    <h1 class="text-4xl font-bold mb-4">Welcome to DinhRise Hotel</h1>
+                    <p class="text-xl mb-8">Your journey to luxury begins here</p>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <i class="fas fa-star text-3xl mb-2"></i>
+                            <p>5-Star Rating</p>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-award text-3xl mb-2"></i>
+                            <p>Best Service</p>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-heart text-3xl mb-2"></i>
+                            <p>Guest Favorite</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Success Message -->
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
+            <div class="w-full max-w-md text-center" data-aos="fade-left">
+                <div class="mb-8">
+                    <div class="success-icon inline-block text-green-500 text-6xl mb-4">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <h2 class="text-3xl font-bold text-gray-900 mb-2">Registration Successful!</h2>
+                    <p class="text-gray-600 mb-4">Your account has been created successfully.</p>
+                    <p class="text-gray-500 text-sm">You will be redirected to the login page in</p>
+                    <div class="countdown text-4xl font-bold text-indigo-600 mt-2">
+                        <span id="countdown">5</span>
+                    </div>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="flex items-center justify-center space-x-2 text-gray-600">
+                        <i class="fas fa-check text-green-500"></i>
+                        <span>Account created successfully</span>
+                    </div>
+                    <div class="flex items-center justify-center space-x-2 text-gray-600">
+                        <i class="fas fa-check text-green-500"></i>
+                        <span>Verification email sent</span>
+                    </div>
+                    <div class="flex items-center justify-center space-x-2 text-gray-600">
+                        <i class="fas fa-check text-green-500"></i>
+                        <span>Profile setup completed</span>
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                    <a href="/login.html" class="inline-flex items-center text-indigo-600 hover:text-indigo-500">
+                        <span>Go to Login</span>
+                        <i class="fas fa-arrow-right ml-2"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Countdown timer
+        let timeLeft = 5;
+        const countdownElement = document.getElementById('countdown');
+        
+        const timer = setInterval(() => {
+            timeLeft--;
+            countdownElement.textContent = timeLeft;
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                window.location.href = '/login.html';
+            }
+        }, 1000);
+    </script>
+</body>
+</html> 

@@ -3,13 +3,11 @@ package com.humg.HotelSystemManagement.controller.HotelController.room;
 import com.humg.HotelSystemManagement.dto.request.room.RoomRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.room.RoomResponse;
-import com.humg.HotelSystemManagement.service.SystemServices.hotel.RoomService;
+import com.humg.HotelSystemManagement.service.HotelService.hotel.RoomService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

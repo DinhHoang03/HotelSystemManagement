@@ -1,20 +1,17 @@
 package com.humg.HotelSystemManagement.controller.HotelController.booking;
 
-import com.humg.HotelSystemManagement.dto.request.hotelService.HotelOfferRequest;
+import com.humg.HotelSystemManagement.dto.request.room.hotelService.HotelOfferRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
 import com.humg.HotelSystemManagement.dto.response.hotelServiceResponse.HotelOfferResponse;
-import com.humg.HotelSystemManagement.service.SystemServices.booking.HotelOfferService;
+import com.humg.HotelSystemManagement.service.HotelService.booking.HotelOfferService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/hotel-service")
+@RequestMapping("/offer")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class HotelOfferController {

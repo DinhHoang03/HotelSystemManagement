@@ -1,9 +1,9 @@
 package com.humg.HotelSystemManagement.controller.HumanController;
 
-import com.humg.HotelSystemManagement.dto.request.employee.EmployeeCreationRequest;
-import com.humg.HotelSystemManagement.dto.request.employee.EmployeeUpdateRequest;
+import com.humg.HotelSystemManagement.dto.request.humanEntity.employee.EmployeeCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.humanEntity.employee.EmployeeUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.employee.EmployeeResponse;
+import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.service.HumanService.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;

@@ -1,9 +1,9 @@
 package com.humg.HotelSystemManagement.controller.HotelController.room;
 
-import com.humg.HotelSystemManagement.dto.request.roomType.RoomTypeRequest;
+import com.humg.HotelSystemManagement.dto.request.room.roomType.RoomTypeRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.roomType.RoomTypeResponse;
-import com.humg.HotelSystemManagement.service.SystemServices.hotel.RoomTypeService;
+import com.humg.HotelSystemManagement.service.HotelService.hotel.RoomTypeService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -11,7 +11,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/room-type")
+@RequestMapping("/type")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class RoomTypeController {
@@ -37,7 +37,7 @@ public class RoomTypeController {
     }
 
     @DeleteMapping("/del/{serviceName}")
-    APIResponse delete(@RequestParam("serviceName") Long id){
+    APIResponse delete(@PathVariable("serviceName") Long id){
         roomTypeService.delete(id);
 
         return APIResponse.builder()

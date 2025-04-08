@@ -3,194 +3,659 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hotel Management System - Register</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Custom CSS -->
+    <title>Register - DinhRise Hotel</title>
+    <!-- Prevent favicon request -->
+    <link rel="icon" href="data:,">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <style>
-        body {
-            background-color: #f8f9fa;
-        }
         .register-container {
-            max-width: 500px;
-            margin: 50px auto;
-            padding: 20px;
-            background-color: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, rgba(0,0,0,0.7), rgba(0,0,0,0.3));
         }
-        .register-header {
-            text-align: center;
-            margin-bottom: 30px;
+        .input-group {
+            position: relative;
         }
-        .register-header h2 {
-            color: #333;
+        .input-group input,
+        .input-group select {
+            padding-right: 40px;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
         }
-        .form-control:focus {
-            border-color: #80bdff;
-            box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
+        .input-group i {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6B7280;
+            pointer-events: none;
+            transition: color 0.3s ease;
         }
-        .btn-register {
-            width: 100%;
-            padding: 10px;
-            font-size: 16px;
+        .input-group select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236B7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 15px center;
+            background-size: 16px;
         }
-        .alert {
-            display: none;
+        .form-input {
+            transition: all 0.3s ease;
         }
-        .password-strength {
-            height: 5px;
-            margin-top: 5px;
-            border-radius: 3px;
+        .form-input:focus {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .password-strength.weak {
-            background-color: #dc3545;
-            width: 25%;
+        .form-input:focus + .floating-label + i {
+            color: #4F46E5;
         }
-        .password-strength.medium {
-            background-color: #ffc107;
-            width: 50%;
+        .btn-primary {
+            transition: all 0.3s ease;
         }
-        .password-strength.strong {
-            background-color: #28a745;
-            width: 100%;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .floating-label {
+            transition: all 0.3s ease;
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #6B7280;
+            pointer-events: none;
+        }
+        .form-input:focus + .floating-label,
+        .form-input:not(:placeholder-shown) + .floating-label {
+            top: 0;
+            transform: translateY(-50%) scale(0.9);
+            background: white;
+            padding: 0 5px;
+            color: #4F46E5;
+        }
+        /* Password toggle button */
+        .input-group .fa-eye,
+        .input-group .fa-eye-slash {
+            pointer-events: auto;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+        .input-group .fa-eye:hover,
+        .input-group .fa-eye-slash:hover {
+            background-color: rgba(79, 70, 229, 0.1);
+            color: #4F46E5;
+        }
+        /* Form tabs */
+        .form-tab {
+            transition: all 0.3s ease;
+        }
+        .form-tab.active {
+            background-color: #4F46E5;
+            color: white;
+        }
+        .form-tab:not(.active):hover {
+            background-color: rgba(79, 70, 229, 0.1);
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <div class="register-container">
-            <div class="register-header">
-                <h2>Create Account</h2>
-                <p class="text-muted">Join our hotel management system</p>
+<body class="bg-gray-50">
+    <div class="min-h-screen flex">
+        <!-- Left Side - Image -->
+        <div class="hidden lg:flex lg:w-1/2 relative">
+            <div class="absolute inset-0 bg-black bg-opacity-50 z-10"></div>
+            <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
+                 alt="DinhRise Hotel" 
+                 class="w-full h-full object-cover">
+            <div class="absolute inset-0 flex items-center justify-center z-20 text-white px-12">
+                <div data-aos="fade-right">
+                    <h1 class="text-4xl font-bold mb-4">Join DinhRise Hotel</h1>
+                    <p class="text-xl mb-8">Experience luxury and comfort in the heart of the city</p>
+                    <div class="flex space-x-4">
+                        <div class="text-center">
+                            <i class="fas fa-star text-3xl mb-2"></i>
+                            <p>5-Star Rating</p>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-award text-3xl mb-2"></i>
+                            <p>Best Service</p>
+                        </div>
+                        <div class="text-center">
+                            <i class="fas fa-heart text-3xl mb-2"></i>
+                            <p>Guest Favorite</p>
+                        </div>
+                    </div>
+                </div>
             </div>
-            
-            <div class="alert alert-danger" id="errorAlert" role="alert"></div>
-            <div class="alert alert-success" id="successAlert" role="alert"></div>
-            
-            <form id="registerForm">
-                <div class="mb-3">
-                    <label for="username" class="form-label">Username</label>
-                    <input type="text" class="form-control" id="username" name="username" required>
+        </div>
+
+        <!-- Right Side - Register Form -->
+        <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
+            <div class="w-full max-w-md" data-aos="fade-left">
+                <div class="text-center mb-8">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo" class="h-16 mx-auto mb-4">
+                    <h2 class="text-3xl font-bold text-gray-900">Create Account</h2>
+                    <p class="text-gray-600">Choose your account type</p>
                 </div>
-                <div class="mb-3">
-                    <label for="email" class="form-label">Email</label>
-                    <input type="email" class="form-control" id="email" name="email" required>
+
+                <!-- Error Alert -->
+                <div id="errorAlert" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+                    <span class="block sm:inline" id="errorMessage"></span>
+                    <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
+                        <i class="fas fa-times cursor-pointer" onclick="hideError()"></i>
+                    </span>
                 </div>
-                <div class="mb-3">
-                    <label for="phone" class="form-label">Phone Number</label>
-                    <input type="tel" class="form-control" id="phone" name="phone" required>
+
+                <!-- Form Tabs -->
+                <div class="flex mb-6 rounded-lg overflow-hidden border border-gray-200">
+                    <button id="customerTab" class="form-tab flex-1 py-2 px-4 text-center font-medium active">
+                        <i class="fas fa-user mr-2"></i>Customer
+                    </button>
+                    <button id="employeeTab" class="form-tab flex-1 py-2 px-4 text-center font-medium">
+                        <i class="fas fa-briefcase mr-2"></i>Employee
+                    </button>
                 </div>
-                <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
-                    <input type="password" class="form-control" id="password" name="password" required>
-                    <div class="password-strength" id="passwordStrength"></div>
-                    <small class="text-muted">Password must be at least 8 characters long and contain at least one number, one uppercase letter, and one special character.</small>
+
+                <!-- Customer Registration Form -->
+                <form id="customerForm" class="space-y-6">
+                    <div class="input-group">
+                        <input type="text" 
+                               id="customerIdentityId" 
+                               name="identityId" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="customerIdentityId" class="floating-label">Identity ID</label>
+                        <i class="fas fa-id-card"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" 
+                               id="customerUsername" 
+                               name="username" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="customerUsername" class="floating-label">Username</label>
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" 
+                               id="customerName" 
+                               name="name" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="customerName" class="floating-label">Full Name</label>
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="tel" 
+                               id="customerPhone" 
+                               name="phone" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="customerPhone" class="floating-label">Phone Number</label>
+                        <i class="fas fa-phone"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="email" 
+                               id="customerEmail" 
+                               name="email" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="customerEmail" class="floating-label">Email</label>
+                        <i class="fas fa-envelope"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="date" 
+                               id="customerDob" 
+                               name="dob" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="customerDob" class="floating-label">Date of Birth</label>
+                        <i class="fas fa-calendar"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <select id="customerGender" 
+                                name="gender" 
+                                class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                            <option value="">Select Gender</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                        <label for="customerGender" class="floating-label">Gender</label>
+                        <i class="fas fa-venus-mars"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" 
+                               id="customerAddress" 
+                               name="address" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="customerAddress" class="floating-label">Address</label>
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" 
+                               id="customerPassword" 
+                               name="password" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="customerPassword" class="floating-label">Password</label>
+                        <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" onclick="togglePassword('customerPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" 
+                               id="customerConfirmPassword" 
+                               name="confirmPassword" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="customerConfirmPassword" class="floating-label">Confirm Password</label>
+                        <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" onclick="togglePassword('customerConfirmPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Register as Customer
+                    </button>
+                </form>
+
+                <!-- Employee Registration Form -->
+                <form id="employeeForm" class="space-y-6 hidden">
+                    <div class="input-group">
+                        <input type="text" 
+                               id="employeeName" 
+                               name="name" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="employeeName" class="floating-label">Full Name</label>
+                        <i class="fas fa-user-circle"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" 
+                               id="employeeUsername" 
+                               name="username" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="employeeUsername" class="floating-label">Username</label>
+                        <i class="fas fa-user"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="email" 
+                               id="employeeEmail" 
+                               name="email" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="employeeEmail" class="floating-label">Email</label>
+                        <i class="fas fa-envelope"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="tel" 
+                               id="employeePhone" 
+                               name="phone" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="employeePhone" class="floating-label">Phone Number</label>
+                        <i class="fas fa-phone"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" 
+                               id="employeeIdentityId" 
+                               name="identityId" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="employeeIdentityId" class="floating-label">Identity ID</label>
+                        <i class="fas fa-id-card"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="date" 
+                               id="employeeDob" 
+                               name="dob" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="employeeDob" class="floating-label">Date of Birth</label>
+                        <i class="fas fa-calendar"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <select id="employeeGender" 
+                                name="gender" 
+                                class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                            <option value="">Select Gender</option>
+                            <option value="MALE">Male</option>
+                            <option value="FEMALE">Female</option>
+                            <option value="OTHER">Other</option>
+                        </select>
+                        <label for="employeeGender" class="floating-label">Gender</label>
+                        <i class="fas fa-venus-mars"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="text" 
+                               id="employeeAddress" 
+                               name="address" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="employeeAddress" class="floating-label">Address</label>
+                        <i class="fas fa-map-marker-alt"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <select id="employeeRole" 
+                                name="role" 
+                                class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200">
+                            <option value="">Select Role</option>
+                            <option value="RECEPTIONIST">Receptionist</option>
+                            <option value="CLEANER">Cleaner</option>
+                            <option value="WAITER">Waiter</option>
+                            <option value="ACCOUNTANT">Accountant</option>
+                            <option value="DEPARTMENT_HEAD">Department Head</option>
+                        </select>
+                        <label for="employeeRole" class="floating-label">Role</label>
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" 
+                               id="employeePassword" 
+                               name="password" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="employeePassword" class="floating-label">Password</label>
+                        <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" onclick="togglePassword('employeePassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <div class="input-group">
+                        <input type="password" 
+                               id="employeeConfirmPassword" 
+                               name="confirmPassword" 
+                               class="form-input w-full px-4 py-3 rounded-lg border border-gray-300 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200"
+                               placeholder=" ">
+                        <label for="employeeConfirmPassword" class="floating-label">Confirm Password</label>
+                        <button type="button" class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-indigo-500" onclick="togglePassword('employeeConfirmPassword')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn-primary w-full bg-indigo-600 text-white py-3 px-4 rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                        Register as Employee
+                    </button>
+                </form>
+
+                <div class="text-center mt-6">
+                    <p class="text-sm text-gray-600">
+                        Already have an account?
+                        <a href="/login.html" class="font-medium text-indigo-600 hover:text-indigo-500">Sign in</a>
+                    </p>
                 </div>
-                <div class="mb-3">
-                    <label for="confirmPassword" class="form-label">Confirm Password</label>
-                    <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
-                </div>
-                <button type="submit" class="btn btn-primary btn-register">Create Account</button>
-            </form>
-            
-            <div class="text-center mt-3">
-                <p>Already have an account? <a href="/login.html">Sign in</a></p>
             </div>
         </div>
     </div>
 
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- API Handler -->
-    <script src="/js/api.js"></script>
-    <!-- Custom JS -->
     <script>
-        $(document).ready(function() {
-            // Password strength indicator
-            $('#password').on('input', function() {
-                const password = $(this).val();
-                const strength = checkPasswordStrength(password);
-                const strengthBar = $('#passwordStrength');
-                
-                strengthBar.removeClass('weak medium strong');
-                if (password.length === 0) {
-                    strengthBar.css('width', '0');
-                } else {
-                    strengthBar.addClass(strength);
-                }
-            });
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const icon = document.querySelector(`#${inputId} + label + button i`);
             
-            // Password strength check
-            function checkPasswordStrength(password) {
-                if (password.length < 8) return 'weak';
-                if (!password.match(/[A-Z]/) || !password.match(/[0-9]/) || !password.match(/[^A-Za-z0-9]/)) {
-                    return 'medium';
-                }
-                return 'strong';
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                icon.classList.remove('fa-eye');
+                icon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                icon.classList.remove('fa-eye-slash');
+                icon.classList.add('fa-eye');
             }
-            
-            // Handle form submission
-            $('#registerForm').on('submit', function(e) {
-                e.preventDefault();
-                
-                // Hide any previous messages
-                $('#errorAlert').hide();
-                $('#successAlert').hide();
-                
-                // Validate passwords match
-                if ($('#password').val() !== $('#confirmPassword').val()) {
-                    showError('Passwords do not match');
+        }
+
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
+        }
+
+        function hideError() {
+            document.getElementById('errorAlert').classList.add('hidden');
+        }
+
+        // Tab switching
+        document.getElementById('customerTab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('employeeTab').classList.remove('active');
+            document.getElementById('customerForm').classList.remove('hidden');
+            document.getElementById('employeeForm').classList.add('hidden');
+        });
+
+        document.getElementById('employeeTab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('customerTab').classList.remove('active');
+            document.getElementById('employeeForm').classList.remove('hidden');
+            document.getElementById('customerForm').classList.add('hidden');
+        });
+
+        // Customer Registration
+        $('#customerForm').submit(function(e) {
+            e.preventDefault();
+            hideError();
+
+            // Validate required fields
+            const requiredFields = [
+                'customerIdentityId',
+                'customerUsername',
+                'customerName',
+                'customerPhone',
+                'customerEmail',
+                'customerDob',
+                'customerGender',
+                'customerAddress',
+                'customerPassword',
+                'customerConfirmPassword'
+            ];
+
+            for (const fieldId of requiredFields) {
+                if (!$(`#${fieldId}`).val()) {
+                    showError(`Please fill in all required fields`);
                     return;
                 }
-                
-                // Validate password strength
-                if (checkPasswordStrength($('#password').val()) === 'weak') {
-                    showError('Password is too weak. Please follow the password requirements.');
-                    return;
-                }
-                
-                // Get form data
-                const formData = {
-                    username: $('#username').val(),
-                    email: $('#email').val(),
-                    phone: $('#phone').val(),
-                    password: $('#password').val()
-                };
-                
-                // Send registration request
-                $.ajax({
-                    url: '/api/customers',
-                    method: 'POST',
-                    contentType: 'application/json',
-                    data: JSON.stringify(formData),
-                    success: function(response) {
-                        showSuccess('Registration successful! Redirecting to login page...');
-                        setTimeout(() => {
-                            window.location.href = '/login.html';
-                        }, 2000);
-                    },
-                    error: function(xhr) {
-                        if (xhr.responseJSON && xhr.responseJSON.message) {
-                            showError(xhr.responseJSON.message);
+            }
+
+            // Validate password match
+            if ($('#customerPassword').val() !== $('#customerConfirmPassword').val()) {
+                showError('Passwords do not match');
+                return;
+            }
+
+            // Validate password strength
+            const password = $('#customerPassword').val();
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+
+            // Show loading state
+            const submitButton = $(this).find('button[type="submit"]');
+            const originalText = submitButton.text();
+            submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Processing...');
+
+            // Prepare form data
+            const formData = {
+                identityId: $('#customerIdentityId').val(),
+                username: $('#customerUsername').val(),
+                name: $('#customerName').val(),
+                phone: $('#customerPhone').val(),
+                email: $('#customerEmail').val(),
+                dob: $('#customerDob').val(),
+                gender: $('#customerGender').val(),
+                address: $('#customerAddress').val(),
+                role: 'CUSTOMER',
+                password: $('#customerPassword').val()
+            };
+
+            // Send registration request
+            $.ajax({
+                url: '/customer/register',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    window.location.href = '/registration-success.html';
+                },
+                error: function(xhr) {
+                    console.error('Registration error:', xhr);
+                    let errorMessage = 'An error occurred. Please try again.';
+                    
+                    if (xhr.status === 400) {
+                        const response = xhr.responseJSON;
+                        if (response && response.message) {
+                            errorMessage = response.message;
                         } else {
-                            showError('An error occurred during registration');
+                            errorMessage = 'Invalid input data. Please check your information.';
                         }
+                    } else if (xhr.status === 401) {
+                        errorMessage = 'Registration service is currently unavailable. Please try again later.';
+                    } else if (xhr.status === 403) {
+                        errorMessage = 'Access denied. Please try again.';
+                    } else if (xhr.status === 404) {
+                        errorMessage = 'Service not found. Please try again later.';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error. Please try again later.';
                     }
-                });
+                    
+                    showError(errorMessage);
+                },
+                complete: function() {
+                    // Reset button state
+                    submitButton.prop('disabled', false).text(originalText);
+                }
             });
-            
-            // Function to show error message
-            function showError(message) {
-                $('#errorAlert').text(message).show();
+        });
+
+        // Employee Registration
+        $('#employeeForm').submit(function(e) {
+            e.preventDefault();
+            hideError();
+
+            // Validate required fields
+            const requiredFields = [
+                'employeeName',
+                'employeeUsername',
+                'employeeEmail',
+                'employeePhone',
+                'employeeIdentityId',
+                'employeeDob',
+                'employeeGender',
+                'employeeAddress',
+                'employeeRole',
+                'employeePassword',
+                'employeeConfirmPassword'
+            ];
+
+            for (const fieldId of requiredFields) {
+                if (!$(`#${fieldId}`).val()) {
+                    showError(`Please fill in all required fields`);
+                    return;
+                }
             }
-            
-            // Function to show success message
-            function showSuccess(message) {
-                $('#successAlert').text(message).show();
+
+            // Validate password match
+            if ($('#employeePassword').val() !== $('#employeeConfirmPassword').val()) {
+                showError('Passwords do not match');
+                return;
             }
+
+            // Validate password strength
+            const password = $('#employeePassword').val();
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+
+            // Show loading state
+            const submitButton = $(this).find('button[type="submit"]');
+            const originalText = submitButton.text();
+            submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Processing...');
+
+            // Prepare form data
+            const formData = {
+                name: $('#employeeName').val(),
+                username: $('#employeeUsername').val(),
+                email: $('#employeeEmail').val(),
+                phone: $('#employeePhone').val(),
+                identityId: $('#employeeIdentityId').val(),
+                dob: $('#employeeDob').val(),
+                gender: $('#employeeGender').val(),
+                address: $('#employeeAddress').val(),
+                role: $('#employeeRole').val(),
+                password: $('#employeePassword').val()
+            };
+
+            // Send registration request
+            $.ajax({
+                url: '/employee/register',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    window.location.href = '/registration-success.html';
+                },
+                error: function(xhr) {
+                    console.error('Registration error:', xhr);
+                    let errorMessage = 'An error occurred. Please try again.';
+                    
+                    if (xhr.status === 400) {
+                        const response = xhr.responseJSON;
+                        if (response && response.message) {
+                            errorMessage = response.message;
+                        } else {
+                            errorMessage = 'Invalid input data. Please check your information.';
+                        }
+                    } else if (xhr.status === 401) {
+                        errorMessage = 'Registration service is currently unavailable. Please try again later.';
+                    } else if (xhr.status === 403) {
+                        errorMessage = 'Access denied. Please try again.';
+                    } else if (xhr.status === 404) {
+                        errorMessage = 'Service not found. Please try again later.';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error. Please try again later.';
+                    }
+                    
+                    showError(errorMessage);
+                },
+                complete: function() {
+                    // Reset button state
+                    submitButton.prop('disabled', false).text(originalText);
+                }
+            });
         });
     </script>
 </body>

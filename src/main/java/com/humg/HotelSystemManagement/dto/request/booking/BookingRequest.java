@@ -1,7 +1,7 @@
 package com.humg.HotelSystemManagement.dto.request.booking;
 
-import com.humg.HotelSystemManagement.dto.request.bookingItems.BookingItemRequest;
-import com.humg.HotelSystemManagement.dto.request.bookingRoom.BookingRoomRequest;
+import com.humg.HotelSystemManagement.dto.request.booking.bookingItems.BookingItemRequest;
+import com.humg.HotelSystemManagement.dto.request.booking.bookingRoom.BookingRoomRequest;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -14,6 +14,6 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingRequest {
     String customerId;
-    List<BookingRoomRequest> bookingRoomRequest;
+    List<BookingRoomRequest> bookingRoomRequests;
     List<BookingItemRequest> bookingItemRequests;
 }

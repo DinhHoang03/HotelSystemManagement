@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.service.HumanService;
 
-import com.humg.HotelSystemManagement.dto.response.employee.EmployeeResponse;
+import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;

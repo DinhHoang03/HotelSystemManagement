@@ -1,7 +1,7 @@
 package com.humg.HotelSystemManagement.dto.response.booking;
 
-import com.humg.HotelSystemManagement.entity.booking.BookingItems;
-import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
+import com.humg.HotelSystemManagement.dto.response.booking.bookingItems.BookingItemResponse;
+import com.humg.HotelSystemManagement.dto.response.booking.bookingRoom.BookingRoomResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -22,6 +22,6 @@ public class BookingResponse {
     Long totalBookingServicePrice;
     Long grandTotal;
     String customerName;
-    List<BookingRoom> bookingRooms;
-    List<BookingItems> bookingItems;
+    List<BookingRoomResponse> bookingRooms;
+    List<BookingItemResponse> bookingItems;
 }

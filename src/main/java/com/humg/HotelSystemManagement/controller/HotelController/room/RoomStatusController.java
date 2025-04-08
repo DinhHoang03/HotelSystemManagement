@@ -1,9 +1,9 @@
 package com.humg.HotelSystemManagement.controller.HotelController.room;
 
-import com.humg.HotelSystemManagement.dto.request.roomServiceStatus.RoomStatusRequest;
+import com.humg.HotelSystemManagement.dto.request.room.roomServiceStatus.RoomStatusRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.roomServiceStatus.RoomStatusResponse;
-import com.humg.HotelSystemManagement.service.SystemServices.hotel.RoomStatusService;
+import com.humg.HotelSystemManagement.service.HotelService.hotel.RoomStatusService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

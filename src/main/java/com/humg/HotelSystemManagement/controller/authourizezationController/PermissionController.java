@@ -1,9 +1,9 @@
 package com.humg.HotelSystemManagement.controller.authourizezationController;
 
-import com.humg.HotelSystemManagement.dto.request.permission.PermissionRequest;
+import com.humg.HotelSystemManagement.dto.request.security.authorization.PermissionRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.authorizezation.PermissionResponse;
-import com.humg.HotelSystemManagement.service.SystemServices.PermissionService;
+import com.humg.HotelSystemManagement.dto.response.security.authorizezation.PermissionResponse;
+import com.humg.HotelSystemManagement.service.SecurityService.PermissionService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

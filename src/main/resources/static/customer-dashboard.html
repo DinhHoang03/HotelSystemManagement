@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DinhRise Hotel - Welcome</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Swiper JS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Auth Script -->
+    <script src="/js/auth.js"></script>
+    <style>
+        .hero-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
+        }
+        .swiper {
+            width: 100%;
+            height: 100vh;
+        }
+        .swiper-slide {
+            width: 100%;
+            height: 100%;
+            position: relative;
+        }
+        .swiper-slide img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .swiper-button-next,
+        .swiper-button-prev {
+            color: white;
+            background: rgba(0, 0, 0, 0.3);
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+        }
+        .swiper-button-next:after,
+        .swiper-button-prev:after {
+            font-size: 20px;
+        }
+        .swiper-pagination-bullet {
+            background: white;
+            opacity: 0.5;
+        }
+        .swiper-pagination-bullet-active {
+            background: white;
+            opacity: 1;
+        }
+        .feature-card {
+            transition: all 0.3s ease;
+        }
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .gallery-item {
+            transition: all 0.3s ease;
+        }
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+        .parallax {
+            background-attachment: fixed;
+            background-position: center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+        .staff-card {
+            transition: all 0.3s ease;
+        }
+        .staff-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .staff-image {
+            width: 200px;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo">
+                        <span class="ml-2 text-xl font-bold text-gray-800">DinhRise Hotel</span>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="relative">
+                        <button id="userMenuButton" class="flex items-center text-gray-700 hover:text-gray-900">
+                            <i class="fas fa-user-circle text-2xl mr-2"></i>
+                            <span id="usernameDisplay" class="mr-2">Loading...</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                            <a href="/my-account.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                            <a href="/my-bookings.html" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">My Bookings</a>
+                            <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section with Swiper -->
+    <div class="swiper">
+        <div class="swiper-wrapper">
+            <div class="swiper-slide">
+                <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" alt="DinhRise Hotel">
+                <div class="absolute inset-0 hero-overlay"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center text-white px-4" data-aos="fade-up">
+                        <h1 class="text-4xl md:text-6xl font-extrabold mb-4">Welcome to DinhRise Hotel</h1>
+                        <p class="text-xl md:text-2xl mb-8">Experience luxury and comfort in the heart of the city</p>
+                        <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
+                            Book Your Stay
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" alt="Luxury Suite">
+                <div class="absolute inset-0 hero-overlay"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center text-white px-4" data-aos="fade-up">
+                        <h1 class="text-4xl md:text-6xl font-extrabold mb-4">Luxury Suites</h1>
+                        <p class="text-xl md:text-2xl mb-8">Indulge in our premium accommodations</p>
+                        <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
+                            View Rooms
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="swiper-slide">
+                <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" alt="Pool">
+                <div class="absolute inset-0 hero-overlay"></div>
+                <div class="absolute inset-0 flex items-center justify-center">
+                    <div class="text-center text-white px-4" data-aos="fade-up">
+                        <h1 class="text-4xl md:text-6xl font-extrabold mb-4">World-Class Amenities</h1>
+                        <p class="text-xl md:text-2xl mb-8">Relax and rejuvenate in style</p>
+                        <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
+                            Explore Amenities
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="swiper-pagination"></div>
+        <div class="swiper-button-next"></div>
+        <div class="swiper-button-prev"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <!-- About Section -->
+        <div class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">About DinhRise Hotel</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div>
+                    <p class="text-gray-600 mb-4">DinhRise Hotel is a premier luxury hotel offering an exceptional experience for both business and leisure travelers. Our commitment to excellence and attention to detail ensures that every guest enjoys a memorable stay.</p>
+                    <p class="text-gray-600">Located in the heart of the city, we provide easy access to major attractions, business districts, and entertainment venues.</p>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div class="feature-card bg-white p-6 rounded-lg shadow-md">
+                        <i class="fas fa-wifi text-3xl text-indigo-600 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Free WiFi</h3>
+                        <p class="text-gray-600">High-speed internet access throughout the hotel</p>
+                    </div>
+                    <div class="feature-card bg-white p-6 rounded-lg shadow-md">
+                        <i class="fas fa-utensils text-3xl text-indigo-600 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Restaurant</h3>
+                        <p class="text-gray-600">Fine dining with international cuisine</p>
+                    </div>
+                    <div class="feature-card bg-white p-6 rounded-lg shadow-md">
+                        <i class="fas fa-swimming-pool text-3xl text-indigo-600 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Pool</h3>
+                        <p class="text-gray-600">Outdoor swimming pool with city views</p>
+                    </div>
+                    <div class="feature-card bg-white p-6 rounded-lg shadow-md">
+                        <i class="fas fa-spa text-3xl text-indigo-600 mb-4"></i>
+                        <h3 class="text-lg font-semibold text-gray-800">Spa</h3>
+                        <p class="text-gray-600">Relaxing spa treatments and massages</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Staff Section -->
+        <div class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Our Professional Staff</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="staff-card bg-white p-6 rounded-lg shadow-md text-center">
+                    <img src="https://images.unsplash.com/photo-1559839734-2b71ea197ec2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Reception Staff" class="staff-image mx-auto mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Sarah Johnson</h3>
+                    <p class="text-indigo-600 mb-2">Reception Manager</p>
+                    <p class="text-gray-600">With over 10 years of experience in hospitality, Sarah ensures your check-in process is smooth and welcoming.</p>
+                </div>
+                <div class="staff-card bg-white p-6 rounded-lg shadow-md text-center">
+                    <img src="https://images.unsplash.com/photo-1560250097-0b93528c311a?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Concierge" class="staff-image mx-auto mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Michael Chen</h3>
+                    <p class="text-indigo-600 mb-2">Chief Concierge</p>
+                    <p class="text-gray-600">Michael's extensive knowledge of the city helps guests discover the best local experiences and attractions.</p>
+                </div>
+                <div class="staff-card bg-white p-6 rounded-lg shadow-md text-center">
+                    <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=80" alt="Housekeeping" class="staff-image mx-auto mb-4">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Emma Rodriguez</h3>
+                    <p class="text-indigo-600 mb-2">Housekeeping Supervisor</p>
+                    <p class="text-gray-600">Emma leads our housekeeping team to maintain the highest standards of cleanliness and comfort in your room.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Parallax Section -->
+        <div class="relative h-96 mb-16 parallax" style="background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');">
+            <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+            <div class="relative h-full flex items-center justify-center">
+                <div class="text-center text-white px-4" data-aos="fade-up">
+                    <h2 class="text-3xl font-bold mb-4">Experience Luxury</h2>
+                    <p class="text-xl mb-8">Book your stay at DinhRise Hotel today</p>
+                    <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
+                        Book Now
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Gallery Section -->
+        <div class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8">Our Gallery</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="gallery-item relative h-64 rounded-lg overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" alt="Lobby" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                        <span class="text-white text-lg font-semibold">Luxury Lobby</span>
+                    </div>
+                </div>
+                <div class="gallery-item relative h-64 rounded-lg overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" alt="Restaurant" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                        <span class="text-white text-lg font-semibold">Fine Dining</span>
+                    </div>
+                </div>
+                <div class="gallery-item relative h-64 rounded-lg overflow-hidden">
+                    <img src="https://images.unsplash.com/photo-1564501049412-61c2a3083791?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" alt="Pool" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center">
+                        <span class="text-white text-lg font-semibold">Swimming Pool</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="bg-white rounded-lg shadow-md" data-aos="fade-up">
+            <div class="p-6">
+                <h2 class="text-2xl font-bold text-gray-900 mb-4">My Bookings</h2>
+                <div class="space-y-4" id="recentBookings">
+                    <!-- Bookings will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Initialize Swiper
+        const swiper = new Swiper('.swiper', {
+            loop: true,
+            autoplay: {
+                delay: 5000,
+                disableOnInteraction: false,
+            },
+            effect: 'fade',
+            fadeEffect: {
+                crossFade: true
+            },
+            pagination: {
+                el: '.swiper-pagination',
+                clickable: true,
+            },
+            navigation: {
+                nextEl: '.swiper-button-next',
+                prevEl: '.swiper-button-prev',
+            },
+        });
+
+        $(document).ready(function() {
+            // Check authentication
+            const payload = checkAuth();
+            if (!payload) return;
+
+            // Set username
+            $('#usernameDisplay').text(payload.sub);
+
+            // Toggle user menu
+            $('#userMenuButton').click(function() {
+                $('#userMenu').toggleClass('hidden');
+            });
+
+            // Close menu when clicking outside
+            $(document).click(function(e) {
+                if (!$(e.target).closest('#userMenuButton, #userMenu').length) {
+                    $('#userMenu').addClass('hidden');
+                }
+            });
+
+            // Load recent bookings
+            $.ajax({
+                url: '/api/bookings/recent',
+                method: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    if (response.result && response.result.length > 0) {
+                        const bookingsHtml = response.result.map(booking => `
+                            <div class="booking-card bg-white rounded-lg shadow-md p-4 border border-gray-200" data-aos="fade-up">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="text-lg font-semibold text-gray-800">Booking #${booking.id}</h3>
+                                        <p class="text-gray-600">${booking.roomType || 'Standard Room'}</p>
+                                        <div class="mt-2 flex items-center text-sm text-gray-500">
+                                            <i class="fas fa-calendar-check mr-2"></i>
+                                            ${new Date(booking.checkInDate).toLocaleDateString()} - ${new Date(booking.checkOutDate).toLocaleDateString()}
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center">
+                                        <span class="px-3 py-1 rounded-full text-sm font-semibold ${getStatusClass(booking.status)}">
+                                            ${booking.status}
+                                        </span>
+                                        <div class="ml-4 flex space-x-2">
+                                            <button onclick="viewBooking('${booking.id}')" class="text-indigo-600 hover:text-indigo-900">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                            ${booking.status === 'PENDING' ? `
+                                                <button onclick="cancelBooking('${booking.id}')" class="text-red-600 hover:text-red-900">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            ` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="mt-4 flex justify-between items-center">
+                                    <div class="text-sm text-gray-500">
+                                        <i class="fas fa-dollar-sign mr-1"></i>
+                                        Total: $${booking.totalPrice}
+                                    </div>
+                                    <div class="text-sm text-gray-500">
+                                        <i class="fas fa-clock mr-1"></i>
+                                        Booked on: ${new Date(booking.createdAt).toLocaleDateString()}
+                                    </div>
+                                </div>
+                            </div>
+                        `).join('');
+                        $('#recentBookings').html(bookingsHtml);
+                    } else {
+                        $('#recentBookings').html(`
+                            <div class="text-center py-8" data-aos="fade-up">
+                                <i class="fas fa-calendar-times text-4xl text-gray-400 mb-4"></i>
+                                <p class="text-gray-500">No recent bookings found</p>
+                                <a href="/book-room.html" class="mt-4 inline-block bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
+                                    Book a Room Now
+                                </a>
+                            </div>
+                        `);
+                    }
+                },
+                error: function() {
+                    $('#recentBookings').html(`
+                        <div class="text-center py-8" data-aos="fade-up">
+                            <i class="fas fa-exclamation-circle text-4xl text-red-400 mb-4"></i>
+                            <p class="text-red-500">Error loading bookings</p>
+                        </div>
+                    `);
+                }
+            });
+        });
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 'CONFIRMED':
+                    return 'bg-green-100 text-green-800';
+                case 'PENDING':
+                    return 'bg-yellow-100 text-yellow-800';
+                case 'CANCELLED':
+                    return 'bg-red-100 text-red-800';
+                case 'COMPLETED':
+                    return 'bg-blue-100 text-blue-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function viewBooking(id) {
+            window.location.href = `/booking-details.html?id=${id}`;
+        }
+
+        function cancelBooking(id) {
+            if (confirm('Are you sure you want to cancel this booking?')) {
+                $.ajax({
+                    url: `/api/bookings/${id}/cancel`,
+                    method: 'POST',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    },
+                    success: function() {
+                        location.reload();
+                    },
+                    error: function() {
+                        alert('Failed to cancel booking');
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html> 

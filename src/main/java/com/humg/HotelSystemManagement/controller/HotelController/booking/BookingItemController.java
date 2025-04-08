@@ -1,9 +1,9 @@
 package com.humg.HotelSystemManagement.controller.HotelController.booking;
 
-import com.humg.HotelSystemManagement.dto.request.bookingItems.BookingItemRequest;
+import com.humg.HotelSystemManagement.dto.request.booking.bookingItems.BookingItemRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.bookingItems.BookingItemResponse;
-import com.humg.HotelSystemManagement.service.SystemServices.booking.BookingItemsService;
+import com.humg.HotelSystemManagement.dto.response.booking.bookingItems.BookingItemResponse;
+import com.humg.HotelSystemManagement.service.HotelService.booking.BookingItemsService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

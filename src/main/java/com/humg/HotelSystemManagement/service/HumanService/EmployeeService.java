@@ -1,16 +1,16 @@
 package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.security.SecurityConfig;
-import com.humg.HotelSystemManagement.dto.request.employee.EmployeeCreationRequest;
-import com.humg.HotelSystemManagement.dto.request.employee.EmployeeUpdateRequest;
-import com.humg.HotelSystemManagement.dto.response.employee.EmployeeResponse;
+import com.humg.HotelSystemManagement.dto.request.humanEntity.employee.EmployeeCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.humanEntity.employee.EmployeeUpdateRequest;
+import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.EmployeeMapper;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
-import com.humg.HotelSystemManagement.service.IGeneralCRUDService;
+import com.humg.HotelSystemManagement.service.Interfaces.IGeneralCRUDService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -34,7 +34,6 @@ public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, Em
     EmployeeMapper employeeMapper;
     SecurityConfig securityConfig;
 
-    @PreAuthorize("!hasRole('CUSTOMER') and !hasRole('ADMIN')")
     public EmployeeResponse create(EmployeeCreationRequest request) {
         Employee employee;
 

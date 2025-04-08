@@ -37,7 +37,7 @@ public class Room {
 //    List<BookingRoom> bookingRooms = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_room_id", nullable = false)
+    @JoinColumn(name = "booking_room_id", nullable = true)
     BookingRoom bookingRoom;
 
 //    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, fetch = FetchType.LAZY,orphanRemoval = true)

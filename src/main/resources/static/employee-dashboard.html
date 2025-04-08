@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard - DinhRise Hotel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Auth Script -->
+    <script src="/js/auth.js"></script>
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+        .main-content {
+            transition: all 0.3s ease;
+        }
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .notification-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background-color: #EF4444;
+            color: white;
+            border-radius: 50%;
+            padding: 2px 6px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Sidebar -->
+    <div class="sidebar fixed h-screen bg-white shadow-lg w-64" id="sidebar">
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo" class="h-8 w-auto">
+                    <span class="ml-2 text-xl font-bold text-gray-800 sidebar-text">DinhRise Hotel</span>
+                </div>
+                <button id="toggleSidebar" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="space-y-2">
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100 active">
+                    <i class="fas fa-home w-6"></i>
+                    <span class="ml-3 sidebar-text">Dashboard</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-calendar-check w-6"></i>
+                    <span class="ml-3 sidebar-text">Check-in/Check-out</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bed w-6"></i>
+                    <span class="ml-3 sidebar-text">Room Management</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-concierge-bell w-6"></i>
+                    <span class="ml-3 sidebar-text">Services</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bell w-6"></i>
+                    <span class="ml-3 sidebar-text">Notifications</span>
+                    <span class="notification-badge">3</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-user w-6"></i>
+                    <span class="ml-3 sidebar-text">Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content ml-64 p-8" id="mainContent">
+        <!-- Top Navigation -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Employee Dashboard</h1>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button id="userMenuButton" class="flex items-center text-gray-700 hover:text-gray-900">
+                        <i class="fas fa-user-circle text-2xl mr-2"></i>
+                        <span id="usernameDisplay" class="mr-2">Loading...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                        <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
+                        <i class="fas fa-bed text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Available Rooms</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="availableRooms">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-calendar-check text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Today's Check-ins</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="todayCheckins">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <i class="fas fa-calendar-times text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Today's Check-outs</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="todayCheckouts">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-red-100 text-red-600">
+                        <i class="fas fa-exclamation-circle text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Pending Tasks</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="pendingTasks">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Bookings -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold text-gray-800">Recent Bookings</h2>
+                <a href="#" class="text-indigo-600 hover:text-indigo-800">View All</a>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Booking ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Guest Name</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-in</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check-out</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200" id="recentBookings">
+                        <!-- Bookings will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tasks and Notifications -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <!-- Tasks -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Today's Tasks</h2>
+                <div class="space-y-4" id="todayTasks">
+                    <!-- Tasks will be loaded here -->
+                </div>
+            </div>
+
+            <!-- Notifications -->
+            <div class="bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-bold text-gray-800 mb-6">Recent Notifications</h2>
+                <div class="space-y-4" id="recentNotifications">
+                    <!-- Notifications will be loaded here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Check authentication
+        $(document).ready(function() {
+            checkAuth();
+            loadDashboardData();
+        });
+
+        // Toggle sidebar
+        $('#toggleSidebar').click(function() {
+            $('#sidebar').toggleClass('collapsed');
+            $('#mainContent').toggleClass('expanded');
+        });
+
+        // Toggle user menu
+        $('#userMenuButton').click(function() {
+            $('#userMenu').toggleClass('hidden');
+        });
+
+        // Load dashboard data
+        function loadDashboardData() {
+            // Load available rooms
+            $.ajax({
+                url: '/api/rooms/available',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    $('#availableRooms').text(response.length);
+                }
+            });
+
+            // Load today's check-ins
+            $.ajax({
+                url: '/api/bookings/today/checkins',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    $('#todayCheckins').text(response.length);
+                }
+            });
+
+            // Load today's check-outs
+            $.ajax({
+                url: '/api/bookings/today/checkouts',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    $('#todayCheckouts').text(response.length);
+                }
+            });
+
+            // Load pending tasks
+            $.ajax({
+                url: '/api/tasks/pending',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    $('#pendingTasks').text(response.length);
+                }
+            });
+
+            // Load recent bookings
+            $.ajax({
+                url: '/api/bookings/recent',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    const bookingsHtml = response.map(booking => `
+                        <tr>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.id}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.guestName}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.roomNumber}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.checkInDate}</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${booking.checkOutDate}</td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${getStatusClass(booking.status)}">
+                                    ${booking.status}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                <button class="text-indigo-600 hover:text-indigo-900" onclick="handleBookingAction('${booking.id}')">
+                                    <i class="fas fa-ellipsis-v"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    `).join('');
+                    $('#recentBookings').html(bookingsHtml);
+                }
+            });
+
+            // Load today's tasks
+            $.ajax({
+                url: '/api/tasks/today',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    const tasksHtml = response.map(task => `
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                            <div>
+                                <h3 class="text-sm font-medium text-gray-900">${task.title}</h3>
+                                <p class="text-sm text-gray-500">${task.description}</p>
+                            </div>
+                            <button class="text-green-600 hover:text-green-800" onclick="completeTask('${task.id}')">
+                                <i class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    `).join('');
+                    $('#todayTasks').html(tasksHtml);
+                }
+            });
+
+            // Load recent notifications
+            $.ajax({
+                url: '/api/notifications/recent',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    const notificationsHtml = response.map(notification => `
+                        <div class="flex items-start p-4 bg-gray-50 rounded-lg">
+                            <div class="flex-shrink-0">
+                                <i class="fas ${getNotificationIcon(notification.type)} text-${getNotificationColor(notification.type)}-600"></i>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-gray-900">${notification.title}</p>
+                                <p class="text-sm text-gray-500">${notification.message}</p>
+                                <p class="text-xs text-gray-400 mt-1">${notification.timestamp}</p>
+                            </div>
+                        </div>
+                    `).join('');
+                    $('#recentNotifications').html(notificationsHtml);
+                }
+            });
+        }
+
+        // Helper functions
+        function getStatusClass(status) {
+            switch(status) {
+                case 'CHECKED_IN':
+                    return 'bg-green-100 text-green-800';
+                case 'CHECKED_OUT':
+                    return 'bg-gray-100 text-gray-800';
+                case 'PENDING':
+                    return 'bg-yellow-100 text-yellow-800';
+                default:
+                    return 'bg-gray-100 text-gray-800';
+            }
+        }
+
+        function getNotificationIcon(type) {
+            switch(type) {
+                case 'BOOKING':
+                    return 'fa-calendar-check';
+                case 'TASK':
+                    return 'fa-tasks';
+                case 'ALERT':
+                    return 'fa-exclamation-circle';
+                default:
+                    return 'fa-bell';
+            }
+        }
+
+        function getNotificationColor(type) {
+            switch(type) {
+                case 'BOOKING':
+                    return 'blue';
+                case 'TASK':
+                    return 'green';
+                case 'ALERT':
+                    return 'red';
+                default:
+                    return 'gray';
+            }
+        }
+
+        function handleBookingAction(bookingId) {
+            // Implement booking action logic
+            console.log('Handling booking action for:', bookingId);
+        }
+
+        function completeTask(taskId) {
+            // Implement task completion logic
+            console.log('Completing task:', taskId);
+        }
+    </script>
+</body>
+</html> 

@@ -1,9 +1,9 @@
 package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.security.SecurityConfig;
-import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
-import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
-import com.humg.HotelSystemManagement.dto.response.customer.CustomerResponse;
+import com.humg.HotelSystemManagement.dto.request.humanEntity.customer.CustomerCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.humanEntity.customer.CustomerUpdateRequest;
+import com.humg.HotelSystemManagement.dto.response.humanEntity.customer.CustomerResponse;
 import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
@@ -11,7 +11,7 @@ import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.CustomerMapper;
 import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
-import com.humg.HotelSystemManagement.service.IGeneralCRUDService;
+import com.humg.HotelSystemManagement.service.Interfaces.IGeneralCRUDService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
