@@ -16,6 +16,8 @@
     <!-- Flatpickr for date selection -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Auth Script -->
     <script src="/js/auth.js"></script>
     <style>
@@ -850,9 +852,20 @@
             const selectedRooms = JSON.parse(localStorage.getItem('selectedRooms') || '[]');
             const selectedServices = JSON.parse(localStorage.getItem('selectedServices') || '[]');
             const userId = localStorage.getItem('userId');
+            const token = localStorage.getItem('token');
+
+            console.log('Selected Rooms:', selectedRooms);
+            console.log('Selected Services:', selectedServices);
+            console.log('User ID:', userId);
+            console.log('Token available:', !!token);
 
             if (!userId) {
                 alert('Please login to complete booking');
+                return;
+            }
+
+            if (!token) {
+                alert('Please login again to complete your booking');
                 return;
             }
 
@@ -862,8 +875,38 @@
             }
 
             // Lấy danh sách bookingRoomIds và bookingItemIds
-            const bookingRoomIds = selectedRooms.map(room => room.bookingRoomId);
-            const bookingItemIds = selectedServices.map(service => service.bookingItemId);
+            const bookingRoomIds = selectedRooms.map(room => {
+                console.log('Room:', room);
+                if (!room.bookingRoomId) {
+                    console.error('Missing bookingRoomId for room:', room);
+                    return null;
+                }
+                return room.bookingRoomId;
+            }).filter(id => id !== null);
+
+            const bookingItemIds = selectedServices.map(service => {
+                console.log('Service:', service);
+                if (!service.bookingItemId) {
+                    console.error('Missing bookingItemId for service:', service);
+                    return null;
+                }
+                return service.bookingItemId;
+            }).filter(id => id !== null);
+
+            console.log('Booking Room IDs:', bookingRoomIds);
+            console.log('Booking Item IDs:', bookingItemIds);
+
+            // Kiểm tra xem có bookingRoomIds không
+            if (bookingRoomIds.length === 0) {
+                alert('No valid room bookings found. Please select a room first.');
+                return;
+            }
+
+            // Kiểm tra xem có bookingRoomId nào là null hoặc undefined không
+            if (bookingRoomIds.some(id => !id)) {
+                alert('Invalid room booking data. Please try selecting rooms again.');
+                return;
+            }
 
             // Tạo request mới
             const request = {
@@ -874,11 +917,15 @@
 
             console.log('Booking request:', request);
 
+            // Thêm tiền tố "Bearer " vào token nếu chưa có
+            const authToken = token.startsWith('Bearer ') ? token : `Bearer ${token}`;
+            console.log('Using auth token:', authToken);
+
             $.ajax({
                 url: '/booking/create',
                 type: 'POST',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Authorization': authToken,
                     'Content-Type': 'application/json'
                 },
                 data: JSON.stringify(request),
@@ -899,7 +946,7 @@
                                 localStorage.removeItem('selectedRooms');
                                 localStorage.removeItem('selectedServices');
                                 // Chuyển hướng đến trang my-booking
-                                window.location.href = '/my-booking';
+                                window.location.href = '/my-bookings.html';
                             }
                         });
                     } else {
@@ -912,9 +959,16 @@
                 },
                 error: function(xhr) {
                     console.error('Error creating booking:', xhr);
+                    
+                    let errorMessage = 'An error occurred while creating your booking. Please try again.';
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    
                     Swal.fire({
                         title: 'Error!',
-                        text: 'An error occurred while creating your booking. Please try again.',
+                        text: errorMessage,
                         icon: 'error'
                     });
                 }

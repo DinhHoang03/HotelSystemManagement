@@ -21,5 +21,5 @@ public interface BookingRoomRepository extends JpaRepository<BookingRoom, String
                                                           @Param("checkOutDate") LocalDate checkOutDate);
 
     List<BookingRoom> findByUsernameAndBookingRoomIdIn(String username, List<String> bookingItemsId);
-    //void deleteByBookingIsNullAndCreatedDateBefore(LocalDateTime threshold);
+    int deleteByBookingIsNull();
 }

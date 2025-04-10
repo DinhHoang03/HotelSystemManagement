@@ -216,9 +216,9 @@ public class BookingService{
 
         if (bookingRoomIds != null && !bookingRoomIds.isEmpty()) {
             bookingRoomList = bookingRoomRepository.findByUsernameAndBookingRoomIdIn(username, bookingRoomIds);
-            if (bookingRoomList.size() != bookingRoomIds.size()) {
-                throw new AppException(AppErrorCode.INVALID_BOOKING_ROOM_ID);
-            }
+//            if (bookingRoomList.size() != bookingRoomIds.size()) {
+//                throw new AppException(AppErrorCode.INVALID_BOOKING_ROOM_ID);
+//            }
             bookingRoomList.forEach(br -> System.out.println("BookingRoom ID: " + br.getBookingRoomId() + ", Rooms: " + br.getRooms()));
 
             for (BookingRoom bookingRoom : bookingRoomList) {
@@ -247,9 +247,9 @@ public class BookingService{
 
         if (bookingItemIds != null && !bookingItemIds.isEmpty()) {
             bookingItemList = bookingItemsRepository.findByUsernameAndBookingItemIdIn(username, bookingItemIds);
-            if (bookingItemList.size() != bookingItemIds.size()) {
-                throw new AppException(AppErrorCode.INVALID_BOOKING_ITEM_ID); // Sửa mã lỗi
-            }
+//            if (bookingItemList.size() != bookingItemIds.size()) {
+//                throw new AppException(AppErrorCode.INVALID_BOOKING_ITEM_ID); // Sửa mã lỗi
+//            }
 
             for (BookingItems bookingItem : bookingItemList) {
                 bookingItem.setBooking(savedBooking);
