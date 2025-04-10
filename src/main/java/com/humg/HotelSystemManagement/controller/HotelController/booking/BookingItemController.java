@@ -7,24 +7,35 @@ import com.humg.HotelSystemManagement.service.HotelService.booking.BookingItemsS
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/booking-item")
+@RequestMapping("/items")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BookingItemController {
     BookingItemsService bookingItemsService;
 
     @PostMapping("/create")
-    public APIResponse<BookingItemResponse> createOrder(@RequestBody BookingItemRequest request) {
-        var result = bookingItemsService.createOrder(request);
+    public APIResponse<BookingItemResponse> createOrder(
+            @RequestBody BookingItemRequest request,
+            @AuthenticationPrincipal Jwt principal
+    ) {
+        String username = principal.getSubject();
+        var result = bookingItemsService.createOrder(request, username);
         return APIResponse.<BookingItemResponse>builder()
                 .result(result)
                 .message("Create order successfully")
+                .build();
+    }
+
+    @DeleteMapping("/del/{id}")
+    APIResponse<String> cancelBooking(@PathVariable("id") String id) {
+        bookingItemsService.deleteBookingItems(id);
+        return APIResponse.<String>builder()
+                .message("Cancel order room successfully")
                 .build();
     }
 }

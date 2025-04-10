@@ -7,6 +7,9 @@ import com.humg.HotelSystemManagement.service.HotelService.booking.BookingServic
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -17,10 +20,26 @@ public class BookingController {
     BookingService bookingService;
 
     @PostMapping("/create")
-    APIResponse<BookingResponse> createBooking(@RequestBody BookingRequest request){
+    APIResponse<BookingResponse> createBooking(
+            @RequestBody BookingRequest request,
+            @AuthenticationPrincipal Jwt principal
+    ){
+        var username = principal.getSubject();
         return APIResponse.<BookingResponse>builder()
-                .result(bookingService.createBooking(request))
+                .result(bookingService.createBooking(request, username))
                 .message("Create booking successfully!")
+                .build();
+    }
+
+    @GetMapping("/list/{customerId}")
+    APIResponse<Page<BookingResponse>> getAllBooking(
+            @PathVariable("customerId") String customerId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return APIResponse.<Page<BookingResponse>>builder()
+                .result(bookingService.getAllBookingByUserId(customerId, page, size))
+                .message("Get all booking successfully")
                 .build();
     }
 

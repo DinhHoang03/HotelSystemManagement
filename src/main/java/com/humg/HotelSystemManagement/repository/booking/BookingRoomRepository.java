@@ -1,14 +1,15 @@
 package com.humg.HotelSystemManagement.repository.booking;
 
 import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface BookingRoomRepository extends JpaRepository<BookingRoom, String> {
@@ -18,4 +19,7 @@ public interface BookingRoomRepository extends JpaRepository<BookingRoom, String
     List<BookingRoom> findBookedRoomNumbersInDateRangeForRooms(@Param("roomNumbers") List<String> roomNumbers,
                                                           @Param("checkInDate") LocalDate checkInDate,
                                                           @Param("checkOutDate") LocalDate checkOutDate);
+
+    List<BookingRoom> findByUsernameAndBookingRoomIdIn(String username, List<String> bookingItemsId);
+    //void deleteByBookingIsNullAndCreatedDateBefore(LocalDateTime threshold);
 }

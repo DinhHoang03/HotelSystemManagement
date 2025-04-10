@@ -2,7 +2,6 @@ package com.humg.HotelSystemManagement.entity.booking;
 
 import com.humg.HotelSystemManagement.entity.enums.BookingStatus;
 import com.humg.HotelSystemManagement.entity.roomManagerment.Room;
-import com.humg.HotelSystemManagement.entity.enums.PriceType;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -37,6 +36,9 @@ public class BookingRoom {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     BookingStatus bookingStatus;
+
+    @Column(nullable = true)
+    String username;
 //    @Column(name = "price_type", nullable = false)
 //    @Enumerated(EnumType.STRING)
 //    PriceType priceType;
@@ -45,10 +47,10 @@ public class BookingRoom {
 //    @JoinColumn(name = "room_id", nullable = false)
 //    Room room;
 
-    @OneToMany(mappedBy = "bookingRoom", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    @OneToMany(mappedBy = "bookingRoom", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY, orphanRemoval = false)
     List<Room> rooms = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", nullable = false)
+    @JoinColumn(name = "booking_id")
     Booking booking;
 }

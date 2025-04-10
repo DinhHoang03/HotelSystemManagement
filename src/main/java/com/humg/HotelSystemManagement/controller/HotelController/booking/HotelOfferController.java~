@@ -28,8 +28,8 @@ public class HotelOfferController {
 
     @GetMapping("/list/{page}/{size}")
     APIResponse<Page<HotelOfferResponse>> getAllHotelOffers(
-            @PathVariable("page") int page,
-            @PathVariable("size") int size
+            @RequestParam("page") int page,
+            @RequestParam("size") int size
     ){
         return APIResponse.<Page<HotelOfferResponse>>builder()
                 .result(hotelService.getAll(page, size))

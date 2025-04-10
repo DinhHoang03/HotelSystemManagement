@@ -55,7 +55,11 @@ public class HotelOfferService implements ISimpleCRUDService<HotelOfferResponse,
         Pageable pageable = PageRequest.of(page, size);
         Page<HotelOffers> result = hotelServiceRepository.findAll(pageable);
 
-        return result.map(hotelOfferMapper::toHotelOfferResponse);
+        return result.map(hotelOffers ->
+                HotelOfferResponse.builder()
+                        .serviceType(hotelOffers.getServiceTypes())
+                        .price(hotelOffers.getPrice())
+                        .build());
     }
 
     @Override

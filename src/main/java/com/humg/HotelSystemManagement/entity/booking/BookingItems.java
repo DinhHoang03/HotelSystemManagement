@@ -25,8 +25,11 @@ public class BookingItems {
     @Column(name = "total_booking_service_price")
     Long totalItemsPrice;
 
+    @Column(nullable = true)
+    String username;
+
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", nullable = false)
+    @JoinColumn(name = "booking_id")
     Booking booking;
 
     @ManyToOne(fetch = FetchType.LAZY)

@@ -6,6 +6,7 @@ import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.SuperBuilder;
 
 import java.time.LocalDate;
 import java.util.List;

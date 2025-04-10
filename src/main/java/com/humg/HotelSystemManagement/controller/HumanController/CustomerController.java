@@ -34,6 +34,11 @@ public class CustomerController {
                 .build();
     }
 
+    @GetMapping("/profile")
+    CustomerResponse getMyInfo() {
+        return customerService.getMyInfo();
+    }
+
     @DeleteMapping("/user/del/{customerId}")
     APIResponse<String> deleteCustomer(@PathVariable("customerId") String customerId){
         customerService.delete(customerId);

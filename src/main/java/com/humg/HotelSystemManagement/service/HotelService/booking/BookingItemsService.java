@@ -1,6 +1,5 @@
 package com.humg.HotelSystemManagement.service.HotelService.booking;
 
-import com.humg.HotelSystemManagement.entity.booking.Booking;
 import com.humg.HotelSystemManagement.service.SystemService.NormalizeString;
 import com.humg.HotelSystemManagement.dto.request.booking.bookingItems.BookingItemRequest;
 import com.humg.HotelSystemManagement.dto.response.booking.bookingItems.BookingItemResponse;
@@ -14,6 +13,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,10 +28,12 @@ public class BookingItemsService {
     BookingItemsMapper bookingItemsMapper;
     NormalizeString normalizeString;
 
-    public BookingItemResponse createOrder(BookingItemRequest request) {
+    public BookingItemResponse createOrder(BookingItemRequest request, String username) {
         BookingItems bookingItems;
 
-        if(request != null) {
+        if(request == null) {
+            throw new AppException(AppErrorCode.REQUEST_IS_NULL);
+        }
             var normalizeHotelOffer = normalizeString.normalizedString(request.getHotelOffer());
 
             var hotelOffer = hotelOffersRepository.findByServiceTypes(normalizeHotelOffer)
@@ -39,29 +41,30 @@ public class BookingItemsService {
                             () -> new AppException(AppErrorCode.OBJECT_IS_NULL)
             );
 
+            var totalItemsPrice = hotelOffer.getPrice() * request.getQuantity();
             var quantity = request.getQuantity();
 
-            bookingItems = BookingItems.builder()
+            BookingItems bookingItem = BookingItems.builder()
+                    .booking(null)
+                    .username(username) // Gắn userId từ token
                     .quantity(quantity)
+                    .totalItemsPrice(totalItemsPrice)
                     .hotelOffers(hotelOffer)
                     .build();
 
-            var caculated = hotelOffer.getPrice() * quantity;
-            bookingItems.setTotalItemsPrice(caculated);
 
-        }else {
-            throw new AppException(AppErrorCode.REQUEST_IS_NULL);
-        }
-        var result = bookingItemsRepository.save(bookingItems);
+        var result = bookingItemsRepository.save(bookingItem);
 
         return BookingItemResponse.builder()
+                .bookingItemId(result.getBookingItemId())
                 .hotelOffer(result.getHotelOffers().getServiceTypes())
-                .quantity(request.getQuantity())
+                .quantity(result.getQuantity())
                 .totalItemsPrice(result.getTotalItemsPrice())
                 .build();
     }
 
-    public List<BookingItemResponse> createOrders(List<BookingItemRequest> requests, Booking booking){
+    @Transactional
+    public List<BookingItemResponse> createOrders(List<BookingItemRequest> requests, String userId){
         if(requests == null || requests.isEmpty()){
             return new ArrayList<>();
         }
@@ -78,7 +81,8 @@ public class BookingItemsService {
                             var totalItemsPrice = hotelOffer.getPrice() * quantity;
 
                             return BookingItems.builder()
-                                    .booking(booking)
+                                    .booking(null)
+                                    .username(userId)
                                     .quantity(quantity)
                                     .hotelOffers(hotelOffer)
                                     .totalItemsPrice(totalItemsPrice)
@@ -98,5 +102,12 @@ public class BookingItemsService {
                         .totalItemsPrice(bookingItems.getTotalItemsPrice())
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public void deleteBookingItems(String bookingItemId){
+        var bookingItems = bookingItemsRepository.findById(bookingItemId)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        bookingItemsRepository.delete(bookingItems);
     }
 }

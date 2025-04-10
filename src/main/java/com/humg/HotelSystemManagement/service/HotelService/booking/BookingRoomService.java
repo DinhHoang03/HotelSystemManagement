@@ -2,7 +2,6 @@ package com.humg.HotelSystemManagement.service.HotelService.booking;
 
 import com.humg.HotelSystemManagement.dto.request.booking.bookingRoom.BookingRoomRequest;
 import com.humg.HotelSystemManagement.dto.response.booking.bookingRoom.BookingRoomResponse;
-import com.humg.HotelSystemManagement.entity.booking.Booking;
 import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
 import com.humg.HotelSystemManagement.entity.enums.BookingStatus;
 import com.humg.HotelSystemManagement.entity.enums.RoomStatus;
@@ -33,7 +32,7 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
     RoomRepository roomRepository;
 
     @Transactional
-    public BookingRoomResponse createOrder(BookingRoomRequest request, Booking booking) {
+    public BookingRoomResponse createOrder(BookingRoomRequest request, String username) {
 
         if(request == null) {
             throw new AppException(AppErrorCode.REQUEST_IS_NULL);
@@ -87,13 +86,20 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
         var totalRoomAmount = totalRoomAmount(listRoom, checkInDate, checkOutDate);
 
         BookingRoom bookingRoom = BookingRoom.builder()
-                .booking(booking)
+                .booking(null)
+                .username(username)
                 .checkInDate(checkInDate)
                 .checkOutDate(checkOutDate)
                 .totalRoomAmount(totalRoomAmount)
                 .bookingStatus(BookingStatus.PENDING)
                 .rooms(listRoom)
                 .build();
+
+        // Đồng bộ mối quan hệ hai chiều
+        for (Room room : listRoom) {
+            room.setBookingRoom(bookingRoom);
+            room.setRoomStatus(RoomStatus.OCCUPIED); // Hoặc PENDING tùy nghiệp vụ
+        }
 
         var result = bookingRoomRepository.save(bookingRoom);
 
@@ -164,11 +170,15 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
     }
 
     @Override
+    @Transactional
     public void delete(String id) {
         var booking = bookingRoomRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
-        booking.getRooms().forEach(room -> room.setRoomStatus(RoomStatus.AVAILABLE));
+        booking.getRooms().forEach(room -> {
+            room.setBookingRoom(null);
+            room.setRoomStatus(RoomStatus.AVAILABLE);
+        });
         roomRepository.saveAll(booking.getRooms());
 
         bookingRoomRepository.delete(booking);

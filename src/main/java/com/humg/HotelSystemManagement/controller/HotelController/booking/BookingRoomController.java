@@ -4,20 +4,29 @@ import com.humg.HotelSystemManagement.dto.request.booking.bookingRoom.BookingRoo
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.booking.bookingRoom.BookingRoomResponse;
 import com.humg.HotelSystemManagement.service.HotelService.booking.BookingRoomService;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/booking-rooms")
+@RequestMapping("/rooms")
+@RequiredArgsConstructor
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BookingRoomController {
-
-    @Autowired
-    private BookingRoomService bookingRoomService;
+    BookingRoomService bookingRoomService;
 
     @PostMapping("/create")
-     APIResponse<BookingRoomResponse> createBooking(@RequestBody BookingRoomRequest request) {
+     APIResponse<BookingRoomResponse> createBooking(
+             @RequestBody BookingRoomRequest request,
+             @AuthenticationPrincipal Jwt principal
+    ) {
+        String username = principal.getSubject(); //Lấy username từ jwt trong claím set subject(check trong authenticationService là ra)
         return APIResponse.<BookingRoomResponse>builder()
-                .result(bookingRoomService.create(request))
+                .result(bookingRoomService.createOrder(request, username))
                 .message("Create order room success")
                 .build();
     }

@@ -70,7 +70,6 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
 
         Page<RoomResponse> response = result.map(room -> {
             return RoomResponse.builder()
-                    .roomId(room.getRoomId())
                     .roomNumber(room.getRoomNumber())
                     .roomType(room.getRoomType().getRoomTypes())
                     .roomStatus(room.getRoomStatus().toString())

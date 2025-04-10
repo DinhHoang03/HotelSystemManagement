@@ -26,7 +26,9 @@ public enum AppErrorCode {
     USERNAME_CONFLICT(1010, "Invalid duplicate user data!", HttpStatus.BAD_REQUEST),
     INVALID_DATE(1011, "Date is invalid, try again!", HttpStatus.BAD_REQUEST),
     ROOM_ALREADY_BOOKED(1012, "Room is already booked!", HttpStatus.BAD_REQUEST),
-    ROOM_NOT_AVAILABLE(1012, "Room is not avaiable now!", HttpStatus.BAD_REQUEST)
+    ROOM_NOT_AVAILABLE(1012, "Room is not avaiable now!", HttpStatus.BAD_REQUEST),
+    INVALID_BOOKING_ROOM_ID(1013, "Invalid booking room id!", HttpStatus.BAD_REQUEST),
+    INVALID_BOOKING_ITEM_ID(1014, "Invalid booking item id!", HttpStatus.BAD_REQUEST),
     ;
 
     int code;

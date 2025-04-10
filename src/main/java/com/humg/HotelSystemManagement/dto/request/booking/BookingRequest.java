@@ -14,6 +14,8 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingRequest {
     String customerId;
-    List<BookingRoomRequest> bookingRoomRequests;
-    List<BookingItemRequest> bookingItemRequests;
+//    List<BookingRoomRequest> bookingRoomRequests;
+//    List<BookingItemRequest> bookingItemRequests;
+    List<String> bookingRoomIds;
+    List<String> bookingItemIds;
 }

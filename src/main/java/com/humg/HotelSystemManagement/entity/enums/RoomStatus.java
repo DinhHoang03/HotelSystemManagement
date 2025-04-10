@@ -8,7 +8,7 @@ import lombok.experimental.FieldDefaults;
 @RequiredArgsConstructor
 public enum RoomStatus {
     AVAILABLE("Phòng trống, có thể đặt"),
-    OCCUPIED("Phòng đang có khách lưu trú"),
+    OCCUPIED("Phòng đang được đặt"),
     CLEANING("Phòng đang được dọn dẹp"),
     NEED_CLEANING("Phòng vừa có khách trả, cần dọn dẹp"),
     UNDER_MAINTENANCE("Phòng đang bảo trì, không thể đặt"),

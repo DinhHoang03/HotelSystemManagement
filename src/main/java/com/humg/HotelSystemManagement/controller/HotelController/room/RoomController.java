@@ -25,10 +25,10 @@ class RoomController {
                 .build();
     }
 
-    @GetMapping("/get-all/list/{page}/{size}")
+    @GetMapping("/list/{page}/{size}")
     APIResponse<Page<RoomResponse>> getAllRooms(
-            @RequestParam("page") int page,
-            @RequestParam("size") int size
+            @PathVariable("page") int page,
+            @PathVariable("size") int size
     ) {
         return APIResponse.<Page<RoomResponse>>builder()
                 .result(roomService.getAll(page, size))
