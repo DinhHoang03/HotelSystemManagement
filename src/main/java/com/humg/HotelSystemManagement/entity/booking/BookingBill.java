@@ -28,9 +28,6 @@ public class BookingBill {
     @Column(name = "grand_total", nullable = false)
     Long grandTotal;
 
-    @Column(name = "remaining_amount")
-    Long remainingAmount;
-
     @Column(name = "payment_date")
     LocalDate paymentDate;
 

@@ -14,5 +14,7 @@ public class BookingBillResponse {
     String bookingBillId;
     String bookingId;
     Long remainingAmount;
+    Long grandTotal;
     LocalDate issueDate;
+    LocalDate paymentDate;
 }

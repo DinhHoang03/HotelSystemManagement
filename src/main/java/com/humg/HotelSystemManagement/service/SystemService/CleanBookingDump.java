@@ -6,6 +6,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataAccessException;
+import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Retryable;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,6 +24,7 @@ public class CleanBookingDump {
     BookingRoomRepository bookingRoomRepository;
 
     @Scheduled(fixedRate = 3600000)
+    @Transactional
     public void cleanUpBooking() {
         long startTime = System.currentTimeMillis();
         log.info("Starting clean up task at {}", Instant.now());
@@ -34,6 +38,7 @@ public class CleanBookingDump {
     }
 
     @Transactional
+    @Retryable(value = {DataAccessException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     private int cleanUpBookingRoom() {
         try {
             int deletedCount = bookingRoomRepository.deleteByBookingIsNull();
@@ -46,6 +51,7 @@ public class CleanBookingDump {
     }
 
     @Transactional
+    @Retryable(value = {DataAccessException.class}, maxAttempts = 3, backoff = @Backoff(delay = 1000))
     private int cleanUpBookingItems() {
         try {
             int deletedCount = bookingItemsRepository.deleteByBookingIsNull();

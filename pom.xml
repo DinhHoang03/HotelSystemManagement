@@ -44,6 +44,12 @@
 			<artifactId>commons-codec</artifactId>
 			<version>1.15</version>
 		</dependency>
+		<!-- Spring retry and AOP-->
+		<dependency>
+			<groupId>org.springframework.retry</groupId>
+			<artifactId>spring-retry</artifactId>
+			<version>2.0.7</version>
+		</dependency>
 		<!-- Jackson để xử lý JSON -->
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
