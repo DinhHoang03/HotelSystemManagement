@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DinhRise Hotel - Careers</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Auth Script -->
+    <script src="/js/auth.js"></script>
+    <style>
+        .job-card {
+            transition: all 0.3s ease;
+        }
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .benefit-icon {
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #EEF2FF;
+            color: #4F46E5;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            transition: all 0.3s ease;
+        }
+        .benefit-card:hover .benefit-icon {
+            background: #4F46E5;
+            color: white;
+            transform: scale(1.1);
+        }
+        /* Navigation Link Styles */
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, #4F46E5, #7C3AED);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::before {
+            width: 100%;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.1));
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: -1;
+        }
+        .nav-link:hover::after {
+            transform: translateY(0);
+        }
+        .nav-link:hover {
+            color: #4F46E5;
+            transform: translateY(-2px);
+        }
+        /* Active Navigation Link */
+        .nav-link.active {
+            color: #4F46E5;
+        }
+        .nav-link.active::before {
+            width: 100%;
+        }
+        /* Smooth Scroll Container */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #4F46E5, #7C3AED);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #4338CA, #6D28D9);
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Top Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo">
+                        <span class="ml-2 text-xl font-bold text-gray-800">DinhRise Hotel</span>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <div class="flex items-center space-x-8">
+                        <a href="/customer-dashboard.html" class="nav-link text-gray-600 hover:text-gray-900">Home</a>
+                        <a href="#positions" class="nav-link text-gray-600 hover:text-gray-900" data-section="positions">Open Positions</a>
+                        <a href="#benefits" class="nav-link text-gray-600 hover:text-gray-900" data-section="benefits">Benefits</a>
+                        <a href="#culture" class="nav-link text-gray-600 hover:text-gray-900" data-section="culture">Our Culture</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <div class="relative h-screen">
+        <img src="https://images.unsplash.com/photo-1521791136064-7986c2920216?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
+             alt="Hotel Staff" 
+             class="absolute inset-0 w-full h-full object-cover">
+        <div class="absolute inset-0 bg-black bg-opacity-50"></div>
+        <div class="relative h-full flex items-center justify-center">
+            <div class="text-center text-white px-4" data-aos="fade-up">
+                <h1 class="text-4xl md:text-6xl font-extrabold mb-4">Join Our Team</h1>
+                <p class="text-xl md:text-2xl mb-8">Be part of our exceptional hospitality family</p>
+                <a href="#positions" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
+                    View Open Positions
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <!-- Why Join Us Section -->
+        <div class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Why Join DinhRise Hotel?</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <i class="fas fa-users text-3xl text-indigo-600 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Professional Growth</h3>
+                    <p class="text-gray-600">Continuous learning opportunities and career advancement programs</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <i class="fas fa-heart text-3xl text-indigo-600 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Work-Life Balance</h3>
+                    <p class="text-gray-600">Flexible scheduling and paid time off for all employees</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <i class="fas fa-medal text-3xl text-indigo-600 mb-4"></i>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Recognition</h3>
+                    <p class="text-gray-600">Employee recognition programs and performance bonuses</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Open Positions Section -->
+        <div id="positions" class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Open Positions</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Front Desk Manager -->
+                <div class="job-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Front Desk Manager</h3>
+                    <p class="text-indigo-600 mb-4">Full-time | Hanoi, Vietnam</p>
+                    <p class="text-gray-600 mb-4">Lead our front desk team to deliver exceptional guest experiences.</p>
+                    <ul class="list-disc list-inside text-gray-600 mb-4">
+                        <li>3+ years of hotel front desk experience</li>
+                        <li>Strong leadership and communication skills</li>
+                        <li>Proficiency in hotel management software</li>
+                    </ul>
+                    <a href="#" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
+                        Apply Now
+                    </a>
+                </div>
+
+                <!-- Executive Chef -->
+                <div class="job-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Executive Chef</h3>
+                    <p class="text-indigo-600 mb-4">Full-time | Hanoi, Vietnam</p>
+                    <p class="text-gray-600 mb-4">Oversee our culinary operations and create exceptional dining experiences.</p>
+                    <ul class="list-disc list-inside text-gray-600 mb-4">
+                        <li>5+ years of culinary leadership experience</li>
+                        <li>Expertise in international cuisines</li>
+                        <li>Strong menu development skills</li>
+                    </ul>
+                    <a href="#" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
+                        Apply Now
+                    </a>
+                </div>
+
+                <!-- Housekeeping Supervisor -->
+                <div class="job-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Housekeeping Supervisor</h3>
+                    <p class="text-indigo-600 mb-4">Full-time | Hanoi, Vietnam</p>
+                    <p class="text-gray-600 mb-4">Ensure the highest standards of cleanliness and guest satisfaction.</p>
+                    <ul class="list-disc list-inside text-gray-600 mb-4">
+                        <li>2+ years of housekeeping experience</li>
+                        <li>Strong organizational skills</li>
+                        <li>Attention to detail</li>
+                    </ul>
+                    <a href="#" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
+                        Apply Now
+                    </a>
+                </div>
+
+                <!-- Guest Relations Officer -->
+                <div class="job-card bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Guest Relations Officer</h3>
+                    <p class="text-indigo-600 mb-4">Full-time | Hanoi, Vietnam</p>
+                    <p class="text-gray-600 mb-4">Create memorable experiences for our guests and handle special requests.</p>
+                    <ul class="list-disc list-inside text-gray-600 mb-4">
+                        <li>Excellent communication skills</li>
+                        <li>Customer service experience</li>
+                        <li>Multilingual abilities preferred</li>
+                    </ul>
+                    <a href="#" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
+                        Apply Now
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Benefits Section -->
+        <div id="benefits" class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Employee Benefits</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="benefit-card bg-white p-6 rounded-lg shadow-md text-center">
+                    <div class="benefit-icon mx-auto">
+                        <i class="fas fa-money-bill-wave text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Competitive Salary</h3>
+                    <p class="text-gray-600">Attractive compensation packages with regular reviews</p>
+                </div>
+                <div class="benefit-card bg-white p-6 rounded-lg shadow-md text-center">
+                    <div class="benefit-icon mx-auto">
+                        <i class="fas fa-utensils text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Meal Benefits</h3>
+                    <p class="text-gray-600">Complimentary meals during shifts</p>
+                </div>
+                <div class="benefit-card bg-white p-6 rounded-lg shadow-md text-center">
+                    <div class="benefit-icon mx-auto">
+                        <i class="fas fa-hotel text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Hotel Discounts</h3>
+                    <p class="text-gray-600">Special rates for you and your family</p>
+                </div>
+                <div class="benefit-card bg-white p-6 rounded-lg shadow-md text-center">
+                    <div class="benefit-icon mx-auto">
+                        <i class="fas fa-graduation-cap text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">Training</h3>
+                    <p class="text-gray-600">Professional development opportunities</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Culture Section -->
+        <div id="culture" class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Our Culture</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Our Values</h3>
+                    <ul class="space-y-4">
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Excellence in service delivery</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Teamwork and collaboration</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Continuous improvement</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-check-circle text-green-500 mt-1 mr-3"></i>
+                            <span class="text-gray-600">Respect for diversity</span>
+                        </li>
+                    </ul>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow-md">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Work Environment</h3>
+                    <p class="text-gray-600 mb-4">At DinhRise Hotel, we foster a supportive and inclusive work environment where every team member's contribution is valued.</p>
+                    <p class="text-gray-600">We believe in work-life balance and provide a positive atmosphere for professional growth and personal development.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">DinhRise Hotel</h3>
+                    <p class="text-gray-400">Experience luxury and comfort at its finest. Join our team and be part of something exceptional.</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Contact Us</h3>
+                    <p class="text-gray-400"><i class="fas fa-phone mr-2"></i> 0913513395</p>
+                    <p class="text-gray-400"><i class="fas fa-envelope mr-2"></i> careers@dinhrise.com</p>
+                    <p class="text-gray-400"><i class="fas fa-map-marker-alt mr-2"></i> Hoai Duc, Hanoi, Vietnam</p>
+                </div>
+                <div>
+                    <h3 class="text-xl font-semibold mb-4">Follow Us</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-facebook-f"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-instagram"></i>
+                        </a>
+                        <a href="#" class="text-gray-400 hover:text-white transition duration-300">
+                            <i class="fab fa-linkedin-in"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-8 pt-8 text-center text-gray-400">
+                <p>© 2025 DinhRise Hotel. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Enhanced smooth scrolling with offset and active link highlighting
+        $(document).ready(function() {
+            // Cache selectors
+            const navLinks = $('.nav-link');
+            const sections = $('section[id], div[id]');
+            const navHeight = $('nav').outerHeight();
+
+            // Function to update active link
+            function updateActiveLink() {
+                const scrollPosition = $(window).scrollTop() + navHeight + 20;
+
+                sections.each(function() {
+                    const section = $(this);
+                    const sectionTop = section.offset().top;
+                    const sectionHeight = section.outerHeight();
+                    const sectionId = section.attr('id');
+
+                    if (scrollPosition >= sectionTop && scrollPosition < sectionTop + sectionHeight) {
+                        navLinks.removeClass('active');
+                        $(`.nav-link[data-section="${sectionId}"]`).addClass('active');
+                    }
+                });
+            }
+
+            // Handle navigation
+            navLinks.on('click', function(e) {
+                const href = $(this).attr('href');
+                
+                // If it's a section link
+                if (href.startsWith('#')) {
+                    e.preventDefault();
+                    const targetId = $(this).attr('data-section');
+                    const targetSection = $(`#${targetId}`);
+                    
+                    if (targetSection.length) {
+                        const targetPosition = targetSection.offset().top - navHeight;
+                        
+                        $('html, body').stop().animate({
+                            scrollTop: targetPosition
+                        }, {
+                            duration: 1000,
+                            easing: 'easeInOutCubic',
+                            complete: function() {
+                                navLinks.removeClass('active');
+                                $(`.nav-link[data-section="${targetId}"]`).addClass('active');
+                            }
+                        });
+                    }
+                }
+                // If it's a page link, let it navigate normally
+            });
+
+            // Update active link on scroll
+            $(window).on('scroll', function() {
+                updateActiveLink();
+            });
+
+            // Initial active link update
+            updateActiveLink();
+        });
+    </script>
+</body>
+</html> 

@@ -25,36 +25,95 @@
         .swiper {
             width: 100%;
             height: 100vh;
+            position: relative;
+            overflow: hidden;
+        }
+        .swiper-wrapper {
+            width: 100%;
+            height: 100%;
+            position: relative;
         }
         .swiper-slide {
             width: 100%;
             height: 100%;
-            position: relative;
+            position: absolute;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            transform: scale(1.1);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .swiper-slide.active {
+            opacity: 1;
+            transform: scale(1);
+            z-index: 1;
         }
         .swiper-slide img {
             width: 100%;
             height: 100%;
             object-fit: cover;
+            transform: scale(1.1);
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .swiper-button-next,
-        .swiper-button-prev {
-            color: white;
-            background: rgba(0, 0, 0, 0.3);
+        .swiper-slide.active img {
+            transform: scale(1);
+        }
+        .swiper-slide .absolute {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s;
+        }
+        .swiper-slide.active .absolute {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
             width: 50px;
             height: 50px;
             border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
         }
-        .swiper-button-next:after,
-        .swiper-button-prev:after {
-            font-size: 20px;
+        .nav-button:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateY(-50%) scale(1.1);
         }
-        .swiper-pagination-bullet {
+        #prevSlide {
+            left: 20px;
+        }
+        #nextSlide {
+            right: 20px;
+        }
+        .indicators {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+        }
+        .indicator {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.5);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .indicator.active {
             background: white;
-            opacity: 0.5;
-        }
-        .swiper-pagination-bullet-active {
-            background: white;
-            opacity: 1;
+            transform: scale(1.2);
         }
         .feature-card {
             transition: all 0.3s ease;
@@ -339,9 +398,154 @@
                 opacity: 1;
             }
         }
+
+        /* Navigation Link Styles */
+        .nav-link {
+            position: relative;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .nav-link::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(to right, #4F46E5, #7C3AED);
+            transition: width 0.3s ease;
+        }
+        .nav-link:hover::before {
+            width: 100%;
+        }
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to right, rgba(79, 70, 229, 0.1), rgba(124, 58, 237, 0.1));
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+            z-index: -1;
+        }
+        .nav-link:hover::after {
+            transform: translateY(0);
+        }
+        .nav-link:hover {
+            color: #4F46E5;
+            transform: translateY(-2px);
+        }
+        /* Active Navigation Link */
+        .nav-link.active {
+            color: #4F46E5;
+        }
+        .nav-link.active::before {
+            width: 100%;
+        }
+        /* Smooth Scroll Container */
+        html {
+            scroll-behavior: smooth;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(to bottom, #4F46E5, #7C3AED);
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(to bottom, #4338CA, #6D28D9);
+        }
+        /* Update navigation bar styles */
+        nav {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .nav-link {
+            color: white;
+            text-shadow: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+        }
+        .nav-link:hover {
+            color: #E5E7EB;
+        }
+        .nav-text {
+            color: white;
+            text-shadow: none;
+            font-weight: 600;
+        }
+        #userMenuButton {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+        #userMenuButton:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .text-gray-800 {
+            color: white;
+        }
+        /* Scroll to top button */
+        #scrollToTop {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(to right, #4F46E5, #7C3AED);
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+            z-index: 1000;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+        }
+        #scrollToTop:hover {
+            background: linear-gradient(to right, #4338CA, #6D28D9);
+            transform: translateY(-3px);
+            box-shadow: 0 6px 8px rgba(79, 70, 229, 0.3);
+        }
+        #scrollToTop.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        /* Add rainbow text animation */
+        @keyframes rainbow {
+            0% { color: #ff0000; }
+            14% { color: #ff7f00; }
+            28% { color: #ffff00; }
+            42% { color: #00ff00; }
+            57% { color: #0000ff; }
+            71% { color: #4b0082; }
+            85% { color: #9400d3; }
+            100% { color: #ff0000; }
+        }
+        .rainbow-text {
+            animation: rainbow 3s linear infinite;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Scroll to top button -->
+    <button id="scrollToTop" onclick="scrollToTop()">
+        <i class="fas fa-arrow-up"></i>
+    </button>
     <!-- Top Navigation -->
     <nav class="bg-white shadow-lg fixed w-full z-50">
         <div class="max-w-7xl mx-auto px-4">
@@ -349,25 +553,29 @@
                 <div class="flex">
                     <div class="flex-shrink-0 flex items-center">
                         <img class="h-8 w-auto" src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo">
-                        <span class="ml-2 text-xl font-bold text-gray-800">DinhRise Hotel</span>
+                        <span class="ml-2 text-xl font-bold text-gray-800 hotel-name">DinhRise Hotel</span>
                     </div>
                 </div>
                 <div class="flex items-center">
-                    <div class="flex items-center space-x-4">
-                        <div class="relative ml-3">
-                            <button id="userMenuButton" class="flex items-center bg-indigo-600/10 backdrop-blur-sm hover:bg-indigo-600/20 px-4 py-2 rounded-full transition-all duration-300 group">
-                                <div class="relative">
-                                    <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff" 
-                                         alt="User Avatar" 
-                                         class="w-10 h-10 rounded-full object-cover border-2 border-indigo-500/50 group-hover:border-indigo-500 transition-all duration-300">
-                                    <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white group-hover:scale-110 transition-transform duration-300"></div>
-                                </div>
-                                <div class="ml-3 text-left">
-                                    <span id="usernameDisplay" class="block text-sm font-semibold text-indigo-700 group-hover:text-indigo-800 transition-colors duration-300">User</span>
-                                    <span class="block text-xs text-indigo-600/80 group-hover:text-indigo-700 transition-colors duration-300">View Profile</span>
-                                </div>
-                            </button>
-                        </div>
+                    <div class="flex items-center space-x-8">
+                        <a href="#about" class="nav-link text-gray-600 hover:text-gray-900">About</a>
+                        <a href="#staff" class="nav-link text-gray-600 hover:text-gray-900">Our Team</a>
+                        <a href="#experience" class="nav-link text-gray-600 hover:text-gray-900">Experience</a>
+                        <a href="#gallery" class="nav-link text-gray-600 hover:text-gray-900">Gallery</a>
+                    </div>
+                    <div class="relative ml-3">
+                        <button id="userMenuButton" class="flex items-center bg-indigo-600/10 backdrop-blur-sm hover:bg-indigo-600/20 px-4 py-2 rounded-full transition-all duration-300 group">
+                            <div class="relative">
+                                <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff" 
+                                     alt="User Avatar" 
+                                     class="w-10 h-10 rounded-full object-cover border-2 border-indigo-500/50 group-hover:border-indigo-500 transition-all duration-300">
+                                <div class="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white group-hover:scale-110 transition-transform duration-300"></div>
+                            </div>
+                            <div class="ml-3 text-left">
+                                <span id="usernameDisplay" class="block text-sm font-semibold text-indigo-700 group-hover:text-indigo-800 transition-colors duration-300">User</span>
+                                <span class="block text-xs text-indigo-600/80 group-hover:text-indigo-700 transition-colors duration-300">View Profile</span>
+                            </div>
+                        </button>
                     </div>
                 </div>
             </div>
@@ -377,16 +585,18 @@
     <!-- Hero Section with Swiper -->
     <div class="swiper">
         <div class="swiper-wrapper">
-            <div class="swiper-slide">
+            <div class="swiper-slide active">
                 <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" alt="DinhRise Hotel">
                 <div class="absolute inset-0 hero-overlay"></div>
                 <div class="absolute inset-0 flex items-center justify-center">
                     <div class="text-center text-white px-4" data-aos="fade-up">
                         <h1 class="text-4xl md:text-6xl font-extrabold mb-4">Welcome to DinhRise Hotel</h1>
                         <p class="text-xl md:text-2xl mb-8">Experience luxury and comfort in the heart of the city</p>
-                        <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
-                            Book Your Stay
-                        </a>
+                        <div class="flex flex-col md:flex-row gap-4 justify-center">
+                            <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
+                                Book Your Stay
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -397,9 +607,11 @@
                     <div class="text-center text-white px-4" data-aos="fade-up">
                         <h1 class="text-4xl md:text-6xl font-extrabold mb-4">Luxury Suites</h1>
                         <p class="text-xl md:text-2xl mb-8">Indulge in our premium accommodations</p>
-                        <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
-                            View Rooms
-                        </a>
+                        <div class="flex flex-col md:flex-row gap-4 justify-center">
+                            <a href="/amenities.html" class="inline-block bg-indigo-600 text-white px-8 py-4 rounded-md font-medium hover:bg-indigo-700 transition duration-300">
+                                Explore Hotel
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -408,24 +620,36 @@
                 <div class="absolute inset-0 hero-overlay"></div>
                 <div class="absolute inset-0 flex items-center justify-center">
                     <div class="text-center text-white px-4" data-aos="fade-up">
-                        <h1 class="text-4xl md:text-6xl font-extrabold mb-4">World-Class Amenities</h1>
-                        <p class="text-xl md:text-2xl mb-8">Relax and rejuvenate in style</p>
-                        <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
-                            Explore Amenities
-                        </a>
+                        <h1 class="text-4xl md:text-6xl font-extrabold mb-4">Join Our Team</h1>
+                        <p class="text-xl md:text-2xl mb-8">Be part of our exceptional hospitality family</p>
+                        <div class="flex flex-col md:flex-row gap-4 justify-center">
+                            <a href="/careers.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
+                                View Careers
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="swiper-pagination"></div>
-        <div class="swiper-button-next"></div>
-        <div class="swiper-button-prev"></div>
+        <!-- Navigation buttons -->
+        <button id="prevSlide" class="nav-button">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        <button id="nextSlide" class="nav-button">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+        <!-- Indicators -->
+        <div class="indicators">
+            <button class="indicator active"></button>
+            <button class="indicator"></button>
+            <button class="indicator"></button>
+        </div>
     </div>
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <!-- About Section -->
-        <div class="mb-16" data-aos="fade-up">
+        <div id="about" class="mb-16" data-aos="fade-up">
             <h2 class="text-3xl font-bold text-gray-900 mb-8">About DinhRise Hotel</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div>
@@ -458,7 +682,7 @@
         </div>
 
         <!-- Staff Section -->
-        <div class="mb-16" data-aos="fade-up">
+        <div id="staff" class="mb-16" data-aos="fade-up">
             <h2 class="text-3xl font-bold text-gray-900 mb-8">Our Professional Staff</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="staff-card bg-white p-6 rounded-lg shadow-md text-center">
@@ -483,21 +707,26 @@
         </div>
 
         <!-- Parallax Section -->
-        <div class="relative h-96 mb-16 parallax" style="background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');">
+        <div id="experience" class="relative h-96 mb-16 parallax" style="background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');">
             <div class="absolute inset-0 bg-black bg-opacity-50"></div>
             <div class="relative h-full flex items-center justify-center">
                 <div class="text-center text-white px-4" data-aos="fade-up">
                     <h2 class="text-3xl font-bold mb-4">Experience Luxury</h2>
                     <p class="text-xl mb-8">Book your stay at DinhRise Hotel today</p>
-                    <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
-                        Book Now
-                    </a>
+                    <div class="flex flex-col md:flex-row gap-4 justify-center">
+                        <a href="/book-room.html" class="inline-block bg-white text-gray-900 px-8 py-4 rounded-md font-medium hover:bg-gray-100 transition duration-300">
+                            Book Now
+                        </a>
+                        <a href="/amenities.html" class="inline-block bg-indigo-600 text-white px-8 py-4 rounded-md font-medium hover:bg-indigo-700 transition duration-300">
+                            Explore Hotel
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
 
         <!-- Gallery Section -->
-        <div class="mb-16" data-aos="fade-up">
+        <div id="gallery" class="mb-16" data-aos="fade-up">
             <h2 class="text-3xl font-bold text-gray-900 mb-8">Our Gallery</h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="gallery-item relative h-64 rounded-lg overflow-hidden">
@@ -640,24 +869,88 @@
             once: true
         });
 
-        // Handle header shrink on scroll
+        // Smooth scrolling with offset
+        $(document).ready(function() {
+            $('a[href^="#"]').on('click', function(e) {
+                e.preventDefault();
+                
+                const target = $(this.hash);
+                if (target.length) {
+                    const navHeight = $('nav').outerHeight();
+                    const targetPosition = target.offset().top - navHeight;
+                    
+                    $('html, body').stop().animate({
+                        scrollTop: targetPosition
+                    }, {
+                        duration: 300,
+                        easing: 'linear'
+                    });
+                }
+            });
+        });
+
+        // Scroll to top button
         $(window).scroll(function() {
-            if ($(window).scrollTop() > 50) {
-                $('#navContainer').addClass('shrink');
-                $('.nav-link').css('color', '#374151');
-                $('.nav-link:hover').css('color', '#4F46E5');
-                $('#userMenuButton').css('color', '#374151');
-                $('#userMenuButton:hover').css('color', '#4F46E5');
-                $('.nav-text').css('color', '#374151');
+            if ($(window).scrollTop() > 300) {
+                $('#scrollToTop').addClass('visible');
             } else {
-                $('#navContainer').removeClass('shrink');
-                $('.nav-link').css('color', 'white');
-                $('.nav-link:hover').css('color', '#E5E7EB');
-                $('#userMenuButton').css('color', 'white');
-                $('#userMenuButton:hover').css('color', '#E5E7EB');
-                $('.nav-text').css('color', 'white');
+                $('#scrollToTop').removeClass('visible');
+            }
+
+            // Update navigation bar and text colors
+            if ($(window).scrollTop() > 50) {
+                $('nav').css({
+                    'background': 'rgba(255, 255, 255, 0.95)',
+                    'backdrop-filter': 'blur(10px)',
+                    '-webkit-backdrop-filter': 'blur(10px)',
+                    'border-bottom': '1px solid rgba(0, 0, 0, 0.1)'
+                });
+                $('.nav-link').css({
+                    'color': '#000000',
+                    'text-shadow': 'none'
+                });
+                $('.nav-text').css({
+                    'color': '#000000',
+                    'text-shadow': 'none'
+                });
+                $('.text-gray-800').css({
+                    'color': '#000000'
+                });
+                $('#userMenuButton').css('background', 'rgba(79, 70, 229, 0.1)');
+                $('.hotel-name').addClass('rainbow-text');
+                $('.hotel-name').css('color', 'transparent');
+            } else {
+                $('nav').css({
+                    'background': 'rgba(255, 255, 255, 0.1)',
+                    'backdrop-filter': 'blur(10px)',
+                    '-webkit-backdrop-filter': 'blur(10px)',
+                    'border-bottom': '1px solid rgba(255, 255, 255, 0.1)'
+                });
+                $('.nav-link').css({
+                    'color': 'white',
+                    'text-shadow': 'none'
+                });
+                $('.nav-text').css({
+                    'color': 'white',
+                    'text-shadow': 'none'
+                });
+                $('.text-gray-800').css({
+                    'color': 'white'
+                });
+                $('#userMenuButton').css('background', 'rgba(255, 255, 255, 0.2)');
+                $('.hotel-name').removeClass('rainbow-text');
+                $('.hotel-name').css('color', 'white');
             }
         });
+
+        function scrollToTop() {
+            $('html, body').animate({
+                scrollTop: 0
+            }, {
+                duration: 500,
+                easing: 'linear'
+            });
+        }
 
         // Check authentication
         $(document).ready(function() {
@@ -725,6 +1018,98 @@
         $('#profileOverlay').click(function() {
             closeProfilePanel();
         });
+
+        // Image Slider
+        let currentSlide = 0;
+        const slides = $('.swiper-slide');
+        const totalSlides = slides.length;
+
+        function showSlide(index) {
+            if (index < 0) {
+                currentSlide = totalSlides - 1;
+            } else if (index >= totalSlides) {
+                currentSlide = 0;
+            } else {
+                currentSlide = index;
+            }
+
+            // Hide all slides
+            slides.removeClass('active');
+            
+            // Show current slide
+            slides.eq(currentSlide).addClass('active');
+            
+            // Update indicators
+            $('.indicator').removeClass('active');
+            $('.indicator').eq(currentSlide).addClass('active');
+        }
+
+        function nextSlide() {
+            showSlide(currentSlide + 1);
+        }
+
+        function prevSlide() {
+            showSlide(currentSlide - 1);
+        }
+
+        // Auto slide every 5 seconds
+        let slideInterval = setInterval(nextSlide, 5000);
+
+        // Reset interval when manually changing slides
+        function resetInterval() {
+            clearInterval(slideInterval);
+            slideInterval = setInterval(nextSlide, 5000);
+        }
+
+        // Event listeners for manual navigation
+        $('#nextSlide').click(function() {
+            nextSlide();
+            resetInterval();
+        });
+
+        $('#prevSlide').click(function() {
+            prevSlide();
+            resetInterval();
+        });
+
+        // Event listeners for indicators
+        $('.indicator').click(function() {
+            const index = $(this).index();
+            showSlide(index);
+            resetInterval();
+        });
+
+        // Initialize first slide
+        showSlide(0);
+
+        // Add touch support
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        $('.swiper').on('touchstart', function(e) {
+            touchStartX = e.originalEvent.touches[0].clientX;
+        });
+
+        $('.swiper').on('touchend', function(e) {
+            touchEndX = e.originalEvent.changedTouches[0].clientX;
+            handleSwipe();
+        });
+
+        function handleSwipe() {
+            const swipeThreshold = 50;
+            const diff = touchStartX - touchEndX;
+
+            if (Math.abs(diff) > swipeThreshold) {
+                if (diff > 0) {
+                    // Swipe left
+                    nextSlide();
+                } else {
+                    // Swipe right
+                    prevSlide();
+                }
+                resetInterval();
+            }
+        }
     </script>
 </body>
 </html> 
