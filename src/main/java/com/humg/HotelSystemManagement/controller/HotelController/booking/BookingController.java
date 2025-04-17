@@ -31,6 +31,14 @@ public class BookingController {
                 .build();
     }
 
+    @GetMapping("/info/{bookingId}")
+    APIResponse<BookingResponse> findBookingById(@PathVariable("bookingId") String bookingId) {
+        return APIResponse.<BookingResponse>builder()
+                .result(bookingService.getBookingById(bookingId))
+                .message("Get booking successfully")
+                .build();
+    }
+
     @GetMapping("/list/{customerId}")
     APIResponse<Page<BookingResponse>> getAllBooking(
             @PathVariable("customerId") String customerId,

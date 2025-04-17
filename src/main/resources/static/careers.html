@@ -13,34 +13,21 @@
     <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <!-- Auth Script -->
     <script src="/js/auth.js"></script>
     <style>
-        .job-card {
+        /* Navigation Bar Styles */
+        .nav-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
             transition: all 0.3s ease;
         }
-        .job-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        .nav-container.scrolled {
+            background: rgba(255, 255, 255, 0.98);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
         }
-        .benefit-icon {
-            width: 48px;
-            height: 48px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #EEF2FF;
-            color: #4F46E5;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            transition: all 0.3s ease;
-        }
-        .benefit-card:hover .benefit-icon {
-            background: #4F46E5;
-            color: white;
-            transform: scale(1.1);
-        }
-        /* Navigation Link Styles */
         .nav-link {
             position: relative;
             padding: 0.5rem 1rem;
@@ -79,17 +66,83 @@
             color: #4F46E5;
             transform: translateY(-2px);
         }
-        /* Active Navigation Link */
         .nav-link.active {
             color: #4F46E5;
         }
         .nav-link.active::before {
             width: 100%;
         }
-        /* Smooth Scroll Container */
-        html {
-            scroll-behavior: smooth;
+
+        /* Role Card Styles */
+        .role-card {
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
         }
+        .role-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .role-image {
+            transition: transform 0.5s ease;
+            height: 300px;
+        }
+        .role-card:hover .role-image {
+            transform: scale(1.1);
+        }
+        .role-overlay {
+            background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+            transition: opacity 0.3s ease;
+            position: absolute;
+            inset: 0;
+        }
+        .role-card:hover .role-overlay {
+            opacity: 0.8;
+        }
+        .role-content {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 1.5rem;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            transform: translateY(100%);
+            transition: transform 0.3s ease;
+        }
+        .role-card:hover .role-content {
+            transform: translateY(0);
+        }
+        .role-title {
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease 0.1s;
+        }
+        .role-description {
+            color: rgba(255,255,255,0.9);
+            font-size: 1rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.3s ease 0.2s;
+        }
+        .role-card:hover .role-title,
+        .role-card:hover .role-description {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* Job Card Styles */
+        .job-card {
+            transition: all 0.3s ease;
+        }
+        .job-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+
         /* Custom Scrollbar */
         ::-webkit-scrollbar {
             width: 8px;
@@ -104,11 +157,73 @@
         ::-webkit-scrollbar-thumb:hover {
             background: linear-gradient(to bottom, #4338CA, #6D28D9);
         }
+
+        /* Service Value Card Styles */
+        .value-card {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(79, 70, 229, 0.1);
+        }
+        .value-card:hover {
+            transform: translateY(-5px);
+            border-color: rgba(79, 70, 229, 0.3);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .value-icon {
+            width: 64px;
+            height: 64px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #EEF2FF;
+            color: #4F46E5;
+            border-radius: 1rem;
+            margin-bottom: 1.5rem;
+            transition: all 0.3s ease;
+        }
+        .value-card:hover .value-icon {
+            background: #4F46E5;
+            color: white;
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Rating Card Styles */
+        .rating-card {
+            transition: all 0.3s ease;
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+        }
+        .rating-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .rating-stars {
+            color: #FCD34D;
+        }
+        .rating-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        .rating-quote {
+            position: relative;
+            padding-left: 1.5rem;
+        }
+        .rating-quote::before {
+            content: '"';
+            position: absolute;
+            left: 0;
+            top: -0.5rem;
+            font-size: 2rem;
+            color: #4F46E5;
+            opacity: 0.2;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
     <!-- Top Navigation -->
-    <nav class="bg-white shadow-lg fixed w-full z-50">
+    <nav class="nav-container fixed w-full z-50">
         <div class="max-w-7xl mx-auto px-4">
             <div class="flex justify-between h-16">
                 <div class="flex">
@@ -119,10 +234,21 @@
                 </div>
                 <div class="flex items-center">
                     <div class="flex items-center space-x-8">
-                        <a href="/customer-dashboard.html" class="nav-link text-gray-600 hover:text-gray-900">Home</a>
-                        <a href="#positions" class="nav-link text-gray-600 hover:text-gray-900" data-section="positions">Open Positions</a>
-                        <a href="#benefits" class="nav-link text-gray-600 hover:text-gray-900" data-section="benefits">Benefits</a>
-                        <a href="#culture" class="nav-link text-gray-600 hover:text-gray-900" data-section="culture">Our Culture</a>
+                        <a href="/customer-dashboard.html" class="nav-link text-gray-600 hover:text-gray-900">
+                            <i class="fas fa-home mr-2"></i>Home
+                        </a>
+                        <a href="#roles" class="nav-link text-gray-600 hover:text-gray-900" data-section="roles">
+                            <i class="fas fa-users mr-2"></i>Our Roles
+                        </a>
+                        <a href="#positions" class="nav-link text-gray-600 hover:text-gray-900" data-section="positions">
+                            <i class="fas fa-briefcase mr-2"></i>Open Positions
+                        </a>
+                        <a href="#benefits" class="nav-link text-gray-600 hover:text-gray-900" data-section="benefits">
+                            <i class="fas fa-gift mr-2"></i>Benefits
+                        </a>
+                        <a href="#culture" class="nav-link text-gray-600 hover:text-gray-900" data-section="culture">
+                            <i class="fas fa-heart mr-2"></i>Our Culture
+                        </a>
                     </div>
                 </div>
             </div>
@@ -148,6 +274,54 @@
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        <!-- Roles Section -->
+        <div id="roles" class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Our Key Roles</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <!-- Front Desk Role -->
+                <div class="role-card bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
+                             alt="Front Desk Staff" 
+                             class="role-image w-full object-cover">
+                        <div class="role-overlay"></div>
+                        <div class="role-content">
+                            <h3 class="role-title">Front Desk Team</h3>
+                            <p class="role-description">The face of our hotel, ensuring exceptional guest experiences from check-in to check-out.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Kitchen Role -->
+                <div class="role-card bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1583394293214-28ded15ee548?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
+                             alt="Kitchen Staff" 
+                             class="role-image w-full object-cover">
+                        <div class="role-overlay"></div>
+                        <div class="role-content">
+                            <h3 class="role-title">Culinary Team</h3>
+                            <p class="role-description">Creating memorable dining experiences through exceptional cuisine and service.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Housekeeping Role -->
+                <div class="role-card bg-white rounded-lg shadow-md overflow-hidden">
+                    <div class="relative">
+                        <img src="https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" 
+                             alt="Housekeeping Staff" 
+                             class="role-image w-full object-cover">
+                        <div class="role-overlay"></div>
+                        <div class="role-content">
+                            <h3 class="role-title">Housekeeping Team</h3>
+                            <p class="role-description">Maintaining pristine environments and ensuring guest comfort throughout their stay.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Why Join Us Section -->
         <div class="mb-16" data-aos="fade-up">
             <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Why Join DinhRise Hotel?</h2>
@@ -184,9 +358,9 @@
                         <li>Strong leadership and communication skills</li>
                         <li>Proficiency in hotel management software</li>
                     </ul>
-                    <a href="#" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
+                    <button onclick="showHRContact('Front Desk Manager')" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
                         Apply Now
-                    </a>
+                    </button>
                 </div>
 
                 <!-- Executive Chef -->
@@ -199,9 +373,9 @@
                         <li>Expertise in international cuisines</li>
                         <li>Strong menu development skills</li>
                     </ul>
-                    <a href="#" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
+                    <button onclick="showHRContact('Executive Chef')" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
                         Apply Now
-                    </a>
+                    </button>
                 </div>
 
                 <!-- Housekeeping Supervisor -->
@@ -214,9 +388,9 @@
                         <li>Strong organizational skills</li>
                         <li>Attention to detail</li>
                     </ul>
-                    <a href="#" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
+                    <button onclick="showHRContact('Housekeeping Supervisor')" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
                         Apply Now
-                    </a>
+                    </button>
                 </div>
 
                 <!-- Guest Relations Officer -->
@@ -229,9 +403,9 @@
                         <li>Customer service experience</li>
                         <li>Multilingual abilities preferred</li>
                     </ul>
-                    <a href="#" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
+                    <button onclick="showHRContact('Guest Relations Officer')" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
                         Apply Now
-                    </a>
+                    </button>
                 </div>
             </div>
         </div>
@@ -303,6 +477,115 @@
                 </div>
             </div>
         </div>
+
+        <!-- Service Values Section -->
+        <div class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">Our Service Values</h2>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div class="value-card bg-white p-6 rounded-lg">
+                    <div class="value-icon mx-auto">
+                        <i class="fas fa-heart text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">Guest-Centric</h3>
+                    <p class="text-gray-600 text-center">We prioritize our guests' needs and satisfaction above all else, ensuring personalized experiences.</p>
+                </div>
+                <div class="value-card bg-white p-6 rounded-lg">
+                    <div class="value-icon mx-auto">
+                        <i class="fas fa-star text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">Excellence</h3>
+                    <p class="text-gray-600 text-center">We maintain the highest standards of service quality and attention to detail in everything we do.</p>
+                </div>
+                <div class="value-card bg-white p-6 rounded-lg">
+                    <div class="value-icon mx-auto">
+                        <i class="fas fa-handshake text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">Professionalism</h3>
+                    <p class="text-gray-600 text-center">Our team delivers service with utmost professionalism, courtesy, and respect.</p>
+                </div>
+                <div class="value-card bg-white p-6 rounded-lg">
+                    <div class="value-icon mx-auto">
+                        <i class="fas fa-sync text-2xl"></i>
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2 text-center">Continuous Improvement</h3>
+                    <p class="text-gray-600 text-center">We constantly seek ways to enhance our services and exceed guest expectations.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Customer Ratings Section -->
+        <div class="mb-16" data-aos="fade-up">
+            <h2 class="text-3xl font-bold text-gray-900 mb-8 text-center">What Our Guests Say</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="rating-card p-6">
+                    <div class="flex items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" 
+                             alt="Guest" 
+                             class="rating-avatar mr-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Sarah Johnson</h4>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="rating-quote text-gray-600">"The staff's attention to detail and warm hospitality made our stay truly memorable. Every request was handled with professionalism and care."</p>
+                </div>
+                <div class="rating-card p-6">
+                    <div class="flex items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" 
+                             alt="Guest" 
+                             class="rating-avatar mr-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Michael Chen</h4>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="rating-quote text-gray-600">"Exceptional service from check-in to check-out. The culinary team's attention to dietary requirements was outstanding. Will definitely return!"</p>
+                </div>
+                <div class="rating-card p-6">
+                    <div class="flex items-center mb-4">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?ixlib=rb-1.2.1&auto=format&fit=crop&w=100&q=80" 
+                             alt="Guest" 
+                             class="rating-avatar mr-4">
+                        <div>
+                            <h4 class="font-semibold text-gray-800">Emily Rodriguez</h4>
+                            <div class="rating-stars">
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star"></i>
+                                <i class="fas fa-star-half-alt"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <p class="rating-quote text-gray-600">"The housekeeping team maintained impeccable cleanliness, and the front desk staff was always ready to assist. A truly luxurious experience!"</p>
+                </div>
+            </div>
+            <div class="mt-8 text-center">
+                <div class="inline-flex items-center space-x-2 bg-indigo-50 px-6 py-3 rounded-full">
+                    <span class="text-2xl font-bold text-indigo-600">4.8</span>
+                    <div class="rating-stars">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star-half-alt"></i>
+                    </div>
+                    <span class="text-gray-600">Based on 500+ reviews</span>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Footer -->
@@ -345,6 +628,15 @@
         AOS.init({
             duration: 1000,
             once: true
+        });
+
+        // Navigation scroll effect
+        $(window).scroll(function() {
+            if ($(window).scrollTop() > 50) {
+                $('.nav-container').addClass('scrolled');
+            } else {
+                $('.nav-container').removeClass('scrolled');
+            }
         });
 
         // Enhanced smooth scrolling with offset and active link highlighting
@@ -396,7 +688,6 @@
                         });
                     }
                 }
-                // If it's a page link, let it navigate normally
             });
 
             // Update active link on scroll
@@ -407,6 +698,24 @@
             // Initial active link update
             updateActiveLink();
         });
+
+        // Function to show HR contact information
+        function showHRContact(position) {
+            Swal.fire({
+                title: `Apply for ${position}`,
+                html: `
+                    <div class="text-left">
+                        <p class="mb-4">Please contact our HR team for application details:</p>
+                        <p class="mb-2"><i class="fas fa-phone mr-2"></i> Phone: 0913513395</p>
+                        <p class="mb-2"><i class="fas fa-envelope mr-2"></i> Email: 2121050110@gmail.com</p>
+                        <p class="mt-4 text-sm text-gray-600">We look forward to reviewing your application!</p>
+                    </div>
+                `,
+                icon: 'info',
+                confirmButtonText: 'Close',
+                confirmButtonColor: '#4F46E5'
+            });
+        }
     </script>
 </body>
 </html> 

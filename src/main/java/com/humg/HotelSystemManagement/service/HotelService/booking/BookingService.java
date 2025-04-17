@@ -4,6 +4,7 @@ import com.humg.HotelSystemManagement.dto.request.booking.BookingRequest;
 import com.humg.HotelSystemManagement.dto.response.booking.BookingResponse;
 import com.humg.HotelSystemManagement.dto.response.booking.bookingItems.BookingItemResponse;
 import com.humg.HotelSystemManagement.dto.response.booking.bookingRoom.BookingRoomResponse;
+import com.humg.HotelSystemManagement.dto.response.room.RoomResponse;
 import com.humg.HotelSystemManagement.entity.booking.Booking;
 import com.humg.HotelSystemManagement.entity.booking.BookingItems;
 import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
@@ -311,6 +312,49 @@ public class BookingService{
                    .customerName(booking.getCustomer().getName())
                    .build();
         });
+
+        return response;
+    }
+
+    public BookingResponse getBookingById(String bookingId) {
+        var booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        List<BookingRoomResponse> bookingRoomResponses = booking.getBookingRooms()
+                .stream()
+                .map(bookingRoom -> BookingRoomResponse.builder()
+                        .checkInDate(bookingRoom.getCheckInDate())
+                        .checkOutDate(bookingRoom.getCheckOutDate())
+                        .totalRoomAmount(bookingRoom.getTotalRoomAmount())
+                        .rooms(bookingRoom.getRooms()
+                                .stream()
+                                .map(Room::getRoomNumber)
+                                .collect(Collectors.toList())
+                        ).build()
+                )
+                .collect(Collectors.toList());
+
+        List<BookingItemResponse> bookingItemResponses = booking.getBookingItems()
+                .stream()
+                .map(bookingItems -> BookingItemResponse.builder()
+                        .hotelOffer(bookingItems.getHotelOffers().getServiceTypes())
+                        .quantity(bookingItems.getQuantity())
+                        .totalItemsPrice(bookingItems.getTotalItemsPrice())
+                        .build()
+                ).collect(Collectors.toList());
+
+        var response = BookingResponse.builder()
+                .bookingId(booking.getBookingId())
+                .bookingDate(booking.getBookingDate())
+                .bookingStatus(BookingStatus.CONFIRMED.toString())
+                .paymentStatus(PaymentStatus.COMPLETED.toString())
+                .totalRoomPrice(booking.getTotalRoomPrice())
+                .totalBookingServicePrice(booking.getTotalBookingServicePrice())
+                .grandTotal(booking.getGrandTotal())
+                .customerName(booking.getCustomer().getName())
+                .bookingRooms(bookingRoomResponses)
+                .bookingItems(bookingItemResponses)
+                .build();
 
         return response;
     }

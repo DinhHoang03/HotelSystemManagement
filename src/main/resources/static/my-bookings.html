@@ -119,6 +119,162 @@
             background-color: #4F46E5;
             color: white;
         }
+
+        /* Add styles for the modal */
+        .booking-details-modal .swal2-popup {
+            padding: 2rem;
+            animation: modalFadeIn 0.3s ease-out;
+            background: linear-gradient(to bottom right, #ffffff, #f8fafc);
+            border-radius: 1rem;
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            max-width: 90vw;
+            width: 900px;
+            margin: 2rem auto;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95) translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes modalFadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.95) translateY(10px);
+            }
+        }
+
+        .booking-details-modal .swal2-close {
+            transition: all 0.3s ease;
+            color: #4F46E5;
+            font-size: 1.5rem;
+            right: 1.5rem;
+            top: 1.5rem;
+            position: absolute;
+            z-index: 100;
+        }
+
+        .booking-details-modal .swal2-close:hover {
+            transform: rotate(90deg);
+            color: #4338CA;
+        }
+
+        .booking-details-modal .grid {
+            gap: 1.5rem;
+        }
+
+        .booking-details-modal .p-3 {
+            padding: 1.25rem;
+            transition: all 0.3s ease;
+            background: white;
+            border: 1px solid #E5E7EB;
+            border-radius: 0.75rem;
+        }
+
+        .booking-details-modal .mb-4 {
+            margin-bottom: 2rem;
+        }
+
+        .booking-details-modal .space-y-2 > * + * {
+            margin-top: 1rem;
+        }
+
+        .booking-details-modal .text-lg {
+            font-size: 1.25rem;
+            color: #1F2937;
+        }
+
+        .booking-details-modal .text-xl {
+            font-size: 1.5rem;
+        }
+
+        .booking-details-modal .p-4 {
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #EEF2FF, #E0E7FF);
+            border-radius: 1rem;
+        }
+
+        /* Hover effects */
+        .booking-details-modal .p-3:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            border-color: #C7D2FE;
+        }
+
+        /* Icon animations */
+        .booking-details-modal .fas {
+            transition: all 0.3s ease;
+        }
+
+        .booking-details-modal .p-3:hover .fas {
+            transform: scale(1.2);
+            color: #4F46E5;
+        }
+
+        /* Custom scrollbar */
+        .booking-details-modal .swal2-popup::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .booking-details-modal .swal2-popup::-webkit-scrollbar-track {
+            background: #F3F4F6;
+            border-radius: 3px;
+        }
+
+        .booking-details-modal .swal2-popup::-webkit-scrollbar-thumb {
+            background: #C7D2FE;
+            border-radius: 3px;
+        }
+
+        .booking-details-modal .swal2-popup::-webkit-scrollbar-thumb:hover {
+            background: #818CF8;
+        }
+
+        /* Title styling */
+        .booking-details-modal .swal2-title {
+            color: #1F2937;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding: 0 2rem;
+        }
+
+        /* Text colors */
+        .booking-details-modal .text-gray-600 {
+            color: #4B5563;
+        }
+
+        .booking-details-modal .text-indigo-600 {
+            color: #4F46E5;
+        }
+
+        .booking-details-modal .text-indigo-900 {
+            color: #312E81;
+        }
+
+        /* Font weights */
+        .booking-details-modal .font-semibold {
+            font-weight: 600;
+        }
+
+        .booking-details-modal .font-bold {
+            font-weight: 700;
+        }
+
+        /* Modal backdrop */
+        .swal2-backdrop-show {
+            background: rgba(0, 0, 0, 0.5) !important;
+        }
     </style>
 </head>
 <body>
@@ -469,6 +625,9 @@
                 // Show Create Bill button only when booking is in PENDING status
                 const showCreateBillButton = bookingStatus === 'pending';
 
+                // Show Display Booking button when booking is CONFIRMED
+                const showDisplayButton = bookingStatus === 'confirmed';
+
                 const bookingHtml = `
                     <div class="bg-white rounded-lg shadow-md p-6 mb-4 hover:shadow-lg transition-shadow duration-200">
                         <div class="flex flex-wrap justify-between items-start mb-4">
@@ -476,32 +635,39 @@
                                 <h3 class="text-lg font-semibold text-gray-800">Đơn đặt #${booking.bookingId}</h3>
                                 <p class="text-sm text-gray-500">Ngày đặt: ${new Date(booking.bookingDate).toLocaleDateString('vi-VN')}</p>
                                 <p class="text-sm text-gray-500">Trạng thái: ${booking.bookingStatus}</p>
-                            </div>
+                                            </div>
                             <div class="text-right">
                                 <p class="text-xl font-bold text-gray-900">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.grandTotal)}</p>
+                                </div>
                             </div>
-                        </div>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                             <div>
                                 <p class="text-gray-600">Room Total:</p>
                                 <p class="text-lg font-semibold">${formattedRoomPrice}</p>
-                            </div>
+                                            </div>
                             <div>
                                 <p class="text-gray-600">Services Total:</p>
                                 <p class="text-lg font-semibold">${formattedServicePrice}</p>
+                                </div>
                             </div>
-                        </div>
                         <div class="flex justify-between items-center pt-4 border-t">
                             <div>
                                 <p class="text-gray-600">Grand Total:</p>
                                 <p class="text-xl font-bold text-indigo-600">${formattedGrandTotal}</p>
-                            </div>
+                        </div>
                             <div class="flex space-x-2">
                                 ${showCreateBillButton ? `
                                     <button onclick="createBill('${booking.bookingId}')" 
                                             class="px-4 py-2 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 transition-colors duration-200 flex items-center space-x-2">
                                         <i class="fas fa-file-invoice-dollar"></i>
                                         <span>Create Bill</span>
+                                    </button>
+                                ` : ''}
+                                ${showDisplayButton ? `
+                                    <button onclick="displayBookingDetails('${booking.bookingId}')" 
+                                            class="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors duration-200 flex items-center space-x-2">
+                                        <i class="fas fa-info-circle"></i>
+                                        <span>Display Booking</span>
                                     </button>
                                 ` : ''}
                                 ${showCancelButton ? `
@@ -999,6 +1165,39 @@
             });
         }
 
+        // Thêm hàm mới để xác nhận việc hủy đặt phòng với cảnh báo không hoàn tiền
+        function cancelBookingWithConfirmation(bookingId) {
+            if (!bookingId) {
+                console.error('No booking ID provided');
+                return;
+            }
+
+            // Show confirmation dialog with warning about no refund
+            Swal.fire({
+                title: 'Hủy đặt phòng?',
+                html: `
+                    <div class="text-left">
+                        <p>Bạn có chắc chắn muốn hủy đặt phòng này?</p>
+                        <div class="mt-4 p-4 bg-red-50 rounded-lg">
+                            <p class="text-red-600 font-bold">Lưu ý quan trọng:</p>
+                            <p class="text-red-600">Việc hủy đặt phòng sẽ không được hoàn tiền.</p>
+                        </div>
+                    </div>
+                `,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280',
+                confirmButtonText: 'Đồng ý, hủy đặt phòng',
+                cancelButtonText: 'Không, giữ lại'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Người dùng đã xác nhận, tiến hành hủy đặt phòng
+                    cancelBooking(bookingId);
+                }
+            });
+        }
+
         // Function to create bill
         async function createBill(bookingId) {
             try {
@@ -1061,37 +1260,291 @@
             }
         }
 
-        // Thêm hàm mới để xác nhận việc hủy đặt phòng với cảnh báo không hoàn tiền
-        function cancelBookingWithConfirmation(bookingId) {
-            if (!bookingId) {
-                console.error('No booking ID provided');
-                return;
-            }
-
-            // Show confirmation dialog with warning about no refund
-            Swal.fire({
-                title: 'Hủy đặt phòng?',
-                html: `
-                    <div class="text-left">
-                        <p>Bạn có chắc chắn muốn hủy đặt phòng này?</p>
-                        <div class="mt-4 p-4 bg-red-50 rounded-lg">
-                            <p class="text-red-600 font-bold">Lưu ý quan trọng:</p>
-                            <p class="text-red-600">Việc hủy đặt phòng sẽ không được hoàn tiền.</p>
-                        </div>
-                    </div>
-                `,
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#EF4444',
-                cancelButtonColor: '#6B7280',
-                confirmButtonText: 'Đồng ý, hủy đặt phòng',
-                cancelButtonText: 'Không, giữ lại'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    // Người dùng đã xác nhận, tiến hành hủy đặt phòng
-                    cancelBooking(bookingId);
+        // Add function to display booking details
+        async function displayBookingDetails(bookingId) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/login.html';
+                    return;
                 }
-            });
+
+                // Save bookingId to localStorage
+                localStorage.setItem('currentBookingId', bookingId);
+
+                // Show loading indicator
+                Swal.fire({
+                    title: 'Loading Booking Details',
+                    text: 'Please wait...',
+                    icon: 'info',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+
+                const response = await fetch(`https://localhost:8443/booking/info/${bookingId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                console.log('Booking response:', data); // Debug log
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Failed to fetch booking details');
+                }
+
+                if (data.result) {
+                    const booking = data.result;
+                    console.log('Booking rooms:', booking.bookingRooms); // Debug log
+                    console.log('Booking items:', booking.bookingItems); // Debug log
+                    
+                    // Format the booking details for display
+                    const detailsHtml = `
+                        <div class="text-left">
+                            <div class="mb-4">
+                                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center">
+                                    <i class="fas fa-info-circle text-indigo-500 mr-2"></i>
+                                    Booking Information
+                                </h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-gray-600 flex items-center">
+                                            <i class="fas fa-hashtag text-gray-400 mr-2"></i>
+                                            Booking ID:
+                                        </p>
+                                        <p class="font-semibold">${booking.bookingId || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600 flex items-center">
+                                            <i class="fas fa-user text-gray-400 mr-2"></i>
+                                            Customer Name:
+                                        </p>
+                                        <p class="font-semibold">${booking.customerName || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600 flex items-center">
+                                            <i class="fas fa-calendar text-gray-400 mr-2"></i>
+                                            Booking Date:
+                                        </p>
+                                        <p class="font-semibold">${booking.bookingDate ? new Date(booking.bookingDate).toLocaleDateString('vi-VN') : 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600 flex items-center">
+                                            <i class="fas fa-clock text-gray-400 mr-2"></i>
+                                            Booking Status:
+                                        </p>
+                                        <p class="font-semibold">${booking.bookingStatus || 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600 flex items-center">
+                                            <i class="fas fa-credit-card text-gray-400 mr-2"></i>
+                                            Payment Status:
+                                        </p>
+                                        <p class="font-semibold">${booking.paymentStatus || 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center">
+                                    <i class="fas fa-bed text-indigo-500 mr-2"></i>
+                                    Room Details
+                                </h3>
+                                <div class="space-y-2">
+                                    ${Array.isArray(booking.bookingRooms) && booking.bookingRooms.length > 0 ? 
+                                        booking.bookingRooms.map(room => {
+                                            console.log('Processing room:', room);
+                                            return `
+                                                <div class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                                    <p class="font-semibold flex items-center">
+                                                        <i class="fas fa-door-open text-indigo-500 mr-2"></i>
+                                                        Room ${room.rooms?.[0] || 'N/A'}
+                                                    </p>
+                                                    <p class="text-gray-600 flex items-center">
+                                                        <i class="fas fa-sign-in-alt text-gray-400 mr-2"></i>
+                                                        Check-in: ${room.checkInDate ? new Date(room.checkInDate[0], room.checkInDate[1]-1, room.checkInDate[2]).toLocaleDateString('vi-VN') : 'N/A'}
+                                                    </p>
+                                                    <p class="text-gray-600 flex items-center">
+                                                        <i class="fas fa-sign-out-alt text-gray-400 mr-2"></i>
+                                                        Check-out: ${room.checkOutDate ? new Date(room.checkOutDate[0], room.checkOutDate[1]-1, room.checkOutDate[2]).toLocaleDateString('vi-VN') : 'N/A'}
+                                                    </p>
+                                                    <p class="text-gray-600 flex items-center">
+                                                        <i class="fas fa-money-bill-wave text-gray-400 mr-2"></i>
+                                                        Amount: ${room.totalRoomAmount ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(room.totalRoomAmount) : 'N/A'}
+                                                    </p>
+                                                </div>
+                                            `;
+                                        }).join('') : 
+                                        '<p class="text-gray-500 italic">No room details available</p>'
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="mb-4">
+                                <h3 class="text-lg font-bold text-gray-900 mb-2 flex items-center">
+                                    <i class="fas fa-concierge-bell text-indigo-500 mr-2"></i>
+                                    Service Details
+                                </h3>
+                                <div class="space-y-2">
+                                    ${Array.isArray(booking.bookingItems) && booking.bookingItems.length > 0 ? 
+                                        booking.bookingItems.map(item => {
+                                            console.log('Processing item:', item);
+                                            return `
+                                                <div class="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors duration-200">
+                                                    <p class="font-semibold flex items-center">
+                                                        <i class="fas fa-utensils text-indigo-500 mr-2"></i>
+                                                        ${item.hotelOffer || 'N/A'}
+                                                    </p>
+                                                    <p class="text-gray-600 flex items-center">
+                                                        <i class="fas fa-hashtag text-gray-400 mr-2"></i>
+                                                        Quantity: ${item.quantity || 'N/A'}
+                                                    </p>
+                                                    <p class="text-gray-600 flex items-center">
+                                                        <i class="fas fa-money-bill-wave text-gray-400 mr-2"></i>
+                                                        Price: ${item.totalItemsPrice ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(item.totalItemsPrice) : 'N/A'}
+                                                    </p>
+                                                </div>
+                                            `;
+                                        }).join('') : 
+                                        '<p class="text-gray-500 italic">No service details available</p>'
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="mt-4 p-4 bg-indigo-50 rounded-lg">
+                                <h3 class="text-lg font-bold text-indigo-900 mb-2 flex items-center">
+                                    <i class="fas fa-calculator text-indigo-500 mr-2"></i>
+                                    Payment Summary
+                                </h3>
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <p class="text-gray-600 flex items-center">
+                                            <i class="fas fa-bed text-gray-400 mr-2"></i>
+                                            Room Total:
+                                        </p>
+                                        <p class="font-semibold">${booking.totalRoomPrice ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.totalRoomPrice) : 'N/A'}</p>
+                                    </div>
+                                    <div>
+                                        <p class="text-gray-600 flex items-center">
+                                            <i class="fas fa-concierge-bell text-gray-400 mr-2"></i>
+                                            Services Total:
+                                        </p>
+                                        <p class="font-semibold">${booking.totalBookingServicePrice ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.totalBookingServicePrice) : 'N/A'}</p>
+                                    </div>
+                                    <div class="col-span-2">
+                                        <p class="text-gray-600 flex items-center">
+                                            <i class="fas fa-money-bill-wave text-gray-400 mr-2"></i>
+                                            Grand Total:
+                                        </p>
+                                        <p class="text-xl font-bold text-indigo-600">${booking.grandTotal ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(booking.grandTotal) : 'N/A'}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Show the details in a modal
+                    const modal = Swal.fire({
+                        title: 'Booking Details',
+                        html: detailsHtml,
+                        showCloseButton: true,
+                        showConfirmButton: false,
+                        allowOutsideClick: true,
+                        allowEscapeKey: true,
+                        customClass: {
+                            container: 'booking-details-modal',
+                            popup: 'max-h-[85vh] overflow-y-auto'
+                        },
+                        didOpen: () => {
+                            // Add animation to elements
+                            const elements = document.querySelectorAll('.booking-details-modal .p-3, .booking-details-modal .p-4');
+                            elements.forEach((el, index) => {
+                                el.style.opacity = '0';
+                                el.style.transform = 'translateY(20px)';
+                                setTimeout(() => {
+                                    el.style.transition = 'all 0.3s ease';
+                                    el.style.opacity = '1';
+                                    el.style.transform = 'translateY(0)';
+                                }, index * 100);
+                            });
+                        },
+                        willClose: () => {
+                            // Add closing animation
+                            const elements = document.querySelectorAll('.booking-details-modal .p-3, .booking-details-modal .p-4');
+                            elements.forEach((el, index) => {
+                                el.style.transition = 'all 0.2s ease';
+                                el.style.opacity = '0';
+                                el.style.transform = 'translateY(-20px)';
+                            });
+                        }
+                    });
+
+                    // Handle close button click
+                    document.querySelector('.swal2-close').addEventListener('click', () => {
+                        // Remove modal and backdrop
+                        const modalElement = document.querySelector('.swal2-container');
+                        const backdropElement = document.querySelector('.swal2-backdrop-show');
+                        
+                        if (modalElement) {
+                            modalElement.style.opacity = '0';
+                            modalElement.style.transition = 'opacity 0.2s ease';
+                        }
+                        
+                        if (backdropElement) {
+                            backdropElement.style.opacity = '0';
+                            backdropElement.style.transition = 'opacity 0.2s ease';
+                        }
+                        
+                        // Remove elements after animation
+                        setTimeout(() => {
+                            if (modalElement) modalElement.remove();
+                            if (backdropElement) backdropElement.remove();
+                            // Remove any remaining modal classes from body
+                            document.body.classList.remove('swal2-shown', 'swal2-height-auto');
+                        }, 200);
+                    });
+
+                    // Handle outside click
+                    document.querySelector('.swal2-backdrop-show')?.addEventListener('click', (e) => {
+                        if (e.target.classList.contains('swal2-backdrop-show')) {
+                            const modalElement = document.querySelector('.swal2-container');
+                            const backdropElement = document.querySelector('.swal2-backdrop-show');
+                            
+                            if (modalElement) {
+                                modalElement.style.opacity = '0';
+                                modalElement.style.transition = 'opacity 0.2s ease';
+                            }
+                            
+                            if (backdropElement) {
+                                backdropElement.style.opacity = '0';
+                                backdropElement.style.transition = 'opacity 0.2s ease';
+                            }
+                            
+                            setTimeout(() => {
+                                if (modalElement) modalElement.remove();
+                                if (backdropElement) backdropElement.remove();
+                                document.body.classList.remove('swal2-shown', 'swal2-height-auto');
+                            }, 200);
+                        }
+                    });
+                } else {
+                    throw new Error('No booking details found');
+                }
+            } catch (error) {
+                console.error('Error displaying booking details:', error);
+                Swal.fire({
+                    title: 'Error',
+                    text: error.message || 'Failed to load booking details',
+                    icon: 'error',
+                    confirmButtonText: 'OK'
+                });
+            }
         }
     </script>
 </body>
