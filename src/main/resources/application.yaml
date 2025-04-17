@@ -2,7 +2,14 @@ application:
   name: hotel-system-management
 
 server:
-  port: 8080
+  port: 8443
+  ssl:
+    enabled: true
+    key-store: classpath:keystore.jks
+    key-store-password: dinh1012
+    key-store-type: JKS
+    key-alias: myssl
+    key-password: dinh1012
 
 spring:
   mvc:
@@ -10,6 +17,8 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/
+  main:
+    allow-bean-definition-overriding: true
   datasource:
     url: jdbc:mysql://localhost:3306/hotel_database_management
     username: root
@@ -28,12 +37,39 @@ paypal:
   mode: sandbox
 
 zalo-pay:
-  app-id: 553
-  key1: "9phuAOYhan4urywHTh0ndEXiV3pKHr5Q"
+  app-id: 2554
+  key1: "sdngKKJmqEMzvh5QQcdD2A9XBSKUNaYn"
   key2: "Iyz2habzyr7AG8SgvoBCbKwKi3UzlLi3"
   create-order-url: "https://sb-openapi.zalopay.vn/v2/create"
+  redirect-url: https://35dc-14-232-67-63.ngrok-free.app/payment-success.html
+  callback-url: https://35dc-14-232-67-63.ngrok-free.app/zalopay/callback
 
 jwt:
   signerKey: "rFpGwv/uscX+l9y5QCe6X5H`3Y825wsLAAuXHT2WgsBiibbVkUj/hrr9GFT+xoEDE"
   valid-duration: 1 #in hour
   refreshable-duration: 7 #in days
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

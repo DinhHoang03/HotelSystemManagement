@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Payment - DinhRise Hotel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Auth Script -->
+    <script src="/js/auth.js"></script>
+    <style>
+        .payment-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        .payment-card {
+            background: white;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+        .payment-method {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border: 2px solid #E5E7EB;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .payment-method:hover {
+            border-color: #4F46E5;
+            background: #F5F3FF;
+        }
+        .payment-method.selected {
+            border-color: #4F46E5;
+            background: #F5F3FF;
+        }
+        .payment-method img {
+            width: 40px;
+            height: 40px;
+            margin-right: 1rem;
+        }
+        .payment-details {
+            margin-top: 2rem;
+            padding-top: 2rem;
+            border-top: 1px solid #E5E7EB;
+        }
+        .payment-summary {
+            background: #F9FAFB;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+            margin-top: 1rem;
+        }
+        .payment-summary-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 0.5rem;
+        }
+        .payment-summary-item.total {
+            font-weight: 600;
+            font-size: 1.125rem;
+            color: #1F2937;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #E5E7EB;
+        }
+        .btn-pay {
+            background: linear-gradient(to right, #4F46E5, #7C3AED);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 1.5rem;
+        }
+        .btn-pay:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+        }
+        .btn-pay:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        .loading {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .loading.active {
+            display: flex;
+        }
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #F3F4F6;
+            border-top: 4px solid #4F46E5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50">
+    <!-- Loading Overlay -->
+    <div class="loading" id="loadingOverlay">
+        <div class="loading-spinner"></div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-lg fixed w-full z-50">
+        <div class="max-w-7xl mx-auto px-4">
+            <div class="flex justify-between h-16">
+                <div class="flex">
+                    <div class="flex-shrink-0 flex items-center">
+                        <img class="h-8 w-auto" src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo">
+                        <span class="ml-2 text-xl font-bold text-gray-800">DinhRise Hotel</span>
+                    </div>
+                </div>
+                <div class="flex items-center">
+                    <a href="/customer-dashboard.html" class="text-gray-600 hover:text-gray-900">Back to Dashboard</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="payment-container pt-24">
+        <h1 class="text-3xl font-bold text-gray-900 mb-8">Payment</h1>
+        
+        <div class="payment-card">
+            <h2 class="text-xl font-semibold text-gray-800 mb-4">Select Payment Method</h2>
+            
+            <div class="payment-method" id="zaloPayMethod">
+                <img src="https://cdn-icons-png.flaticon.com/512/5968/5968520.png" alt="ZaloPay">
+                <div>
+                    <h3 class="font-medium text-gray-800">ZaloPay</h3>
+                    <p class="text-sm text-gray-600">Pay with your ZaloPay account</p>
+                </div>
+            </div>
+
+            <div class="payment-details">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4">Payment Summary</h3>
+                <div class="payment-summary">
+                    <div class="payment-summary-item">
+                        <span class="text-gray-600">Room Type</span>
+                        <span class="text-gray-800" id="roomType">-</span>
+                    </div>
+                    <div class="payment-summary-item">
+                        <span class="text-gray-600">Check-in Date</span>
+                        <span class="text-gray-800" id="checkInDate">-</span>
+                    </div>
+                    <div class="payment-summary-item">
+                        <span class="text-gray-600">Check-out Date</span>
+                        <span class="text-gray-800" id="checkOutDate">-</span>
+                    </div>
+                    <div class="payment-summary-item">
+                        <span class="text-gray-600">Number of Nights</span>
+                        <span class="text-gray-800" id="nights">-</span>
+                    </div>
+                    <div class="payment-summary-item">
+                        <span class="text-gray-600">Room Price</span>
+                        <span class="text-gray-800" id="roomPrice">-</span>
+                    </div>
+                    <div class="payment-summary-item">
+                        <span class="text-gray-600">Tax</span>
+                        <span class="text-gray-800" id="tax">-</span>
+                    </div>
+                    <div class="payment-summary-item total">
+                        <span>Total Amount</span>
+                        <span id="totalAmount">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <button id="payButton" class="btn-pay" disabled>
+                <i class="fas fa-lock"></i>
+                Pay Now
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Check authentication
+        $(document).ready(function() {
+            checkAuth();
+            loadBookingDetails();
+        });
+
+        // Load booking details from URL parameters
+        function loadBookingDetails() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookingId = urlParams.get('bookingId');
+            
+            if (!bookingId) {
+                alert('No booking ID provided');
+                window.location.href = '/customer-dashboard.html';
+                return;
+            }
+
+            // Show loading overlay
+            $('#loadingOverlay').addClass('active');
+
+            // Get booking details
+            $.ajax({
+                url: `/booking/${bookingId}`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    if (response && response.result) {
+                        const booking = response.result;
+                        $('#roomType').text(booking.roomType);
+                        $('#checkInDate').text(new Date(booking.checkInDate).toLocaleDateString());
+                        $('#checkOutDate').text(new Date(booking.checkOutDate).toLocaleDateString());
+                        $('#nights').text(booking.nights);
+                        $('#roomPrice').text(formatCurrency(booking.roomPrice));
+                        $('#tax').text(formatCurrency(booking.tax));
+                        $('#totalAmount').text(formatCurrency(booking.grandTotal));
+
+                        // Enable pay button
+                        $('#payButton').prop('disabled', false);
+                    } else {
+                        alert('Failed to load booking details');
+                        window.location.href = '/customer-dashboard.html';
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error loading booking details');
+                    window.location.href = '/customer-dashboard.html';
+                },
+                complete: function() {
+                    $('#loadingOverlay').removeClass('active');
+                }
+            });
+        }
+
+        // Format currency
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('vi-VN', {
+                style: 'currency',
+                currency: 'VND'
+            }).format(amount);
+        }
+
+        // Handle payment method selection
+        $('#zaloPayMethod').click(function() {
+            $('.payment-method').removeClass('selected');
+            $(this).addClass('selected');
+        });
+
+        // Handle payment
+        $('#payButton').click(function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const bookingId = urlParams.get('bookingId');
+
+            if (!bookingId) {
+                alert('No booking ID provided');
+                return;
+            }
+
+            // Show loading overlay
+            $('#loadingOverlay').addClass('active');
+
+            // Create booking bill
+            $.ajax({
+                url: '/bill/create',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                data: {
+                    bookingId: bookingId
+                },
+                success: function(response) {
+                    if (response && response.result) {
+                        const bill = response.result;
+                        // Redirect to ZaloPay payment page
+                        window.location.href = bill.paymentUrl;
+                    } else {
+                        alert('Failed to create payment');
+                    }
+                },
+                error: function(xhr) {
+                    alert('Error creating payment');
+                },
+                complete: function() {
+                    $('#loadingOverlay').removeClass('active');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

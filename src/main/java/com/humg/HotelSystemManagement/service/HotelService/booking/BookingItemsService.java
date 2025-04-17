@@ -25,9 +25,9 @@ import java.util.stream.Collectors;
 public class BookingItemsService {
     BookingItemsRepository bookingItemsRepository;
     HotelOffersRepository hotelOffersRepository;
-    BookingItemsMapper bookingItemsMapper;
     NormalizeString normalizeString;
 
+    @Transactional
     public BookingItemResponse createOrder(BookingItemRequest request, String username) {
         BookingItems bookingItems;
 
@@ -61,47 +61,6 @@ public class BookingItemsService {
                 .quantity(result.getQuantity())
                 .totalItemsPrice(result.getTotalItemsPrice())
                 .build();
-    }
-
-    @Transactional
-    public List<BookingItemResponse> createOrders(List<BookingItemRequest> requests, String userId){
-        if(requests == null || requests.isEmpty()){
-            return new ArrayList<>();
-        }
-
-        List<BookingItems> bookingItemsList = requests
-                .stream()
-                .map(
-                        request -> {
-                            var normalizeHotelOffer = normalizeString.normalizedString(request.getHotelOffer());
-                            var hotelOffer = hotelOffersRepository.findByServiceTypes(normalizeHotelOffer)
-                                    .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
-
-                            var quantity = request.getQuantity();
-                            var totalItemsPrice = hotelOffer.getPrice() * quantity;
-
-                            return BookingItems.builder()
-                                    .booking(null)
-                                    .username(userId)
-                                    .quantity(quantity)
-                                    .hotelOffers(hotelOffer)
-                                    .totalItemsPrice(totalItemsPrice)
-                                    .build();
-                        }
-                )
-                .collect(Collectors.toList());
-
-        var result = bookingItemsRepository.saveAll(bookingItemsList);
-
-        return result
-                .stream()
-                .map(bookingItems -> BookingItemResponse.builder()
-                        .bookingItemId(bookingItems.getBookingItemId())
-                        .hotelOffer(bookingItems.getHotelOffers().getServiceTypes())
-                        .quantity(bookingItems.getQuantity())
-                        .totalItemsPrice(bookingItems.getTotalItemsPrice())
-                        .build())
-                .collect(Collectors.toList());
     }
 
     public void deleteBookingItems(String bookingItemId){

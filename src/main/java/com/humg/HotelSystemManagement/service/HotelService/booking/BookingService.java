@@ -148,7 +148,7 @@ public class BookingService{
                 .totalBookingServicePrice(finalBooking.getTotalBookingServicePrice())
                 .grandTotal(finalBooking.getGrandTotal())
                 .customerName(finalBooking.getCustomer().getName())
-                /**
+                 /**
                 .bookingItems(finalBooking.getBookingItems()
                         .stream()
                         .map(

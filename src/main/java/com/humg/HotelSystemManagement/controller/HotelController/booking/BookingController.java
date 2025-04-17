@@ -39,7 +39,7 @@ public class BookingController {
     ) {
         return APIResponse.<Page<BookingResponse>>builder()
                 .result(bookingService.getAllBookingByUserId(customerId, page, size))
-                .message("Get all booking successfully")
+                .message("Get all bookings successfully")
                 .build();
     }
 

@@ -32,7 +32,7 @@ public class BookingBill {
     LocalDate paymentDate;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_id", referencedColumnName = "booking_id", unique = true)
+    @JoinColumn(name = "booking_id", referencedColumnName = "booking_id")
     Booking booking;
 
     @OneToMany(mappedBy = "bookingBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)

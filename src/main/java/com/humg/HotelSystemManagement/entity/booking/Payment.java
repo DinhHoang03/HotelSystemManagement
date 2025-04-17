@@ -50,6 +50,10 @@ public class Payment {
 
     @Column(name = "payment_response", columnDefinition = "TEXT")
     String paymentResponse;
+    
+    @Version
+    @Column(name = "version")
+    Long version = 0L;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_bill_id", nullable = false)

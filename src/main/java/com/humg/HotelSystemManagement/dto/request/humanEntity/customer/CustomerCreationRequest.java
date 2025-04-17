@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.dto.request.humanEntity.customer;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -41,10 +42,8 @@ public class CustomerCreationRequest {
     @NotNull(message = "REQUEST_NULL")
     String address;
 
-//    @Pattern(regexp = "^CUSTOMER$",
-//            message = "INVALID_ROLE")
-//    @NotNull(message = "REQUEST_NULL")
-//    String role;
+    @JsonIgnore
+    String role;
 
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,16}$",
             message = "INVALID_PASSWORD")
