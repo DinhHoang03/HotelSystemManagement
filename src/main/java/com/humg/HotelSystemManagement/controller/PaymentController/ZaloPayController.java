@@ -30,6 +30,4 @@ public class ZaloPayController {
                 .message("Create order success")
                 .build();
     }
-
-
 }

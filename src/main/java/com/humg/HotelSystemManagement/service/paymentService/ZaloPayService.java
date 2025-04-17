@@ -59,7 +59,7 @@ public class ZaloPayService {
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
         Map<String, Object> zaloPayOrder = new HashMap<>();
-        zaloPayOrder.put("app_id", 553);
+        zaloPayOrder.put("app_id", zaloPayConfig.getAppId());
         zaloPayOrder.put("app_trans_id", getCurrentTimeString("yyMMdd") + "_" + randomId);
         zaloPayOrder.put("app_time", System.currentTimeMillis());
         zaloPayOrder.put("app_user", bookingBill.getBooking().getCustomer().getUsername());
@@ -88,7 +88,7 @@ public class ZaloPayService {
         Map<String, Object> embedData = new LinkedHashMap<>();
         embedData.put("promotioninfo", "");
         embedData.put("merchantinfo", "hotel");
-        //embedData.put("redirecturl", zaloPayConfig.getRedirectUrl());
+        embedData.put("redirecturl", zaloPayConfig.getRedirectUrl());
 
         /**
         Map<String, String> columnInfo = new LinkedHashMap<>();
@@ -112,7 +112,7 @@ public class ZaloPayService {
         log.info("Data for MAC: {}", data);
 
 // Tiếp theo: sinh MAC, gửi request như cũ
-        String mac = HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, "9phuAOYhan4urywHTh0ndEXiV3pKHr5Q", data);
+        String mac = HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, zaloPayConfig.getKey1(), data);
 
         //String mac = HMACUtil.computeHMac(data, ZaloPayConfig.KEY1);
         log.info("Generated MAC: {}", mac);
@@ -148,7 +148,7 @@ public class ZaloPayService {
         String mac = HMACUtil.HMacHexStringEncode(HMACUtil.HMACSHA256, zaloPayConfig.getKey1(), data);
 
         try (CloseableHttpClient client = HttpClients.createDefault()) {
-            HttpPost post = new HttpPost("https://sb-openapi.zalopay.vn/v2/query");
+            HttpPost post = new HttpPost(zaloPayConfig.getOrderStatusUrl());
 
             List<NameValuePair> params = new ArrayList<>();
             params.add(new BasicNameValuePair("app_id", zaloPayConfig.getAppId().toString()));

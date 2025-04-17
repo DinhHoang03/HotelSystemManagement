@@ -21,17 +21,22 @@ public class ZaloPayConfig {
     @Value("${zalo-pay.create-order-url}")
     private String createOrderUrl;
 
-    @Value("${zalo-pay.callback-url}")
-    private String callbackUrl;
+    @Value("${zalo-pay.order-status-url}")
+    private String orderStatusUrl;
 
     @Value("${zalo-pay.redirect-url}")
     private String redirectUrl;
+
+    @Value("${zalo-pay.callback-url}")
+    private String callbackUrl;
+
 
     @PostConstruct
     public void init() {
         System.out.println("ZaloPay Configuration:");
         System.out.println("App ID: " + appId);
         System.out.println("Create Order URL: " + createOrderUrl);
+        System.out.println("Order Status URL: " + orderStatusUrl);
         System.out.println("Redirect URL: " + redirectUrl);
         System.out.println("Callback URL: " + callbackUrl);
     }
@@ -50,6 +55,10 @@ public class ZaloPayConfig {
 
     public String getCreateOrderUrl() {
         return createOrderUrl;
+    }
+
+    public String getOrderStatusUrl() {
+        return orderStatusUrl;
     }
 
     public String getCallbackUrl() {

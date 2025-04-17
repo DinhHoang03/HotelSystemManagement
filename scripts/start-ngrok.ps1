@@ -35,13 +35,13 @@ try {
 
         # Thay thế callback-url và redirect-url
         $newCallbackUrl = "$ngrokUrl/zalopay/callback"
-        $newRedirectUrl = "$ngrokUrl/payment-success.html"
+        #$newRedirectUrl = "$ngrokUrl/payment-success.html"
         Write-Output "Thay thế callback-url thành: $newCallbackUrl"
-        Write-Output "Thay thế redirect-url thành: $newRedirectUrl"
+        #Write-Output "Thay thế redirect-url thành: $newRedirectUrl"
 
         # Sử dụng regex để khớp dòng callback-url và redirect-url
         $yamlContent = $yamlContent -replace "callback-url:\s*.*", "callback-url: $newCallbackUrl"
-        $yamlContent = $yamlContent -replace "redirect-url:\s*.*", "redirect-url: $newRedirectUrl"
+        #$yamlContent = $yamlContent -replace "redirect-url:\s*.*", "redirect-url: $newRedirectUrl"
 
         # Ghi lại file YAML
         Write-Output "Đang ghi file YAML..."

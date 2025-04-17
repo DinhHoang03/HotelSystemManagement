@@ -40,8 +40,8 @@ public class BookingBillController {
                 .build();
     }
 
-    @DeleteMapping("/delete/{billId}")
-    APIResponse<Void> deleteBookingBill(@PathVariable String billId, 
+    @DeleteMapping("/del/{billId}")
+    APIResponse<Void> deleteBookingBill(@PathVariable("billId") String billId,
                                        @AuthenticationPrincipal Jwt principal) {
         String username = principal.getSubject();
         bookingBillService.deleteBill(billId, username);

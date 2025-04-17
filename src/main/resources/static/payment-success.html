@@ -199,10 +199,10 @@
                 
                 <!-- Action Buttons -->
                 <div class="flex flex-col sm:flex-row gap-4 mt-8">
-                    <a href="/my-bookings.html" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-lg text-center transition duration-300 flex items-center justify-center">
+                    <a href="/my-bookings.html" id="viewBookingsBtn" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-lg text-center transition duration-300 flex items-center justify-center">
                         <i class="fas fa-list mr-2"></i> Xem đơn đặt
                     </a>
-                    <a href="/customer-dashboard.html" class="flex-1 bg-white border-2 gold-border text-gray-900 hover:bg-gray-50 font-semibold py-4 px-6 rounded-lg text-center transition duration-300 flex items-center justify-center gold-hover">
+                    <a href="/customer-dashboard.html" id="homeBtn" class="flex-1 bg-white border-2 gold-border text-gray-900 hover:bg-gray-50 font-semibold py-4 px-6 rounded-lg text-center transition duration-300 flex items-center justify-center gold-hover">
                         <i class="fas fa-home mr-2"></i> Về trang chủ
                     </a>
                 </div>
@@ -216,11 +216,135 @@
         const orderId = urlParams.get('orderId');
         const amount = urlParams.get('amount');
         const paymentTime = urlParams.get('paymentTime');
-
+        
+        // Lấy thông tin từ localStorage
+        const bookingBillId = localStorage.getItem('currentBookingBillId');
+        
         // Cập nhật thông tin lên giao diện
-        document.getElementById('orderId').textContent = orderId || 'N/A';
+        document.getElementById('orderId').textContent = bookingBillId || orderId || 'N/A';
         document.getElementById('amount').textContent = amount ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount) : 'N/A';
-        document.getElementById('paymentTime').textContent = paymentTime ? new Date(paymentTime).toLocaleString('vi-VN') : 'N/A';
+        document.getElementById('paymentTime').textContent = paymentTime ? new Date(paymentTime).toLocaleString('vi-VN') : (new Date().toLocaleString('vi-VN'));
+
+        // Xử lý chức năng xóa bill khi nhấp vào nút điều hướng
+        document.getElementById('viewBookingsBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteBillAndRedirect('/my-bookings.html');
+        });
+        
+        document.getElementById('homeBtn').addEventListener('click', function(e) {
+            e.preventDefault();
+            deleteBillAndRedirect('/customer-dashboard.html');
+        });
+        
+        // Hàm xóa bill và chuyển hướng
+        function deleteBillAndRedirect(url) {
+            const billId = bookingBillId || orderId;
+            console.log('Attempting to delete bill ID:', billId);
+            
+            if (!billId) {
+                console.error('No bill ID found in localStorage or URL parameters');
+                alert('Không tìm thấy ID hóa đơn để xóa');
+                window.location.href = url;
+                return;
+            }
+            
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('No authentication token found');
+                alert('Bạn cần đăng nhập lại để hoàn tất quá trình này');
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Hiển thị thông báo đang xử lý
+            const successElement = document.querySelector('.success-animation');
+            if (successElement) {
+                successElement.style.opacity = '0.5';
+            }
+            
+            // Thông báo đang xử lý
+            const processingMessage = document.createElement('div');
+            processingMessage.innerHTML = `
+                <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                            background: rgba(0,0,0,0.8); color: white; padding: 20px; border-radius: 10px;
+                            z-index: 9999; text-align: center;">
+                    <p>Đang xóa hóa đơn...</p>
+                </div>
+            `;
+            document.body.appendChild(processingMessage);
+            
+            console.log(`Sending DELETE request to: https://localhost:8443/bill/del/${billId}`);
+            console.log(`With token: ${token.substring(0, 10)}...`);
+            
+            // Gọi API xóa bill
+            fetch(`https://localhost:8443/bill/del/${billId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                console.log('Delete bill response status:', response.status);
+                console.log('Delete bill response headers:', [...response.headers.entries()]);
+                
+                if (!response.ok) {
+                    throw new Error('Server returned status: ' + response.status);
+                }
+                
+                return response.text().then(text => {
+                    return text ? JSON.parse(text) : {};
+                }).catch(e => {
+                    console.log('Response is not JSON or is empty:', e);
+                    return {};
+                });
+            })
+            .then(data => {
+                console.log('Delete bill success data:', data);
+                // Xóa bookingBillId khỏi localStorage
+                localStorage.removeItem('currentBookingBillId');
+                // Chuyển hướng đến trang đích không hiển thị thông báo
+                window.location.href = url;
+            })
+            .catch(error => {
+                console.error('Error deleting bill:', error);
+                
+                // Hiển thị dialog lỗi chi tiết hơn
+                const errorDialog = document.createElement('div');
+                errorDialog.innerHTML = `
+                    <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+                                background: white; padding: 20px; border-radius: 10px; max-width: 80%;
+                                z-index: 9999; text-align: left; box-shadow: 0 0 20px rgba(0,0,0,0.5);">
+                        <h3 style="color: red; margin-top: 0;">Lỗi khi xóa hóa đơn</h3>
+                        <p>${error.message}</p>
+                        <p>Bill ID: ${billId}</p>
+                        <pre style="background: #f0f0f0; padding: 10px; overflow: auto; max-height: 200px;">${error.stack || 'No stack trace available'}</pre>
+                        <div style="text-align: right; margin-top: 15px;">
+                            <button id="errorCloseBtn" style="padding: 8px 15px; background: #4F46E5; color: white; border: none; border-radius: 5px; cursor: pointer;">Đóng</button>
+                            <button id="errorContinueBtn" style="padding: 8px 15px; background: #22c55e; color: white; border: none; border-radius: 5px; margin-left: 10px; cursor: pointer;">Tiếp tục</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(errorDialog);
+                
+                // Xử lý sự kiện đóng dialog
+                document.getElementById('errorCloseBtn').addEventListener('click', function() {
+                    document.body.removeChild(errorDialog);
+                });
+                
+                // Xử lý sự kiện tiếp tục
+                document.getElementById('errorContinueBtn').addEventListener('click', function() {
+                    document.body.removeChild(errorDialog);
+                    window.location.href = url;
+                });
+            })
+            .finally(() => {
+                // Xóa thông báo đang xử lý
+                if (processingMessage && processingMessage.parentNode) {
+                    document.body.removeChild(processingMessage);
+                }
+            });
+        }
 
         // Thêm hiệu ứng khi trang được tải
         document.addEventListener('DOMContentLoaded', () => {

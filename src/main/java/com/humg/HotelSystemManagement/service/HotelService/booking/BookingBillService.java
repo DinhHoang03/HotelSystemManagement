@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.humg.HotelSystemManagement.configuration.payment.ZaloPayConfig;
 import com.humg.HotelSystemManagement.dto.request.booking.bookingBill.BookingBillRequest;
 import com.humg.HotelSystemManagement.dto.response.booking.bookingBill.BookingBillResponse;
+import com.humg.HotelSystemManagement.entity.booking.Booking;
 import com.humg.HotelSystemManagement.entity.booking.BookingBill;
 
 import com.humg.HotelSystemManagement.entity.enums.BookingStatus;
@@ -114,13 +115,20 @@ public class BookingBillService {
         var bookingBill = bookingBillRepository.findById(bookingBillId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
+        Booking booking = bookingRepository.findById(bookingBill.getBooking().getBookingId())
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        booking.getBookingBill();
+        booking.setBookingBill(null);
+        bookingRepository.save(booking);
+
         // Kiểm tra quyền truy cập
         if (!bookingBill.getBooking().getCustomer().getUsername().equals(username)) {
             throw new AppException(AppErrorCode.UNAUTHORIZED);
         }
 
         // Cập nhật lại trạng thái của booking (chuyển từ WAITING_PAYMENT về CONFIRMED)
-        var booking = bookingBill.getBooking();
+        //booking = bookingBill.getBooking();
         booking.setBookingStatus(BookingStatus.CONFIRMED);
         bookingRepository.save(booking);
 
