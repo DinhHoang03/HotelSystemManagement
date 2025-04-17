@@ -52,11 +52,237 @@
             overflow: hidden;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
             transition: all 0.3s ease;
+            position: relative;
+            background: linear-gradient(135deg, #f5f7ff 0%, #ffffff 100%);
+            border-left: 6px solid #4F46E5;
+            margin-bottom: 1.5rem;
+            max-width: 95%;
+            width: 95%;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .bill-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+        }
+
+        .bill-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -6px;
+            height: 100%;
+            width: 6px;
+            background: repeating-linear-gradient(
+                0deg,
+                #4F46E5,
+                #4F46E5 10px,
+                #818CF8 10px,
+                #818CF8 20px
+            );
+        }
+
+        .bill-card::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 15px;
+            background-color: #f5f7ff;
+        }
+
+        .right-border-dots {
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 100%;
+            width: 15px;
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .right-border-dots::before {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 10px;
+            height: calc(100% - 20px);
+            background-image: radial-gradient(circle, #C7D2FE 3px, transparent 3px);
+            background-size: 10px 20px;
+            background-position: 0 0;
+            background-repeat: repeat-y;
+        }
+
+        .bill-header {
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            color: white;
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem 0.5rem 0 0;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .bill-header::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(135deg, #4F46E5 0%, #7C3AED 100%);
+            clip-path: polygon(
+                0 0, 
+                5% 0, 5% 100%, 
+                10% 0, 15% 0, 15% 100%, 
+                20% 0, 25% 0, 25% 100%, 
+                30% 0, 35% 0, 35% 100%, 
+                40% 0, 45% 0, 45% 100%, 
+                50% 0, 55% 0, 55% 100%, 
+                60% 0, 65% 0, 65% 100%, 
+                70% 0, 75% 0, 75% 100%, 
+                80% 0, 85% 0, 85% 100%, 
+                90% 0, 95% 0, 95% 100%, 
+                100% 0
+            );
+        }
+
+        .bill-body {
+            padding: 1.5rem 1rem 1rem;
+            position: relative;
+            min-height: 350px;
+        }
+
+        .bill-footer {
+            background: #F3F4F6;
+            padding: 0.75rem;
+            border-radius: 0 0 0.5rem 0.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+        }
+
+        .bill-id {
+            font-size: 1.25rem;
+            font-weight: 700;
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            padding: 0.2rem 0.4rem;
+            border-radius: 0.25rem;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .bill-date {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .bill-price {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4F46E5;
+            text-align: right;
+            background: linear-gradient(135deg, #4F46E5, #7C3AED);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .bill-separator {
+            height: 1px;
+            background: repeating-linear-gradient(
+                90deg,
+                #E5E7EB,
+                #E5E7EB 5px,
+                transparent 5px,
+                transparent 10px
+            );
+            margin: 0.75rem 0;
+        }
+
+        .pay-button {
+            background: linear-gradient(to right, #4F46E5, #7C3AED);
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            box-shadow: 0 4px 6px rgba(79, 70, 229, 0.2);
+        }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 10px rgba(79, 70, 229, 0.3);
+            background: linear-gradient(to right, #4338CA, #6D28D9);
+        }
+
+        .pay-button i {
+            font-size: 1.2rem;
+        }
+        
+        .bill-amount-label {
+            font-size: 0.875rem;
+            color: #6B7280;
+            margin-bottom: 0.25rem;
+        }
+
+        .hotel-logo {
+            background: white;
+            padding: 0.4rem;
+            border-radius: 0.25rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            transform: rotate(5deg);
+            transition: all 0.3s ease;
+        }
+
+        .hotel-logo:hover {
+            transform: rotate(0deg) scale(1.1);
+        }
+
+        .hotel-logo img {
+            height: 1.75rem;
+            width: auto;
+        }
+
+        .bill-info-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.4rem;
+        }
+
+        .bill-info-row i {
+            width: 18px;
+            color: #4F46E5;
+            margin-right: 0.4rem;
+            font-size: 0.9rem;
+        }
+
+        .bill-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: #EF4444;
+            color: white;
+            padding: 0.2rem 0.5rem;
+            border-radius: 0.75rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            box-shadow: 0 2px 4px rgba(239, 68, 68, 0.3);
+            transform: rotate(5deg);
         }
 
         .status-badge {
@@ -353,6 +579,11 @@
                 if (data && data.id) {
                     localStorage.setItem('customerId', data.id);
                     
+                    // Save customer name to localStorage
+                    if (data.name) {
+                        localStorage.setItem('customerName', data.name);
+                    }
+                    
                     // Update profile menu with user information
                     updateProfileMenu(data);
                     
@@ -429,24 +660,114 @@
                 if (bills && bills.length > 0) {
                     bills.forEach(bill => {
                         const billCard = document.createElement('div');
-                        billCard.className = 'bill-card bg-white rounded-lg border border-gray-200 p-4';
+                        billCard.className = 'bill-card';
+                        
+                        // Format dates
+                        const issueDate = new Date(bill.issueDate);
+                        const paymentDate = new Date(bill.paymentDate);
+                        const formattedIssueDate = issueDate.toLocaleDateString('vi-VN');
+                        const formattedPaymentDate = paymentDate.toLocaleDateString('vi-VN');
+                        
+                        // Format amount
+                        const formattedAmount = new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(bill.grandTotal);
+                        
+                        // Get customer name from localStorage
+                        const customerName = localStorage.getItem('customerName') || 'Khách hàng';
+                        
+                        // Calculate days remaining for payment
+                        const today = new Date();
+                        const daysRemaining = Math.ceil((paymentDate - today) / (1000 * 60 * 60 * 24));
+                        const paymentStatus = daysRemaining > 0 ? `Còn ${daysRemaining} ngày` : 'Đã quá hạn!';
+                        
                         billCard.innerHTML = `
-                            <div class="flex justify-between items-start">
+                            <div class="right-border-dots"></div>
+                            <div class="bill-header">
                                 <div>
-                                    <h3 class="text-lg font-semibold text-gray-900">Hóa đơn #${bill.bookingBillId}</h3>
-                                    <p class="text-sm text-gray-500">Ngày tạo: ${new Date(bill.issueDate).toLocaleDateString('vi-VN')}</p>
-                                    <p class="text-sm text-gray-500">Hạn thanh toán: ${new Date(bill.paymentDate).toLocaleDateString('vi-VN')}</p>
-                                </div>
-                                <div class="text-right">
-                                    <p class="text-xl font-bold text-gray-900">${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(bill.grandTotal)}</p>
-                                    <div class="mt-2">
-                                        <button onclick="payBill('${bill.bookingBillId}')" class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition duration-300">
-                                            Thanh toán ngay
-                                        </button>
+                                    <span class="bill-id">#${bill.bookingBillId}</span>
+                                    <div class="bill-date">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <span>Ngày tạo: ${formattedIssueDate}</span>
                                     </div>
+                                </div>
+                                <div class="hotel-logo">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo">
+                                </div>
+                            </div>
+                            <div class="bill-body">
+                                ${daysRemaining <= 3 ? `<div class="bill-badge">Thanh toán ngay!</div>` : ''}
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="text-base font-semibold text-gray-900 mb-2">Chi tiết hóa đơn</h3>
+                                        <div class="bill-info-row">
+                                            <i class="fas fa-clock"></i>
+                                            <span class="text-xs ${daysRemaining <= 0 ? 'text-red-600 font-bold' : 'text-gray-600'}">
+                                                Hạn thanh toán: ${formattedPaymentDate} (${paymentStatus})
+                                            </span>
+                                        </div>
+                                        <div class="bill-info-row">
+                                            <i class="fas fa-user"></i>
+                                            <span class="text-xs text-gray-600">Khách hàng: ${customerName}</span>
+                                        </div>
+                                        <div class="bill-info-row">
+                                            <i class="fas fa-calendar-alt"></i>
+                                            <span class="text-xs text-gray-600">Ngày phát hành: ${formattedIssueDate}</span>
+                                        </div>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="bill-amount-label">Tổng tiền</div>
+                                        <div class="bill-price">${formattedAmount}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="bill-separator my-3"></div>
+                                
+                                <div class="mb-4">
+                                    <div class="font-medium text-gray-700 mb-2">Thông tin thanh toán</div>
+                                    <div class="grid grid-cols-2 gap-3 bg-gray-50 p-2 rounded-lg">
+                                        <div>
+                                            <p class="text-xs text-gray-500">Phương thức thanh toán</p>
+                                            <p class="text-sm font-medium">ZaloPay</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-xs text-gray-500">Trạng thái</p>
+                                            <p class="text-sm font-medium text-orange-500">Đang chờ thanh toán</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <div class="font-medium text-gray-700 mb-1">Điều khoản & Điều kiện</div>
+                                    <ul class="text-xs text-gray-500 list-disc list-inside">
+                                        <li>Vui lòng thanh toán đúng hạn để đảm bảo dịch vụ.</li>
+                                        <li>Số tiền đã bao gồm thuế VAT và phí dịch vụ.</li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="bill-separator"></div>
+                                
+                                <div class="flex items-center justify-between mt-3">
+                                    <div>
+                                        <p class="text-xs text-gray-500">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Thanh toán trước hạn để tránh mất đặt phòng
+                                        </p>
+                                    </div>
+                                    <button onclick="payBill('${bill.bookingBillId}')" class="pay-button">
+                                        <i class="fas fa-credit-card"></i>
+                                        <span>Thanh toán</span>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="bill-footer">
+                                <div class="text-xs text-gray-600">
+                                    <i class="fas fa-qrcode mr-1"></i>Quét mã để thanh toán
+                                </div>
+                                <div class="text-xs text-gray-600">
+                                    <i class="fas fa-hotel mr-1"></i>DinhRise Hotel
                                 </div>
                             </div>
                         `;
+                        
                         billsList.appendChild(billCard);
                     });
                 } else {

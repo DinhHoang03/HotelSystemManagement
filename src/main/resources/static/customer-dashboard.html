@@ -930,19 +930,19 @@
                 <!-- Statistics -->
                 <div class="mt-20 grid grid-cols-1 md:grid-cols-4 gap-8">
                     <div class="text-center" data-aos="fade-up">
-                        <div class="text-4xl font-bold text-indigo-600 mb-2 counter">1000+</div>
+                        <div class="text-4xl font-bold text-indigo-600 mb-2 counter" data-count="10000">0</div>
                         <p class="text-gray-600">Happy Guests</p>
                     </div>
                     <div class="text-center" data-aos="fade-up" data-aos-delay="100">
-                        <div class="text-4xl font-bold text-indigo-600 mb-2 counter">50+</div>
+                        <div class="text-4xl font-bold text-indigo-600 mb-2 counter" data-count="50">0</div>
                         <p class="text-gray-600">Awards Won</p>
                     </div>
                     <div class="text-center" data-aos="fade-up" data-aos-delay="200">
-                        <div class="text-4xl font-bold text-indigo-600 mb-2 counter">100+</div>
+                        <div class="text-4xl font-bold text-indigo-600 mb-2 counter" data-count="100">0</div>
                         <p class="text-gray-600">Expert Staff</p>
                     </div>
                     <div class="text-center" data-aos="fade-up" data-aos-delay="300">
-                        <div class="text-4xl font-bold text-indigo-600 mb-2 counter">4</div>
+                        <div class="text-4xl font-bold text-indigo-600 mb-2 counter" data-count="4">0</div>
                         <p class="text-gray-600">Years of Excellence</p>
                     </div>
                 </div>
@@ -1314,18 +1314,19 @@
         function animateCounters() {
             $('.counter').each(function() {
                 const $this = $(this);
-                const countTo = $this.text().replace('+', '');
+                const countTo = parseInt($this.attr('data-count'));
                 
                 $({ countNum: 0 }).animate({
                     countNum: countTo
                 }, {
-                    duration: 2000,
-                    easing: 'linear',
+                    duration: 3000,
+                    easing: 'swing',
                     step: function() {
-                        $this.text(Math.floor(this.countNum) + '+');
+                        const current = Math.floor(this.countNum);
+                        $this.text(current + (current === countTo ? '+' : ''));
                     },
                     complete: function() {
-                        $this.text(this.countNum + '+');
+                        $this.text(countTo + '+');
                     }
                 });
             });
@@ -1339,7 +1340,7 @@
                     observer.unobserve(entry.target);
                 }
             });
-        }, { threshold: 0.5 });
+        }, { threshold: 0.3 });
 
         document.querySelectorAll('.counter').forEach(counter => {
             observer.observe(counter);
