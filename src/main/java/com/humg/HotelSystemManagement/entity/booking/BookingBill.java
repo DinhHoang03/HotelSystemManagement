@@ -35,6 +35,4 @@ public class BookingBill {
     @JoinColumn(name = "booking_id", referencedColumnName = "booking_id")
     Booking booking;
 
-    @OneToMany(mappedBy = "bookingBill", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    List<Payment> payments = new ArrayList<>();
 }

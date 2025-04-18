@@ -5,9 +5,17 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.humg.HotelSystemManagement.crypto.HMACUtil;
 import com.humg.HotelSystemManagement.configuration.payment.ZaloPayConfig;
 import com.humg.HotelSystemManagement.dto.request.payment.ZaloPayOrderRequest;
+import com.humg.HotelSystemManagement.entity.booking.Booking;
+import com.humg.HotelSystemManagement.entity.booking.BookingBill;
+import com.humg.HotelSystemManagement.entity.booking.Payment;
+import com.humg.HotelSystemManagement.entity.enums.PaymentMethod;
+import com.humg.HotelSystemManagement.entity.enums.PaymentStatus;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.booking.BookingBillRepository;
+import com.humg.HotelSystemManagement.repository.booking.BookingRepository;
+import com.humg.HotelSystemManagement.repository.booking.PaymentRepository;
+import com.humg.HotelSystemManagement.service.HotelService.booking.BookingService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +31,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
@@ -30,6 +39,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.*;
 
 @Service
@@ -39,6 +49,8 @@ import java.util.*;
 public class ZaloPayService {
     ZaloPayConfig zaloPayConfig;
     BookingBillRepository bookingBillRepository;
+    PaymentRepository paymentRepository;
+    BookingService bookingService;
 
     public static String getCurrentTimeString(String format){
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));
@@ -135,12 +147,29 @@ public class ZaloPayService {
                 }
                 System.out.println("Zalopay Response: " + resultJsonString.toString());
 
+                Payment payment = Payment.builder()
+                        .transactionId(zaloPayOrder.get("app_trans_id").toString())
+                        .paymentMethod(PaymentMethod.ZALO_PAY)
+                        .paidAmount(bookingBill.getGrandTotal())
+                        .status(PaymentStatus.COMPLETED)
+                        .createAt(LocalDate.now())
+                        .customer(bookingBill.getBooking().getCustomer())
+                        .build();
+
+                var result = paymentRepository.save(payment);
+
+                String paymentId = result.getPaymentId();
+                String bookingId = bookingBill.getBooking().getBookingId();
+                
+                bookingService.updatePaymentStatus(bookingId, paymentId);
+
                 return resultJsonString.toString();
             }
         } catch (Exception e) {
             e.printStackTrace();
             return "{\"error\": \"Failed to create order: " + e.getMessage() + "\"}";
         }
+
     }
 
     public String getOrderStatus(String appTransId) {

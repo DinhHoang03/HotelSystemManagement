@@ -359,6 +359,16 @@ public class BookingService{
         return response;
     }
 
+    public void updatePaymentStatus(String bookingId, String paymentOrderId) {
+        var booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        booking.setPaymentStatus(PaymentStatus.COMPLETED);
+        booking.setPaymentOrderId(paymentOrderId);
+
+        bookingRepository.save(booking);
+    }
+
     @Transactional
     public void deleteBooking(String bookingId) {
         var booking = bookingRepository.findById(bookingId)

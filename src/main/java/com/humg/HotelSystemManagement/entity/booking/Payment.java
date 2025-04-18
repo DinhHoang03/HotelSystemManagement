@@ -39,26 +39,6 @@ public class Payment {
     @Column(name = "create_at", nullable = false)
     LocalDate createAt;
 
-    @Column(name = "update_at", nullable = false)
-    LocalDate updateAt;
-
-    @Column(name = "success_url")
-    String successUrl;
-
-    @Column(name = "cancel_url")
-    String cancelUrl;
-
-    @Column(name = "payment_response", columnDefinition = "TEXT")
-    String paymentResponse;
-    
-    @Version
-    @Column(name = "version")
-    Long version = 0L;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_bill_id", nullable = false)
-    BookingBill bookingBill;
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "customer_id", nullable = false)
     Customer customer;
