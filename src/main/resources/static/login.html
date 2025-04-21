@@ -241,12 +241,14 @@
                             
                             // Decode token to get user role
                             const payload = JSON.parse(atob(response.result.token.split('.')[1]));
-                            const scope = payload.scope.split(' ');
+                            const role = payload.scope; // Scope là một chuỗi đơn, không phải mảng
                             
                             // Redirect based on role
-                            if (scope.includes('ROLE_ADMIN')) {
+                            if (role === 'ROLE_ADMIN') {
                                 window.location.href = '/admin-dashboard.html';
-                            } else if (scope.includes('ROLE_EMPLOYEE')) {
+                            } else if (role === 'ROLE_ACCOUNTANT' || role === 'ROLE_DEPARTMENT_HEAD' || 
+                                      role === 'ROLE_RECEPTIONIST' || role === 'ROLE_CLEANER' || 
+                                      role === 'ROLE_WAITER') {
                                 window.location.href = '/employee-dashboard.html';
                             } else {
                                 window.location.href = '/customer-dashboard.html';
@@ -257,9 +259,31 @@
                     },
                     error: function(xhr) {
                         if (xhr.status === 401) {
-                            showError('Invalid username or password');
+                            try {
+                                // Cố gắng đọc phản hồi lỗi từ backend
+                                const errorResponse = JSON.parse(xhr.responseText);
+                                if (errorResponse && errorResponse.message) {
+                                    showError(errorResponse.message);
+                                } else {
+                                    showError('Invalid username or password');
+                                }
+                            } catch (e) {
+                                // Nếu không thể parse JSON, hiển thị thông báo lỗi mặc định
+                                showError('Invalid username or password');
+                            }
                         } else {
-                            showError('An error occurred. Please try again.');
+                            try {
+                                // Cố gắng đọc phản hồi lỗi từ backend cho các lỗi khác
+                                const errorResponse = JSON.parse(xhr.responseText);
+                                if (errorResponse && errorResponse.message) {
+                                    showError(errorResponse.message);
+                                } else {
+                                    showError('An error occurred. Please try again.');
+                                }
+                            } catch (e) {
+                                // Nếu không thể parse JSON, hiển thị thông báo lỗi mặc định
+                                showError('An error occurred. Please try again.');
+                            }
                         }
                     }
                 });

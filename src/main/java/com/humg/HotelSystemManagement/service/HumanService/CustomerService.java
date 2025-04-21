@@ -1,8 +1,8 @@
 package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.security.SecurityConfig;
-import com.humg.HotelSystemManagement.dto.request.humanEntity.customer.CustomerCreationRequest;
-import com.humg.HotelSystemManagement.dto.request.humanEntity.customer.CustomerUpdateRequest;
+import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.humanEntity.customer.CustomerResponse;
 import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
@@ -11,6 +11,7 @@ import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.CustomerMapper;
 import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
+import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import com.humg.HotelSystemManagement.service.Interfaces.IGeneralCRUDService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +33,7 @@ import java.util.Set;
 public class CustomerService implements IGeneralCRUDService<CustomerResponse, CustomerCreationRequest, CustomerUpdateRequest, String> {
     //Call Repository
     CustomerRepository customerRepository;
+    EmployeeRepository employeeRepository;
     RoleRepository roleRepository;
     CustomerMapper customerMapper;
     SecurityConfig securityConfig;
@@ -42,10 +44,12 @@ public class CustomerService implements IGeneralCRUDService<CustomerResponse, Cu
         Customer customer;
         //Check if the email was registered with this customer account
         if (request != null) {
-            if (customerRepository.existsByEmail(request.getEmail()) ||
-                    customerRepository.existsByPhone(request.getPhone())) {
-                throw new AppException(AppErrorCode.USER_EXISTED);
-            }
+            
+            if (customerRepository.existsByEmail(request.getEmail())
+                    || customerRepository.existsByPhone(request.getPhone())
+                    || employeeRepository.existsByUsername(request.getUsername())
+            ) throw new AppException(AppErrorCode.USER_EXISTED);
+
 
             customer = customerMapper.toCustomer(request);
             //Mã hóa mật khẩu với thuật toán BCrypt

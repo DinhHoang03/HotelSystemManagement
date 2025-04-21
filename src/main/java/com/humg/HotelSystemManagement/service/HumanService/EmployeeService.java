@@ -1,16 +1,21 @@
 package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.security.SecurityConfig;
-import com.humg.HotelSystemManagement.dto.request.humanEntity.employee.EmployeeCreationRequest;
-import com.humg.HotelSystemManagement.dto.request.humanEntity.employee.EmployeeUpdateRequest;
+import com.humg.HotelSystemManagement.dto.request.employee.EmployeeCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.employee.EmployeeUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
+import com.humg.HotelSystemManagement.entity.authorizezation.Role;
+import com.humg.HotelSystemManagement.entity.enums.Gender;
+import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.EmployeeMapper;
+import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
 import com.humg.HotelSystemManagement.service.Interfaces.IGeneralCRUDService;
+import com.humg.HotelSystemManagement.service.SystemService.NormalizeString;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,6 +28,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 @Service
 @RequiredArgsConstructor
@@ -30,9 +36,11 @@ import java.util.List;
 public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, EmployeeCreationRequest, EmployeeUpdateRequest, String> {
 
     EmployeeRepository employeeRepository;
+    CustomerRepository customerRepository;
     RoleRepository roleRepository;
     EmployeeMapper employeeMapper;
     SecurityConfig securityConfig;
+    NormalizeString normalizeString;
 
     public EmployeeResponse create(EmployeeCreationRequest request) {
         Employee employee;
@@ -45,12 +53,39 @@ public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, Em
             }
             */
 
-            if (employeeRepository.existsByEmail(request.getEmail()) ||
-                    employeeRepository.existsByPhone(request.getPhone())) {
-                throw new AppException(AppErrorCode.USER_EXISTED);
-            }
+            if (employeeRepository.existsByEmail(request.getEmail())
+                    || employeeRepository.existsByPhone(request.getPhone())
+                    || customerRepository.existsByUsername(request.getUsername())
+            ) throw new AppException(AppErrorCode.USER_EXISTED);
 
-            employee = employeeMapper.toEmployee(request);
+
+            var allRoles = roleRepository.findAll();
+            allRoles.forEach(r -> System.out.println("ROLE IN DB: " + r.getName()));
+
+
+            Gender gender = Gender.valueOf(request.getGender().toUpperCase());
+            System.out.println("Tìm role: " + request.getRole());
+
+            var role = roleRepository.findByName(request.getRole())
+                    .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+            Set<Role> roles = new HashSet<>();
+            roles.add(role);
+            //employee = employeeMapper.toEmployee(request);
+            //Làm lại(Không dùng mapper nữa lỏ vl)
+
+            employee = Employee.builder()
+                    .name(request.getName())
+                    .username(request.getUsername())
+                    .email(request.getEmail())
+                    .phone(request.getPhone())
+                    .identityId(request.getIdentityId())
+                    .dob(request.getDob())
+                    .userStatus(UserStatus.PENDING)
+                    .roles(roles)
+                    .gender(gender)
+                    .address(request.getAddress())
+                    .build();
 
             String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(request.getPassword());
             employee.setPassword(encodedPassword);
@@ -62,7 +97,18 @@ public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, Em
 
         employee = employeeRepository.save(employee);
 
-        return employeeMapper.toEmployeeResponse(employee);
+        return EmployeeResponse.builder()
+                .id(employee.getId())
+                .username(employee.getUsername())
+                .name(employee.getName())
+                .gender(employee.getGender().toString())
+                .dob(employee.getDob())
+                .email(employee.getEmail())
+                .phone(employee.getPhone())
+                .address(employee.getAddress())
+                .identityId(employee.getIdentityId())
+                .userStatus(employee.getUserStatus().toString())
+                .build(); //fix lại response hiển thị status và role
     }
 
     //@PreAuthorize("hasRole('ADMIN')")

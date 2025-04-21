@@ -1,7 +1,7 @@
 package com.humg.HotelSystemManagement.controller.HumanController;
 
-import com.humg.HotelSystemManagement.dto.request.humanEntity.customer.CustomerCreationRequest;
-import com.humg.HotelSystemManagement.dto.request.humanEntity.customer.CustomerUpdateRequest;
+import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.humanEntity.customer.CustomerResponse;
 import com.humg.HotelSystemManagement.service.HumanService.CustomerService;

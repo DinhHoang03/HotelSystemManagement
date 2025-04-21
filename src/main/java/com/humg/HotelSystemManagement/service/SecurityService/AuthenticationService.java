@@ -9,6 +9,7 @@ import com.humg.HotelSystemManagement.dto.request.security.jwt.RefreshRequest;
 import com.humg.HotelSystemManagement.dto.response.security.jwt.AuthenticationResponse;
 import com.humg.HotelSystemManagement.dto.response.security.jwt.IntrospectResponse;
 import com.humg.HotelSystemManagement.entity.authorizezation.InvalidatedToken;
+import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.authenticationRepository.InvalidatedTokenRepository;
@@ -146,6 +147,9 @@ public class AuthenticationService {
             var role = employee.get().getRoles();
             var password = employee.get().getPassword();
 
+            if(employee.get().getUserStatus().equals(UserStatus.PENDING) || employee.get().getUserStatus().equals(UserStatus.REJECTED))
+                throw new AppException(AppErrorCode.USER_NOT_APPROVE);
+
             userPrincipal = new UserPrincipal(
                     username,
                     password,
@@ -207,37 +211,6 @@ public class AuthenticationService {
         String username = request.getUsername();
         String password = request.getPassword();
 
-        /**
-        // Tìm user trong cả hai bảng Customer và Employee.
-        var customer = customerRepository.findByUsername(username);
-        var employee = employeeRepository.findByUsername(username);
-
-        // Nếu không tìm thấy user ở cả hai bảng, ném ngoại lệ USER_NOT_EXISTED.
-        if (customer.isEmpty() && employee.isEmpty()) {
-            throw new AppException(AppErrorCode.USER_NOT_EXISTED);
-        }
-
-        // Biến để lưu mật khẩu và vai trò của user (Customer hoặc Employee).
-        String passwordToCheck;
-        //Object user = null;  // Lưu đối tượng người dùng để truyền vào buildScope
-
-        // Kiểm tra user là Customer hay Employee, lấy mật khẩu và role tương ứng.
-        if (customer.isPresent()) {
-            var user = customer.get();
-            passwordToCheck = customer.get().getPassword();
-            userPrincipal = new UserPrincipal(
-                    username,
-                    user.getRoles().stream().toList()
-            );
-        } else {
-            var user = employee.get();
-            passwordToCheck = employee.get().getPassword();
-            userPrincipal = new UserPrincipal(
-                    username,
-                    user.getRoles().stream().toList()
-            );
-        }
-        */
         var user = findUser(username);
         var passwordToCheck = user.getPassword();
 

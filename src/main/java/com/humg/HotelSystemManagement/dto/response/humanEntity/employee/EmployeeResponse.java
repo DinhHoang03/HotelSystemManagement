@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class EmployeeResponse {
-    Long id;
+    String id;
 
     String username;
 
@@ -24,6 +24,8 @@ public class EmployeeResponse {
     String email;
 
     String phone;
+
+    String address;
 
     String identityId;
 

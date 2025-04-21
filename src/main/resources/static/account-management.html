@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Account Management - DinhRise Hotel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- AOS Animation -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Auth Script -->
+    <script src="/js/auth.js"></script>
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+        .main-content {
+            transition: all 0.3s ease;
+        }
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+        .card {
+            transition: all 0.3s ease;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        .status-badge {
+            display: inline-block;
+            padding: 0.25rem 0.5rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        .status-pending {
+            background-color: #FEF3C7;
+            color: #92400E;
+        }
+        .status-approved {
+            background-color: #D1FAE5;
+            color: #065F46;
+        }
+        .status-rejected {
+            background-color: #FEE2E2;
+            color: #991B1B;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+        .tab-active {
+            border-bottom: 2px solid #4F46E5;
+            color: #4F46E5;
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Sidebar -->
+    <div class="sidebar fixed h-screen bg-white shadow-lg w-64" id="sidebar">
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo" class="h-8 w-auto">
+                    <span class="ml-2 text-xl font-bold text-gray-800 sidebar-text">DinhRise Hotel</span>
+                </div>
+                <button id="toggleSidebar" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="space-y-2">
+                <a href="/admin-dashboard.html" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-home w-6"></i>
+                    <span class="ml-3 sidebar-text">Dashboard</span>
+                </a>
+                <a href="/account-management.html" class="flex items-center p-2 text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 active">
+                    <i class="fas fa-user-shield w-6"></i>
+                    <span class="ml-3 sidebar-text">Account Authorization</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-users w-6"></i>
+                    <span class="ml-3 sidebar-text">Employee Management</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bed w-6"></i>
+                    <span class="ml-3 sidebar-text">Room Management</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-concierge-bell w-6"></i>
+                    <span class="ml-3 sidebar-text">Service Management</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-chart-line w-6"></i>
+                    <span class="ml-3 sidebar-text">Reports & Analytics</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-cog w-6"></i>
+                    <span class="ml-3 sidebar-text">Settings</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-user w-6"></i>
+                    <span class="ml-3 sidebar-text">Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content ml-64 p-8" id="mainContent">
+        <!-- Top Navigation -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Account Management</h1>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button id="userMenuButton" class="flex items-center text-gray-700 hover:text-gray-900">
+                        <i class="fas fa-user-circle text-2xl mr-2"></i>
+                        <span id="usernameDisplay" class="mr-2">Loading...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                        <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-indigo-100 text-indigo-600">
+                        <i class="fas fa-users text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Total Users</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="totalUsers">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <i class="fas fa-user-tag text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Total Customers</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="totalCustomers">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+            <div class="card bg-white p-6 rounded-lg shadow-md">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <i class="fas fa-user-tie text-2xl"></i>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-gray-500">Total Employees</p>
+                        <h3 class="text-2xl font-bold text-gray-800" id="totalEmployees">Loading...</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Distribution Chart -->
+        <div class="bg-white rounded-lg shadow-md p-6 mb-8">
+            <h2 class="text-xl font-bold text-gray-800 mb-6">Account Distribution</h2>
+            <div class="chart-container">
+                <canvas id="accountDistribution"></canvas>
+            </div>
+        </div>
+
+        <!-- Tabs for Account Lists -->
+        <div class="bg-white rounded-lg shadow-md mb-8">
+            <div class="border-b border-gray-200">
+                <nav class="flex">
+                    <button id="employeesTab" class="tab-active px-6 py-4 text-sm font-medium">
+                        <i class="fas fa-user-tie mr-2"></i> Employees
+                    </button>
+                    <button id="customersTab" class="px-6 py-4 text-sm font-medium text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-user-tag mr-2"></i> Customers
+                    </button>
+                </nav>
+            </div>
+            
+            <!-- Employee Status Filter -->
+            <div id="employeeStatusFilter" class="border-b border-gray-200 p-4">
+                <div class="flex items-center">
+                    <p class="text-sm font-medium text-gray-700 mr-4">Filter by Status:</p>
+                    <div class="flex space-x-2">
+                        <button class="status-filter status-active px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700" data-status="PENDING">
+                            Pending
+                        </button>
+                        <button class="status-filter px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700" data-status="APPROVED">
+                            Approved
+                        </button>
+                        <button class="status-filter px-3 py-1 text-xs font-medium rounded-full bg-gray-100 text-gray-700" data-status="REJECTED">
+                            Rejected
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Customer Status Filter (Initially Hidden) -->
+            <div id="customerStatusFilter" class="border-b border-gray-200 p-4 hidden">
+                <div class="flex items-center">
+                    <p class="text-sm font-medium text-gray-700 mr-4">Filter by Status:</p>
+                    <div class="flex space-x-2">
+                        <button class="customer-status-filter customer-status-active px-3 py-1 text-xs font-medium rounded-full bg-indigo-100 text-indigo-700" data-status="ALL">
+                            All Customers
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Accounts List Container -->
+            <div id="accountsList" class="p-4">
+                <!-- Account list will be loaded here by JS -->
+                <div class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                </div>
+            </div>
+            
+            <!-- Pagination -->
+            <div class="flex items-center justify-between px-4 py-3 border-t border-gray-200">
+                <div class="flex-1 flex justify-between sm:hidden">
+                    <button id="prevPageMobile" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Previous
+                    </button>
+                    <button id="nextPageMobile" class="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                        Next
+                    </button>
+                </div>
+                <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                    <div>
+                        <p class="text-sm text-gray-700" id="paginationInfo">
+                            Showing <span id="pageStart">1</span> to <span id="pageEnd">10</span> of <span id="totalItems">--</span> results
+                        </p>
+                    </div>
+                    <div>
+                        <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+                            <button id="prevPage" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Previous</span>
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <div id="pageNumbers" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                                <!-- Page numbers will be dynamically inserted here -->
+                            </div>
+                            <button id="nextPage" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                                <span class="sr-only">Next</span>
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Check authentication
+        $(document).ready(function() {
+            checkAuth();
+            initializePage();
+        });
+
+        // Toggle sidebar
+        $('#toggleSidebar').click(function() {
+            $('#sidebar').toggleClass('collapsed');
+            $('#mainContent').toggleClass('expanded');
+        });
+
+        // Toggle user menu
+        $('#userMenuButton').click(function() {
+            $('#userMenu').toggleClass('hidden');
+        });
+
+        // Initialize page
+        function initializePage() {
+            loadAccountStats();
+            initializeChart();
+            loadEmployees('PENDING', 0, 10);
+            setupEventListeners();
+        }
+
+        // Variables to track current state
+        let currentTab = 'employees';
+        let currentEmployeeStatus = 'PENDING';
+        let currentCustomerStatus = 'ALL';
+        let currentPage = 0;
+        let pageSize = 10;
+        let totalPages = 1;
+
+        // Setup event listeners
+        function setupEventListeners() {
+            // Tab switching
+            $('#employeesTab').click(function() {
+                if (currentTab !== 'employees') {
+                    currentTab = 'employees';
+                    $('.tab-active').removeClass('tab-active');
+                    $(this).addClass('tab-active');
+                    $('#customersTab').removeClass('tab-active');
+                    $('#employeeStatusFilter').removeClass('hidden');
+                    $('#customerStatusFilter').addClass('hidden');
+                    loadEmployees(currentEmployeeStatus, 0, pageSize);
+                }
+            });
+
+            $('#customersTab').click(function() {
+                if (currentTab !== 'customers') {
+                    currentTab = 'customers';
+                    $('.tab-active').removeClass('tab-active');
+                    $(this).addClass('tab-active');
+                    $('#employeesTab').removeClass('tab-active');
+                    $('#employeeStatusFilter').addClass('hidden');
+                    $('#customerStatusFilter').removeClass('hidden');
+                    loadCustomers(0, pageSize);
+                }
+            });
+
+            // Employee status filter buttons
+            $('.status-filter').click(function() {
+                $('.status-filter').removeClass('status-active bg-indigo-100 text-indigo-700').addClass('bg-gray-100 text-gray-700');
+                $(this).removeClass('bg-gray-100 text-gray-700').addClass('status-active bg-indigo-100 text-indigo-700');
+                currentEmployeeStatus = $(this).data('status');
+                loadEmployees(currentEmployeeStatus, 0, pageSize);
+            });
+
+            // Pagination buttons
+            $('#prevPage, #prevPageMobile').click(function() {
+                if (currentPage > 0) {
+                    currentPage--;
+                    if (currentTab === 'employees') {
+                        loadEmployees(currentEmployeeStatus, currentPage, pageSize);
+                    } else {
+                        loadCustomers(currentPage, pageSize);
+                    }
+                }
+            });
+
+            $('#nextPage, #nextPageMobile').click(function() {
+                if (currentPage < totalPages - 1) {
+                    currentPage++;
+                    if (currentTab === 'employees') {
+                        loadEmployees(currentEmployeeStatus, currentPage, pageSize);
+                    } else {
+                        loadCustomers(currentPage, pageSize);
+                    }
+                }
+            });
+        }
+
+        // Load account stats
+        function loadAccountStats() {
+            const token = localStorage.getItem('token');
+            
+            // This is a mock implementation - replace with actual API calls
+            // In a real app, you would call an API endpoint to get these counts
+            $('#totalUsers').text('Loading...');
+            $('#totalCustomers').text('Loading...');
+            $('#totalEmployees').text('Loading...');
+            
+            // Example to update the stats - replace with actual API calls
+            setTimeout(() => {
+                $('#totalUsers').text('250');
+                $('#totalCustomers').text('180');
+                $('#totalEmployees').text('70');
+            }, 1000);
+        }
+
+        // Initialize chart
+        function initializeChart() {
+            const ctx = document.getElementById('accountDistribution').getContext('2d');
+            
+            // Create a pie chart showing customer vs employee distribution
+            new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: ['Customers', 'Employees'],
+                    datasets: [{
+                        data: [180, 70],
+                        backgroundColor: [
+                            '#10B981', // Green for customers
+                            '#4F46E5'  // Indigo for employees
+                        ],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load employees by status
+        function loadEmployees(status, page, size) {
+            currentPage = page;
+            pageSize = size;
+            
+            // Show loading state
+            $('#accountsList').html(`
+                <div class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                </div>
+            `);
+            
+            const token = localStorage.getItem('token');
+            
+            fetch(`/admin/get-status/${status}?page=${page}&size=${size}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load employees');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const employees = data.result.content;
+                totalPages = data.result.totalPages;
+                
+                // Update pagination info
+                updatePaginationInfo(page, size, data.result.totalElements, totalPages);
+                
+                if (employees && employees.length > 0) {
+                    // Render the employee list
+                    renderEmployeeList(employees);
+                } else {
+                    $('#accountsList').html(`
+                        <div class="text-center py-8 text-gray-500">
+                            No employees found with status: ${status}
+                        </div>
+                    `);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading employees:', error);
+                $('#accountsList').html(`
+                    <div class="text-center py-8 text-red-500">
+                        Failed to load employees: ${error.message}
+                    </div>
+                `);
+            });
+        }
+
+        // Load customers with pagination
+        function loadCustomers(page, size) {
+            currentPage = page;
+            pageSize = size;
+            
+            // Show loading state
+            $('#accountsList').html(`
+                <div class="flex items-center justify-center py-8">
+                    <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+                </div>
+            `);
+            
+            const token = localStorage.getItem('token');
+            
+            fetch(`/admin/get-customers/list?page=${page}&size=${size}`, {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load customers');
+                }
+                return response.json();
+            })
+            .then(data => {
+                const customers = data.result.content;
+                totalPages = data.result.totalPages;
+                
+                // Update pagination info
+                updatePaginationInfo(page, size, data.result.totalElements, totalPages);
+                
+                if (customers && customers.length > 0) {
+                    // Render the customer list
+                    renderCustomerList(customers);
+                } else {
+                    $('#accountsList').html(`
+                        <div class="text-center py-8 text-gray-500">
+                            No customers found
+                        </div>
+                    `);
+                }
+            })
+            .catch(error => {
+                console.error('Error loading customers:', error);
+                $('#accountsList').html(`
+                    <div class="text-center py-8 text-red-500">
+                        Failed to load customers: ${error.message}
+                    </div>
+                `);
+            });
+        }
+
+        // Render employee list
+        function renderEmployeeList(employees) {
+            let html = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Employee</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Role</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+            `;
+
+            employees.forEach(employee => {
+                // Determine badge class based on status
+                let statusBadgeClass = '';
+                switch(employee.userStatus) {
+                    case 'PENDING':
+                        statusBadgeClass = 'status-badge status-pending';
+                        break;
+                    case 'APPROVED':
+                        statusBadgeClass = 'status-badge status-approved';
+                        break;
+                    case 'REJECTED':
+                        statusBadgeClass = 'status-badge status-rejected';
+                        break;
+                    default:
+                        statusBadgeClass = 'status-badge bg-gray-100 text-gray-800';
+                }
+
+                // Determine available actions based on status
+                let actionsHtml = '';
+                if (employee.userStatus === 'PENDING' || employee.userStatus === 'REJECTED') {
+                    actionsHtml += `<button onclick="approveEmployee('${employee.id}')" class="text-green-600 hover:text-green-900 mr-3"><i class="fas fa-check"></i> Approve</button>`;
+                }
+                if (employee.userStatus === 'PENDING' || employee.userStatus === 'APPROVED') {
+                    actionsHtml += `<button onclick="rejectEmployee('${employee.id}')" class="text-red-600 hover:text-red-900"><i class="fas fa-times"></i> Reject</button>`;
+                }
+
+                html += `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-500">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${employee.name || 'N/A'}</div>
+                                    <div class="text-sm text-gray-500">${employee.username}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${employee.email || 'No email'}</div>
+                            <div class="text-sm text-gray-500">${employee.phone || 'No phone'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${employee.role || 'No role'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="${statusBadgeClass}">${employee.userStatus}</span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                            ${actionsHtml}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            $('#accountsList').html(html);
+        }
+
+        // Render customer list
+        function renderCustomerList(customers) {
+            let html = `
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Contact Info</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Identity ID</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+            `;
+
+            customers.forEach(customer => {
+                html += `
+                    <tr>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0 h-10 w-10">
+                                    <div class="h-10 w-10 rounded-full bg-green-100 flex items-center justify-center text-green-500">
+                                        <i class="fas fa-user"></i>
+                                    </div>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-medium text-gray-900">${customer.name || 'N/A'}</div>
+                                    <div class="text-sm text-gray-500">${customer.username}</div>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm text-gray-900">${customer.email || 'No email'}</div>
+                            <div class="text-sm text-gray-500">${customer.phone || 'No phone'}</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${customer.identityId || 'N/A'}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            ${customer.address || 'No address'}
+                        </td>
+                    </tr>
+                `;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            $('#accountsList').html(html);
+        }
+
+        // Update pagination info
+        function updatePaginationInfo(page, size, totalItems, totalPages) {
+            const start = page * size + 1;
+            const end = Math.min((page + 1) * size, totalItems);
+            
+            $('#pageStart').text(start);
+            $('#pageEnd').text(end);
+            $('#totalItems').text(totalItems);
+            
+            // Update page numbers
+            let pageNumbersHtml = '';
+            for (let i = Math.max(0, page - 2); i < Math.min(totalPages, page + 3); i++) {
+                if (i === page) {
+                    pageNumbersHtml += `<button class="relative inline-flex items-center px-4 py-2 border border-indigo-500 bg-indigo-50 text-sm font-medium text-indigo-600">${i + 1}</button>`;
+                } else {
+                    pageNumbersHtml += `<button onclick="goToPage(${i})" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">${i + 1}</button>`;
+                }
+            }
+            $('#pageNumbers').html(pageNumbersHtml);
+            
+            // Disable/enable prev/next buttons
+            $('#prevPage, #prevPageMobile').prop('disabled', page === 0);
+            $('#nextPage, #nextPageMobile').prop('disabled', page === totalPages - 1);
+            
+            if (page === 0) {
+                $('#prevPage, #prevPageMobile').addClass('opacity-50 cursor-not-allowed');
+            } else {
+                $('#prevPage, #prevPageMobile').removeClass('opacity-50 cursor-not-allowed');
+            }
+            
+            if (page === totalPages - 1) {
+                $('#nextPage, #nextPageMobile').addClass('opacity-50 cursor-not-allowed');
+            } else {
+                $('#nextPage, #nextPageMobile').removeClass('opacity-50 cursor-not-allowed');
+            }
+        }
+
+        // Go to specific page
+        function goToPage(page) {
+            currentPage = page;
+            if (currentTab === 'employees') {
+                loadEmployees(currentEmployeeStatus, page, pageSize);
+            } else {
+                loadCustomers(page, pageSize);
+            }
+        }
+
+        // Approve employee
+        function approveEmployee(employeeId) {
+            const token = localStorage.getItem('token');
+            
+            // Show loading message
+            Swal.fire({
+                title: 'Processing...',
+                text: 'Approving employee account',
+                icon: 'info',
+                showConfirmButton: false,
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            fetch(`/admin/approve/${employeeId}`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to approve employee');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Show success message
+                Swal.fire({
+                    title: 'Success!',
+                    text: `Employee ${data.result.name} has been approved.`,
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#4F46E5'
+                });
+                
+                // Reload employee list
+                loadEmployees(currentEmployeeStatus, currentPage, pageSize);
+            })
+            .catch(error => {
+                console.error('Error approving employee:', error);
+                Swal.fire({
+                    title: 'Error!',
+                    text: `Failed to approve employee: ${error.message}`,
+                    icon: 'error',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#EF4444'
+                });
+            });
+        }
+
+        // Reject employee
+        function rejectEmployee(employeeId) {
+            const token = localStorage.getItem('token');
+            
+            // Show confirmation dialog
+            Swal.fire({
+                title: 'Are you sure?',
+                text: 'Are you sure you want to reject this employee account?',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Yes, reject it',
+                cancelButtonText: 'Cancel',
+                confirmButtonColor: '#EF4444',
+                cancelButtonColor: '#6B7280'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Show loading message
+                    Swal.fire({
+                        title: 'Processing...',
+                        text: 'Rejecting employee account',
+                        icon: 'info',
+                        showConfirmButton: false,
+                        allowOutsideClick: false,
+                        didOpen: () => {
+                            Swal.showLoading();
+                        }
+                    });
+                    
+                    fetch(`/admin/reject/${employeeId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Failed to reject employee');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        // Show success message
+                        Swal.fire({
+                            title: 'Success!',
+                            text: `Employee ${data.result.name} has been rejected.`,
+                            icon: 'success',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#4F46E5'
+                        });
+                        
+                        // Reload employee list
+                        loadEmployees(currentEmployeeStatus, currentPage, pageSize);
+                    })
+                    .catch(error => {
+                        console.error('Error rejecting employee:', error);
+                        Swal.fire({
+                            title: 'Error!',
+                            text: `Failed to reject employee: ${error.message}`,
+                            icon: 'error',
+                            confirmButtonText: 'OK',
+                            confirmButtonColor: '#EF4444'
+                        });
+                    });
+                }
+            });
+        }
+    </script>
+</body>
+</html> 

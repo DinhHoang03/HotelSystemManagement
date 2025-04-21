@@ -49,6 +49,8 @@ public class Employee {
     @Column(unique = true, length = 12)
     String identityId;
 
+    String address;
+
     @ManyToMany
     Set<Role> roles;
 

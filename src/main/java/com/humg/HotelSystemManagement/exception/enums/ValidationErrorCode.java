@@ -21,6 +21,7 @@ public enum ValidationErrorCode {
     INVALID_DOB(107, "Invalid birthdate, please choose again", HttpStatus.BAD_REQUEST),
     INVALID_GENDER(108, "Invalid gender, please choose again", HttpStatus.BAD_REQUEST),
     INVALID_USERNAME(109, "Invalid user name, username must be longer than 4 characters, please choose again", HttpStatus.BAD_REQUEST),
+    INVALID_STATUS(110, "Invalid status, please choose again", HttpStatus.BAD_REQUEST)
     ;
 
     int code;

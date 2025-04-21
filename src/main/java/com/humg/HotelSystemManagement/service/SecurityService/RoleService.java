@@ -23,14 +23,20 @@ public class RoleService {
     PermissionRepository permissionRepository;
     RoleMapper roleMapper;
 
-    public RoleResponse createRole(RoleRequest request){
+    public RoleResponse createRole(RoleRequest request) {
         Role role = roleMapper.toRole(request);
-        var permission = permissionRepository.findAllById(request.getPermissions());
-        role.setPermissions(new HashSet<>(permission));
+
+        if (request.getPermissions() == null || request.getPermissions().isEmpty()) {
+            role.setPermissions(new HashSet<>()); // hoặc ném lỗi tùy bạn muốn
+        } else {
+            var permissions = permissionRepository.findAllById(request.getPermissions());
+            role.setPermissions(new HashSet<>(permissions));
+        }
 
         role = roleRepository.save(role);
         return roleMapper.toRoleResponse(role);
     }
+
 
     public List<RoleResponse> getAllRole(){
         var roles = roleRepository.findAll();

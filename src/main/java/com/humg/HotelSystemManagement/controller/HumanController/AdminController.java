@@ -2,7 +2,11 @@ package com.humg.HotelSystemManagement.controller.HumanController;
 
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.humanEntity.customer.CustomerResponse;
+import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.AttendanceResponse;
 import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
+import com.humg.HotelSystemManagement.entity.enums.UserStatus;
+import com.humg.HotelSystemManagement.service.EmployeeService.AttendanceService;
+import com.humg.HotelSystemManagement.service.HumanService.AdminService;
 import com.humg.HotelSystemManagement.service.HumanService.CustomerService;
 import com.humg.HotelSystemManagement.service.HumanService.EmployeeService;
 import lombok.AccessLevel;
@@ -22,6 +26,8 @@ public class AdminController {
 
     CustomerService customerService;
     EmployeeService employeeService;
+    AdminService adminService;
+    AttendanceService attendanceService;
 
     @GetMapping("/get-customer/{customerId}")
     APIResponse<CustomerResponse> getCustomerById(@PathVariable("customerId") String customerId){
@@ -32,6 +38,7 @@ public class AdminController {
     }
 
 
+    /*
     @GetMapping("/get-customers/list")
     @PreAuthorize("hasRole('ADMIN')")
     APIResponse<List<CustomerResponse>> getAllCustomers(){
@@ -40,9 +47,10 @@ public class AdminController {
                 .message("Successfully get all customers!")
                 .build();
     }
+*/
 
     //Get all sort by pages
-    @GetMapping("/get-customers/list/{page}/{size}")
+    @GetMapping("/get-customers/list")
     APIResponse<Page<CustomerResponse>> getAllCustomers(
             @RequestParam("page") int page,
             @RequestParam("size") int size
@@ -56,14 +64,12 @@ public class AdminController {
     }
 
     //Get all sort by pages
-    @GetMapping("/get-employees/list/{page}/{size}")
+    @GetMapping("/get-employees/list")
     APIResponse<Page<EmployeeResponse>> getAllEmployees(
             @RequestParam("page") int page,
             @RequestParam("size") int size
     ){
-        return APIResponse.<
-                        Page<EmployeeResponse>
-                        >builder()
+        return APIResponse.<Page<EmployeeResponse>>builder()
                 .result(employeeService.getAll(page, size))
                 .message("Successfully get all employees!")
                 .build();
@@ -77,12 +83,49 @@ public class AdminController {
                 .build();
     }
 
-
+/*
     @GetMapping("/get-employees/list")
     APIResponse<List<EmployeeResponse>> getAllEmployees(){
         return APIResponse.<List<EmployeeResponse>>builder()
                 .result(employeeService.getAll())
                 .message("Successfully get all customers!")
+                .build();
+    }
+*/
+    @GetMapping("/get-attendances/list")
+    APIResponse<Page<AttendanceResponse>> getAllAttendances(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return APIResponse.<Page<AttendanceResponse>>builder()
+                .result(attendanceService.getAllAttendances(page, size))
+                .message("Get all attendances")
+                .build();
+    }
+
+    @PostMapping("/approve/{empId}")
+    APIResponse<EmployeeResponse> approveEmp(@PathVariable("empId") String id) {
+        return APIResponse.<EmployeeResponse>builder()
+                .result(adminService.approveEmployee(id))
+                .message("Approve emp " + id + " successfully")
+                .build();
+    }
+
+    @PostMapping("/reject/{empId}")
+    APIResponse<EmployeeResponse> reject(@PathVariable("empId") String id) {
+        return APIResponse.<EmployeeResponse>builder()
+                .result(adminService.rejectEmployee(id))
+                .message("Reject emp " + id + " successfully")
+                .build();
+    }
+
+    @GetMapping("/get-status/{status}")
+    APIResponse<Page<EmployeeResponse>> findAllByStatusEmp(@PathVariable("status")UserStatus userStatus,
+                                                           @RequestParam(defaultValue = "0") int page,
+                                                           @RequestParam(defaultValue = "10") int size){
+        return APIResponse.<Page<EmployeeResponse>>builder()
+                .result(adminService.findAllByStatusEmployee(page, size, userStatus))
+                .message("Successfully get all employees by status!")
                 .build();
     }
 }

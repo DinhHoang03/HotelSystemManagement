@@ -12,6 +12,10 @@ server:
     key-password: dinh1012
 
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
   mvc:
     static-path-pattern: /**
   web:
@@ -43,19 +47,12 @@ zalo-pay:
   create-order-url: "https://sb-openapi.zalopay.vn/v2/create"
   order-status-url: "https://sb-openapi.zalopay.vn/v2/query"
   redirect-url: "https://localhost:8443/payment-success.html"
-  callback-url: https://003f-1-55-210-61.ngrok-free.app/zalopay/callback
+  callback-url: https://62c5-1-55-210-61.ngrok-free.app/zalopay/callback
 
 jwt:
   signerKey: "rFpGwv/uscX+l9y5QCe6X5H`3Y825wsLAAuXHT2WgsBiibbVkUj/hrr9GFT+xoEDE"
   valid-duration: 1 #in hour
   refreshable-duration: 7 #in days
-
-
-
-
-
-
-
 
 
 
