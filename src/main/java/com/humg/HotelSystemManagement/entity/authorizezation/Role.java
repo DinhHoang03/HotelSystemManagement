@@ -14,9 +14,11 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
+@ToString(onlyExplicitlyIncluded = true) //Cho phép thêm các trường được đánh dấu vào toString
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Role {
     @Id
+    @ToString.Include //Thêm trường name vào toString
     String name;
     String description;
 
@@ -31,4 +33,6 @@ public class Role {
      *     WAITER,
      *     ADMIN
      */
+
+
 }

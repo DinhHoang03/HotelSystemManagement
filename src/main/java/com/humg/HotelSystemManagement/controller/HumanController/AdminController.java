@@ -38,17 +38,6 @@ public class AdminController {
     }
 
 
-    /*
-    @GetMapping("/get-customers/list")
-    @PreAuthorize("hasRole('ADMIN')")
-    APIResponse<List<CustomerResponse>> getAllCustomers(){
-        return APIResponse.<List<CustomerResponse>>builder()
-                .result(customerService.getAll())
-                .message("Successfully get all customers!")
-                .build();
-    }
-*/
-
     //Get all sort by pages
     @GetMapping("/get-customers/list")
     APIResponse<Page<CustomerResponse>> getAllCustomers(
@@ -83,15 +72,6 @@ public class AdminController {
                 .build();
     }
 
-/*
-    @GetMapping("/get-employees/list")
-    APIResponse<List<EmployeeResponse>> getAllEmployees(){
-        return APIResponse.<List<EmployeeResponse>>builder()
-                .result(employeeService.getAll())
-                .message("Successfully get all customers!")
-                .build();
-    }
-*/
     @GetMapping("/get-attendances/list")
     APIResponse<Page<AttendanceResponse>> getAllAttendances(
             @RequestParam(defaultValue = "0") int page,
@@ -126,6 +106,30 @@ public class AdminController {
         return APIResponse.<Page<EmployeeResponse>>builder()
                 .result(adminService.findAllByStatusEmployee(page, size, userStatus))
                 .message("Successfully get all employees by status!")
+                .build();
+    }
+
+    @GetMapping("/count-employees")
+    APIResponse<Long> countEmp() {
+        return APIResponse.<Long>builder()
+                .result(adminService.countEmployeeByList())
+                .message("Get count successfully")
+                .build();
+    }
+
+    @GetMapping("/count-customers")
+    APIResponse<Long> countCus() {
+        return APIResponse.<Long>builder()
+                .result(adminService.countCustomerByList())
+                .message("Get count successfully")
+                .build();
+    }
+
+    @GetMapping("total-users")
+    APIResponse<Long> totalUsers() {
+        return APIResponse.<Long>builder()
+                .result(adminService.totalCountUser())
+                .message("Get total count complete")
                 .build();
     }
 }

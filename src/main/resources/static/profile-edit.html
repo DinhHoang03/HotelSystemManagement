@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Edit Profile | Luxury Hotel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- AOS Animation Library -->
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #f9fafb;
+        }
+
+        .navbar {
+            background-color: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(10px);
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            background: #4F46E5;
+            bottom: -5px;
+            left: 0;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover:after {
+            width: 100%;
+        }
+
+        .form-container {
+            background-color: white;
+            border-radius: 1rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .input-field {
+            transition: all 0.3s ease;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.5rem;
+        }
+
+        .input-field:focus {
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        }
+
+        .btn-primary {
+            background: linear-gradient(to right, #4F46E5, #7C3AED);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(to right, #9CA3AF, #6B7280);
+            color: white;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(107, 114, 128, 0.2);
+        }
+
+        .profile-picture {
+            position: relative;
+            border-radius: 50%;
+            border: 4px solid white;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <!-- Navigation Bar -->
+    <div class="navbar py-4 px-6">
+        <div class="container mx-auto">
+            <div class="flex justify-between items-center">
+                <a href="/" class="flex items-center">
+                    <img src="images/logo.png" alt="Luxury Hotel Logo" class="h-8 mr-3">
+                    <span class="text-xl font-semibold text-gray-800">Luxury Hotel</span>
+                </a>
+                <nav class="hidden md:flex space-x-8">
+                    <a href="/" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Home</a>
+                    <a href="/rooms.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Rooms</a>
+                    <a href="/amenities.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Amenities</a>
+                    <a href="/services.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Services</a>
+                    <a href="/contact.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Contact</a>
+                    <a href="/customer-dashboard.html" class="nav-link text-indigo-600 font-medium">Dashboard</a>
+                </nav>
+                <div class="flex items-center space-x-4">
+                    <a href="/book-room.html" class="hidden md:block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">Book Now</a>
+                    <div class="relative" id="userMenuContainer">
+                        <button id="userMenuButton" class="flex items-center focus:outline-none">
+                            <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff" alt="User" class="w-10 h-10 rounded-full border-2 border-indigo-200">
+                            <span id="usernameDisplay" class="ml-2 text-gray-700 font-medium hidden md:block">User</span>
+                            <svg class="w-4 h-4 ml-1 text-gray-400 hidden md:block" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto pt-28 px-4 pb-16">
+        <div class="flex flex-col items-center" data-aos="fade-up">
+            <h1 class="text-3xl font-bold text-gray-800 mb-2">Edit Profile</h1>
+            <p class="text-gray-600 mb-10">Update your personal information</p>
+            
+            <div class="form-container w-full max-w-2xl p-8 mb-12">
+                <div class="flex flex-col items-center mb-8">
+                    <div class="profile-picture w-32 h-32 mb-4">
+                        <img id="profileAvatar" src="https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff&size=128" alt="Profile Picture" class="w-full h-full object-cover">
+                    </div>
+                    <h2 id="profileName" class="text-xl font-semibold text-gray-800">User Name</h2>
+                    <p id="memberType" class="text-sm text-indigo-600 font-medium">Standard Member</p>
+                </div>
+                
+                <form id="profileEditForm" class="space-y-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
+                            <input type="text" id="name" name="name" class="input-field w-full p-3 focus:outline-none" placeholder="Your full name">
+                        </div>
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                            <input type="email" id="email" name="email" class="input-field w-full p-3 focus:outline-none" placeholder="Your email address">
+                        </div>
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
+                            <input type="tel" id="phone" name="phone" class="input-field w-full p-3 focus:outline-none" placeholder="Your phone number">
+                        </div>
+                        <div>
+                            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
+                            <input type="text" id="address" name="address" class="input-field w-full p-3 focus:outline-none" placeholder="Your address">
+                        </div>
+                    </div>
+                    
+                    <div class="border-t border-gray-200 pt-6 flex justify-between">
+                        <a href="/customer-dashboard.html" class="btn-secondary px-8 py-3 rounded-lg font-medium flex items-center">
+                            <i class="fas fa-arrow-left mr-2"></i> 
+                            Back to Dashboard
+                        </a>
+                        <button type="submit" class="btn-primary px-8 py-3 rounded-lg font-medium flex items-center">
+                            <i class="fas fa-save mr-2"></i> 
+                            Save Changes
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Luxury Hotel</h3>
+                    <p class="text-gray-400 mb-4">Experience luxury like never before.</p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white transition-colors"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-gray-400 hover:text-white transition-colors">Home</a></li>
+                        <li><a href="/rooms.html" class="text-gray-400 hover:text-white transition-colors">Rooms</a></li>
+                        <li><a href="/amenities.html" class="text-gray-400 hover:text-white transition-colors">Amenities</a></li>
+                        <li><a href="/services.html" class="text-gray-400 hover:text-white transition-colors">Services</a></li>
+                        <li><a href="/contact.html" class="text-gray-400 hover:text-white transition-colors">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Us</h3>
+                    <ul class="space-y-2">
+                        <li class="flex items-start">
+                            <i class="fas fa-map-marker-alt mt-1 mr-2 text-indigo-400"></i>
+                            <span class="text-gray-400">123 Luxury Lane, Prestige City, Country</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-phone-alt mt-1 mr-2 text-indigo-400"></i>
+                            <span class="text-gray-400">+1 (123) 456-7890</span>
+                        </li>
+                        <li class="flex items-start">
+                            <i class="fas fa-envelope mt-1 mr-2 text-indigo-400"></i>
+                            <span class="text-gray-400">info@luxuryhotel.com</span>
+                        </li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Newsletter</h3>
+                    <p class="text-gray-400 mb-4">Subscribe to our newsletter for the latest updates and offers.</p>
+                    <div class="flex">
+                        <input type="email" placeholder="Your email" class="bg-gray-800 px-4 py-2 rounded-l-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 w-full">
+                        <button class="bg-indigo-600 hover:bg-indigo-700 px-4 py-2 rounded-r-lg transition-colors">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-10 pt-6 text-center text-gray-400">
+                <p>&copy; 2023 Luxury Hotel. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Check if user is logged in
+        document.addEventListener('DOMContentLoaded', function() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            // Load user profile data
+            loadUserProfile();
+        });
+
+        // Load user profile data
+        function loadUserProfile() {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+
+            $.ajax({
+                url: '/customer/profile',
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + token
+                },
+                success: function(response) {
+                    console.log('Profile response:', response);
+                    if (response) {
+                        // Update form fields with user data
+                        $('#name').val(response.name || '');
+                        $('#email').val(response.email || '');
+                        $('#phone').val(response.phone || '');
+                        $('#address').val(response.address || '');
+                        
+                        // Update profile information
+                        $('#profileName').text(response.name || 'User');
+                        $('#memberType').text(response.memberType || 'Standard Member');
+                        
+                        // Update avatar
+                        const avatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(response.name || 'User')}&background=4F46E5&color=fff&size=128`;
+                        $('#profileAvatar').attr('src', avatarUrl);
+                        $('#userAvatar').attr('src', avatarUrl);
+                        
+                        // Update username in navigation
+                        $('#usernameDisplay').text(response.name || 'User');
+                        
+                        // Store user ID
+                        localStorage.setItem('userId', response.id);
+                    } else {
+                        console.error('Invalid response format:', response);
+                        showError('Error loading profile data');
+                    }
+                },
+                error: function(xhr) {
+                    console.error('Error loading profile:', xhr);
+                    if (xhr.status === 401) {
+                        localStorage.removeItem('token');
+                        window.location.href = '/login.html';
+                    } else {
+                        showError('Failed to load profile information. Please try again later.');
+                    }
+                }
+            });
+        }
+
+        // Submit form handler
+        $('#profileEditForm').on('submit', function(e) {
+            e.preventDefault();
+            
+            const token = localStorage.getItem('token');
+            if (!token) {
+                window.location.href = '/login.html';
+                return;
+            }
+            
+            const userId = localStorage.getItem('userId');
+            if (!userId) {
+                showError('User ID not found. Please log in again.');
+                return;
+            }
+            
+            // Get form data
+            const formData = {
+                name: $('#name').val(),
+                email: $('#email').val(),
+                phone: $('#phone').val(),
+                address: $('#address').val()
+            };
+            
+            // Validate form data
+            if (!formData.email || !formData.phone) {
+                showError('Please fill in all required fields (Email and Phone).');
+                return;
+            }
+            
+            // Show loading indicator
+            Swal.fire({
+                title: 'Updating profile...',
+                text: 'Please wait',
+                allowOutsideClick: false,
+                didOpen: () => {
+                    Swal.showLoading();
+                }
+            });
+            
+            // Send update request
+            $.ajax({
+                url: `/customer/update/${userId}`,
+                type: 'PUT',
+                headers: {
+                    'Authorization': 'Bearer ' + token,
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(formData),
+                contentType: 'application/json',
+                success: function(response) {
+                    console.log('Update response:', response);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Profile Updated!',
+                        text: 'Your profile has been successfully updated.',
+                        showConfirmButton: true,
+                        confirmButtonText: 'Continue',
+                        confirmButtonColor: '#4F46E5'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            window.location.href = '/customer-dashboard.html';
+                        }
+                    });
+                },
+                error: function(xhr) {
+                    console.error('Error updating profile:', xhr);
+                    let errorMessage = 'Failed to update profile.';
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    }
+                    
+                    showError(errorMessage);
+                }
+            });
+        });
+
+        // Show error message
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message,
+                confirmButtonColor: '#4F46E5'
+            });
+        }
+        
+        // Logout function
+        function logout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            window.location.href = '/login.html';
+        }
+    </script>
+</body>
+</html> 

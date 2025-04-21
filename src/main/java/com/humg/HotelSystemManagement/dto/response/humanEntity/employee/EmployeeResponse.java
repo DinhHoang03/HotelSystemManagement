@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.dto.response.humanEntity.employee;
 
+import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 

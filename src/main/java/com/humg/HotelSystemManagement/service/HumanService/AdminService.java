@@ -7,6 +7,7 @@ import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.EmployeeMapper;
+import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -17,12 +18,15 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminService {
 
     EmployeeRepository employeeRepository;
+    CustomerRepository customerRepository;
     EmployeeMapper employeeMapper;
 
     @PreAuthorize("hasRole('ADMIN')")
@@ -79,5 +83,23 @@ public class AdminService {
                     .build();
         });
         return response;
+    }
+
+    public Long countEmployeeByList() {
+        var count = employeeRepository.count();
+        return count;
+    }
+
+    public Long countCustomerByList() {
+        var count = customerRepository.count();
+        return count;
+    }
+
+    public Long totalCountUser() {
+        var empC = employeeRepository.count();
+        var cusC = customerRepository.count();
+        var totalC = empC + cusC;
+
+        return totalC;
     }
 }

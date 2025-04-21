@@ -126,8 +126,18 @@ public class CustomerService implements IGeneralCRUDService<CustomerResponse, Cu
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         if (request != null) {
-            customer.setEmail(request.getEmail());
-            customer.setPhone(request.getPhone());
+            if (request.getName() != null && !request.getName().isEmpty()) {
+                customer.setName(request.getName());
+            }
+            if (request.getEmail() != null && !request.getEmail().isEmpty()) {
+                customer.setEmail(request.getEmail());
+            }
+            if (request.getPhone() != null && !request.getPhone().isEmpty()) {
+                customer.setPhone(request.getPhone());
+            }
+            if (request.getAddress() != null && !request.getAddress().isEmpty()) {
+                customer.setAddress(request.getAddress());
+            }
         } else {
             throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         }

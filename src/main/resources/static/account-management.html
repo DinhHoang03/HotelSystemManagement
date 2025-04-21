@@ -131,12 +131,12 @@
                 <div class="relative">
                     <button id="userMenuButton" class="flex items-center text-gray-700 hover:text-gray-900">
                         <i class="fas fa-user-circle text-2xl mr-2"></i>
-                        <span id="usernameDisplay" class="mr-2">Loading...</span>
+                        <span id="adminName" class="mr-2">Loading...</span>
                         <i class="fas fa-chevron-down"></i>
                     </button>
                     <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
                         <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
-                        <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                        <a href="#" onclick="adminLogout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
                     </div>
                 </div>
             </div>
@@ -277,33 +277,167 @@
     <script>
         // Initialize AOS
         AOS.init({
-            duration: 1000,
-            once: true
+            duration: 1000
         });
 
-        // Check authentication
+        // Authentication check for admin access
+        function checkAdminAuth() {
+            const adminToken = localStorage.getItem('token');
+            
+            if (!adminToken) {
+                // Redirect to login page if no admin token
+                Swal.fire({
+                    title: 'Access Denied',
+                    text: 'You need to login as an admin to access this page.',
+                    icon: 'error',
+                    confirmButtonText: 'Go to Login',
+                    confirmButtonColor: '#4F46E5'
+                }).then(() => {
+                    window.location.href = '/login';
+                });
+                return false;
+            }
+            
+            try {
+                // Decode token to check if user is admin
+                const tokenParts = adminToken.split('.');
+                const payload = JSON.parse(atob(tokenParts[1]));
+                
+                // Check if token has admin role (using scope instead of roles array)
+                if (!payload.scope || payload.scope !== 'ROLE_ADMIN') {
+                    // Redirect to home page if not admin
+                    Swal.fire({
+                        title: 'Permission Denied',
+                        text: 'You do not have administrator privileges.',
+                        icon: 'error',
+                        confirmButtonText: 'Go to Home',
+                        confirmButtonColor: '#4F46E5'
+                    }).then(() => {
+                        window.location.href = '/';
+                    });
+                    return false;
+                }
+                
+                // Set admin username in the UI
+                $('#adminName').text(payload.sub);
+                $('#sidebarAdminName').text(payload.sub);
+                
+                return true;
+            } catch (error) {
+                console.error('Error decoding token:', error);
+                
+                // Redirect to login page if token is invalid
+                Swal.fire({
+                    title: 'Authentication Error',
+                    text: 'Your session is invalid. Please login again.',
+                    icon: 'error',
+                    confirmButtonText: 'Go to Login',
+                    confirmButtonColor: '#4F46E5'
+                }).then(() => {
+                    window.location.href = '/login';
+                });
+                return false;
+            }
+        }
+
+        // Admin logout function
+        function adminLogout() {
+            localStorage.removeItem('token');
+            window.location.href = '/login';
+        }
+
+        // Document ready function
         $(document).ready(function() {
-            checkAuth();
+            // Check admin authentication
+            if (!checkAdminAuth()) return;
+            
+            // Initialize page
             initializePage();
+            
+            // Toggle sidebar
+            $('#toggleSidebar').click(function() {
+                $('#sidebar').toggleClass('-translate-x-full');
+            });
+            
+            // Toggle user menu
+            $('#userMenuButton').click(function() {
+                $('#userMenu').toggleClass('hidden');
+            });
         });
-
-        // Toggle sidebar
-        $('#toggleSidebar').click(function() {
-            $('#sidebar').toggleClass('collapsed');
-            $('#mainContent').toggleClass('expanded');
-        });
-
-        // Toggle user menu
-        $('#userMenuButton').click(function() {
-            $('#userMenu').toggleClass('hidden');
-        });
-
-        // Initialize page
+        
+        // Initialize page with data
         function initializePage() {
+            // Load account statistics
             loadAccountStats();
+            
+            // Initialize chart with empty data (will be updated once data is loaded)
             initializeChart();
+            
+            // Default: Load employees with 'PENDING' status
             loadEmployees('PENDING', 0, 10);
+            
+            // Set up event listeners
             setupEventListeners();
+        }
+        
+        // Set up event listeners
+        function setupEventListeners() {
+            // Tab switching between employees and customers
+            $('#employeesTab').click(function() {
+                currentTab = 'employees';
+                $(this).addClass('bg-indigo-600 text-white').removeClass('bg-white text-gray-700');
+                $('#customersTab').addClass('bg-white text-gray-700').removeClass('bg-indigo-600 text-white');
+                $('#employeeStatusFilter').removeClass('hidden');
+                $('#customerStatusFilter').addClass('hidden');
+                
+                // Reset to page 1 when switching tabs
+                loadEmployees(currentEmployeeStatus, 0, pageSize);
+            });
+            
+            $('#customersTab').click(function() {
+                currentTab = 'customers';
+                $(this).addClass('bg-indigo-600 text-white').removeClass('bg-white text-gray-700');
+                $('#employeesTab').addClass('bg-white text-gray-700').removeClass('bg-indigo-600 text-white');
+                $('#employeeStatusFilter').addClass('hidden');
+                $('#customerStatusFilter').removeClass('hidden');
+                
+                // Reset to page 1 when switching tabs
+                loadCustomers(0, pageSize);
+            });
+            
+            // Employee status filter buttons
+            $('.status-filter').click(function() {
+                const status = $(this).data('status');
+                currentEmployeeStatus = status;
+                
+                // Update active button state
+                $('.status-filter').removeClass('status-active bg-indigo-100 text-indigo-700').addClass('bg-gray-100 text-gray-700');
+                $(this).addClass('status-active bg-indigo-100 text-indigo-700').removeClass('bg-gray-100 text-gray-700');
+                
+                // Reset to page 1 when changing filters
+                loadEmployees(status, 0, pageSize);
+            });
+            
+            // Pagination controls
+            $('#prevPage').click(function() {
+                if (currentPage > 0) {
+                    if (currentTab === 'employees') {
+                        loadEmployees(currentEmployeeStatus, currentPage - 1, pageSize);
+                    } else {
+                        loadCustomers(currentPage - 1, pageSize);
+                    }
+                }
+            });
+            
+            $('#nextPage').click(function() {
+                if (currentPage < totalPages - 1) {
+                    if (currentTab === 'employees') {
+                        loadEmployees(currentEmployeeStatus, currentPage + 1, pageSize);
+                    } else {
+                        loadCustomers(currentPage + 1, pageSize);
+                    }
+                }
+            });
         }
 
         // Variables to track current state
@@ -314,94 +448,101 @@
         let pageSize = 10;
         let totalPages = 1;
 
-        // Setup event listeners
-        function setupEventListeners() {
-            // Tab switching
-            $('#employeesTab').click(function() {
-                if (currentTab !== 'employees') {
-                    currentTab = 'employees';
-                    $('.tab-active').removeClass('tab-active');
-                    $(this).addClass('tab-active');
-                    $('#customersTab').removeClass('tab-active');
-                    $('#employeeStatusFilter').removeClass('hidden');
-                    $('#customerStatusFilter').addClass('hidden');
-                    loadEmployees(currentEmployeeStatus, 0, pageSize);
-                }
-            });
-
-            $('#customersTab').click(function() {
-                if (currentTab !== 'customers') {
-                    currentTab = 'customers';
-                    $('.tab-active').removeClass('tab-active');
-                    $(this).addClass('tab-active');
-                    $('#employeesTab').removeClass('tab-active');
-                    $('#employeeStatusFilter').addClass('hidden');
-                    $('#customerStatusFilter').removeClass('hidden');
-                    loadCustomers(0, pageSize);
-                }
-            });
-
-            // Employee status filter buttons
-            $('.status-filter').click(function() {
-                $('.status-filter').removeClass('status-active bg-indigo-100 text-indigo-700').addClass('bg-gray-100 text-gray-700');
-                $(this).removeClass('bg-gray-100 text-gray-700').addClass('status-active bg-indigo-100 text-indigo-700');
-                currentEmployeeStatus = $(this).data('status');
-                loadEmployees(currentEmployeeStatus, 0, pageSize);
-            });
-
-            // Pagination buttons
-            $('#prevPage, #prevPageMobile').click(function() {
-                if (currentPage > 0) {
-                    currentPage--;
-                    if (currentTab === 'employees') {
-                        loadEmployees(currentEmployeeStatus, currentPage, pageSize);
-                    } else {
-                        loadCustomers(currentPage, pageSize);
-                    }
-                }
-            });
-
-            $('#nextPage, #nextPageMobile').click(function() {
-                if (currentPage < totalPages - 1) {
-                    currentPage++;
-                    if (currentTab === 'employees') {
-                        loadEmployees(currentEmployeeStatus, currentPage, pageSize);
-                    } else {
-                        loadCustomers(currentPage, pageSize);
-                    }
-                }
-            });
-        }
-
         // Load account stats
         function loadAccountStats() {
-            const token = localStorage.getItem('token');
+            const adminToken = localStorage.getItem('token');
             
-            // This is a mock implementation - replace with actual API calls
-            // In a real app, you would call an API endpoint to get these counts
+            // Use the new API endpoints to get real counts
+            // Set loading state for all counters
             $('#totalUsers').text('Loading...');
             $('#totalCustomers').text('Loading...');
             $('#totalEmployees').text('Loading...');
             
-            // Example to update the stats - replace with actual API calls
-            setTimeout(() => {
-                $('#totalUsers').text('250');
-                $('#totalCustomers').text('180');
-                $('#totalEmployees').text('70');
-            }, 1000);
+            // Get total users count
+            fetch('/admin/total-users', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load total users count');
+                }
+                return response.json();
+            })
+            .then(data => {
+                $('#totalUsers').text(data.result);
+            })
+            .catch(error => {
+                console.error('Error loading total users:', error);
+                $('#totalUsers').text('Error');
+            });
+            
+            // Get customers count
+            fetch('/admin/count-customers', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load customers count');
+                }
+                return response.json();
+            })
+            .then(data => {
+                $('#totalCustomers').text(data.result);
+                // Update chart after we have customer count
+                updateChart(data.result);
+            })
+            .catch(error => {
+                console.error('Error loading customers count:', error);
+                $('#totalCustomers').text('Error');
+            });
+            
+            // Get employees count
+            fetch('/admin/count-employees', {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${adminToken}`,
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Failed to load employees count');
+                }
+                return response.json();
+            })
+            .then(data => {
+                $('#totalEmployees').text(data.result);
+                // Update chart after we have employee count
+                updateChart(null, data.result);
+            })
+            .catch(error => {
+                console.error('Error loading employees count:', error);
+                $('#totalEmployees').text('Error');
+            });
         }
+
+        // Global variable to store the chart
+        let accountChart;
 
         // Initialize chart
         function initializeChart() {
             const ctx = document.getElementById('accountDistribution').getContext('2d');
             
-            // Create a pie chart showing customer vs employee distribution
-            new Chart(ctx, {
+            // Create an empty pie chart that will be updated when data is loaded
+            accountChart = new Chart(ctx, {
                 type: 'pie',
                 data: {
                     labels: ['Customers', 'Employees'],
                     datasets: [{
-                        data: [180, 70],
+                        data: [0, 0], // Initial empty data
                         backgroundColor: [
                             '#10B981', // Green for customers
                             '#4F46E5'  // Indigo for employees
@@ -415,10 +556,45 @@
                     plugins: {
                         legend: {
                             position: 'bottom'
+                        },
+                        title: {
+                            display: true,
+                            text: 'Loading data...',
+                            font: {
+                                size: 16
+                            }
                         }
                     }
                 }
             });
+        }
+
+        // Store customer and employee counts for chart update
+        let customerCount = 0;
+        let employeeCount = 0;
+
+        // Update chart with real data
+        function updateChart(customers, employees) {
+            // Update stored counts if values are provided
+            if (customers !== null && customers !== undefined) {
+                customerCount = customers;
+            }
+            
+            if (employees !== null && employees !== undefined) {
+                employeeCount = employees;
+            }
+            
+            // Only update chart if we have both counts
+            if (customerCount > 0 || employeeCount > 0) {
+                // Update chart data
+                accountChart.data.datasets[0].data = [customerCount, employeeCount];
+                
+                // Update chart title
+                accountChart.options.plugins.title.text = 'Account Distribution';
+                
+                // Update chart
+                accountChart.update();
+            }
         }
 
         // Load employees by status
@@ -433,12 +609,14 @@
                 </div>
             `);
             
-            const token = localStorage.getItem('token');
+            const adminToken = localStorage.getItem('token');
             
-            fetch(`/admin/get-status/${status}?page=${page}&size=${size}`, {
+            // Use the correct endpoint format for the backend
+            // Since the controller expects a UserStatus enum, we need to pass the string as is
+            fetch(`/admin/get-employees/list?page=${page}&size=${size}`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${adminToken}`,
                     'Content-Type': 'application/json'
                 }
             })
@@ -449,11 +627,17 @@
                 return response.json();
             })
             .then(data => {
-                const employees = data.result.content;
+                const allEmployees = data.result.content;
                 totalPages = data.result.totalPages;
                 
+                // Filter employees by status and exclude admin account
+                const employees = allEmployees.filter(emp => {
+                    // Filter by status and exclude any user with username "admin"
+                    return emp.userStatus === status && emp.username.toLowerCase() !== "admin";
+                });
+                
                 // Update pagination info
-                updatePaginationInfo(page, size, data.result.totalElements, totalPages);
+                updatePaginationInfo(page, size, employees.length, totalPages);
                 
                 if (employees && employees.length > 0) {
                     // Render the employee list
@@ -488,12 +672,12 @@
                 </div>
             `);
             
-            const token = localStorage.getItem('token');
+            const adminToken = localStorage.getItem('token');
             
             fetch(`/admin/get-customers/list?page=${page}&size=${size}`, {
                 method: 'GET',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${adminToken}`,
                     'Content-Type': 'application/json'
                 }
             })
@@ -565,6 +749,18 @@
                         statusBadgeClass = 'status-badge bg-gray-100 text-gray-800';
                 }
 
+                // Format the role properly
+                let roleName = 'No role';
+                if (employee.role) {
+                    // Check if it's the role string format [Role(name=ROLENAME)]
+                    const roleMatch = employee.role.match(/\[Role\(name=([A-Z_]+)\)\]/);
+                    if (roleMatch && roleMatch[1]) {
+                        roleName = roleMatch[1]; // Extract just the role name
+                    } else {
+                        roleName = employee.role; // Use as is if it's already formatted
+                    }
+                }
+
                 // Determine available actions based on status
                 let actionsHtml = '';
                 if (employee.userStatus === 'PENDING' || employee.userStatus === 'REJECTED') {
@@ -594,7 +790,7 @@
                             <div class="text-sm text-gray-500">${employee.phone || 'No phone'}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            <div class="text-sm text-gray-900">${employee.role || 'No role'}</div>
+                            <div class="text-sm text-gray-900">${roleName}</div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <span class="${statusBadgeClass}">${employee.userStatus}</span>
@@ -691,19 +887,19 @@
             $('#pageNumbers').html(pageNumbersHtml);
             
             // Disable/enable prev/next buttons
-            $('#prevPage, #prevPageMobile').prop('disabled', page === 0);
-            $('#nextPage, #nextPageMobile').prop('disabled', page === totalPages - 1);
+            $('#prevPage').prop('disabled', page === 0);
+            $('#nextPage').prop('disabled', page === totalPages - 1);
             
             if (page === 0) {
-                $('#prevPage, #prevPageMobile').addClass('opacity-50 cursor-not-allowed');
+                $('#prevPage').addClass('opacity-50 cursor-not-allowed');
             } else {
-                $('#prevPage, #prevPageMobile').removeClass('opacity-50 cursor-not-allowed');
+                $('#prevPage').removeClass('opacity-50 cursor-not-allowed');
             }
             
             if (page === totalPages - 1) {
-                $('#nextPage, #nextPageMobile').addClass('opacity-50 cursor-not-allowed');
+                $('#nextPage').addClass('opacity-50 cursor-not-allowed');
             } else {
-                $('#nextPage, #nextPageMobile').removeClass('opacity-50 cursor-not-allowed');
+                $('#nextPage').removeClass('opacity-50 cursor-not-allowed');
             }
         }
 
@@ -719,7 +915,7 @@
 
         // Approve employee
         function approveEmployee(employeeId) {
-            const token = localStorage.getItem('token');
+            const adminToken = localStorage.getItem('token');
             
             // Show loading message
             Swal.fire({
@@ -736,7 +932,7 @@
             fetch(`/admin/approve/${employeeId}`, {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}`,
+                    'Authorization': `Bearer ${adminToken}`,
                     'Content-Type': 'application/json'
                 }
             })
@@ -773,7 +969,7 @@
 
         // Reject employee
         function rejectEmployee(employeeId) {
-            const token = localStorage.getItem('token');
+            const adminToken = localStorage.getItem('token');
             
             // Show confirmation dialog
             Swal.fire({
@@ -802,7 +998,7 @@
                     fetch(`/admin/reject/${employeeId}`, {
                         method: 'POST',
                         headers: {
-                            'Authorization': `Bearer ${token}`,
+                            'Authorization': `Bearer ${adminToken}`,
                             'Content-Type': 'application/json'
                         }
                     })
