@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.repository.booking;
 
+import com.humg.HotelSystemManagement.entity.booking.Booking;
 import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -22,4 +23,9 @@ public interface BookingRoomRepository extends JpaRepository<BookingRoom, String
 
     List<BookingRoom> findByUsernameAndBookingRoomIdIn(String username, List<String> bookingItemsId);
     int deleteByBookingIsNull();
+    List<BookingRoom> findByBooking(Booking booking);
+
+    @Query("SELECT br FROM BookingRoom br WHERE br.checkInDate <= :date AND br.checkOutDate >= :date " +
+            "AND br.bookingStatus = 'CONFIRMED'")
+    List<BookingRoom> findActiveBookingsOnDate(LocalDate date);
 }

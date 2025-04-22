@@ -7,13 +7,16 @@ import com.humg.HotelSystemManagement.configuration.payment.ZaloPayConfig;
 import com.humg.HotelSystemManagement.dto.request.payment.ZaloPayOrderRequest;
 import com.humg.HotelSystemManagement.entity.booking.Booking;
 import com.humg.HotelSystemManagement.entity.booking.BookingBill;
+import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
 import com.humg.HotelSystemManagement.entity.booking.Payment;
+import com.humg.HotelSystemManagement.entity.enums.BookingStatus;
 import com.humg.HotelSystemManagement.entity.enums.PaymentMethod;
 import com.humg.HotelSystemManagement.entity.enums.PaymentStatus;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.booking.BookingBillRepository;
 import com.humg.HotelSystemManagement.repository.booking.BookingRepository;
+import com.humg.HotelSystemManagement.repository.booking.BookingRoomRepository;
 import com.humg.HotelSystemManagement.repository.booking.PaymentRepository;
 import com.humg.HotelSystemManagement.service.HotelService.booking.BookingService;
 import lombok.AccessLevel;
@@ -49,6 +52,7 @@ import java.util.*;
 public class ZaloPayService {
     ZaloPayConfig zaloPayConfig;
     BookingBillRepository bookingBillRepository;
+    BookingRoomRepository bookingRoomRepository;
     PaymentRepository paymentRepository;
     BookingService bookingService;
 
@@ -102,12 +106,6 @@ public class ZaloPayService {
         embedData.put("merchantinfo", "hotel");
         embedData.put("redirecturl", zaloPayConfig.getRedirectUrl());
 
-        /**
-        Map<String, String> columnInfo = new LinkedHashMap<>();
-        columnInfo.put("storename", "hotel");
-        embedData.put("columninfo", columnInfo);
-
-         */
 // Convert embedData thành JSON string
         String embedDataJsonString = objectMapper.writeValueAsString(embedData);
 
@@ -157,6 +155,11 @@ public class ZaloPayService {
                         .build();
 
                 var result = paymentRepository.save(payment);
+
+                List<BookingRoom> findBookingRoom = bookingRoomRepository.findByBooking(bookingBill.getBooking());
+
+                findBookingRoom.forEach(bookingRoom -> bookingRoom.setBookingStatus(BookingStatus.CONFIRMED));
+                bookingRoomRepository.saveAll(findBookingRoom);
 
                 String paymentId = result.getPaymentId();
                 String bookingId = bookingBill.getBooking().getBookingId();

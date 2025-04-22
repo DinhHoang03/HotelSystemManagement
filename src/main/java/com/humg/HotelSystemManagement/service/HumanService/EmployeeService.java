@@ -111,8 +111,7 @@ public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, Em
                 .build(); //fix lại response hiển thị status và role
     }
 
-    //@PreAuthorize("hasRole('ADMIN')")
-    @PreAuthorize("hasAuthority('GET_ALL_EMPLOYEE')")
+
     public List<EmployeeResponse> getAll() {
         List<EmployeeResponse> list = employeeRepository.findAll()
                 .stream()
@@ -132,7 +131,6 @@ public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, Em
         return employeePage.map(employeeMapper::toEmployeeResponse);
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
     public EmployeeResponse getById(String id) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));

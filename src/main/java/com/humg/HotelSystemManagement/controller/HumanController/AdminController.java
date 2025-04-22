@@ -16,7 +16,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/admin")
@@ -125,11 +127,55 @@ public class AdminController {
                 .build();
     }
 
+    @GetMapping("/count-rooms")
+    APIResponse<Long> countRoom() {
+        return APIResponse.<Long>builder()
+                .result(adminService.countRoomByList())
+                .message("Get count successfully")
+                .build();
+    }
+
+    @GetMapping("/today-bookings")
+    APIResponse<Long> countBooking(LocalDate date) {
+        return APIResponse.<Long>builder()
+                .result(adminService.countBookingTodayByList(date))
+                .message("Get count successfully")
+                .build();
+    }
+
+    @GetMapping("/today-revenue")
+    APIResponse<Long> getTodayRevenue(LocalDate now) {
+        return APIResponse.<Long>builder()
+                .result(adminService.getTodayRevenue(now))
+                .message("Get count successfully")
+                .build();
+    }
+
     @GetMapping("total-users")
     APIResponse<Long> totalUsers() {
         return APIResponse.<Long>builder()
                 .result(adminService.totalCountUser())
                 .message("Get total count complete")
+                .build();
+    }
+
+    @GetMapping("/revenue")
+    APIResponse<Map<String, Long>> getRevenue(
+            @RequestParam(name = "year") int year,
+            @RequestParam(name = "startMonth") int startMonth,
+            @RequestParam(name = "endMonth") int endMonth
+    ){
+        return APIResponse.<Map<String, Long>>builder()
+                .result(adminService.getMonthlyRevenue(year, startMonth, endMonth))
+                .message("Get revenue successfully")
+                .build();
+    }
+
+    @GetMapping("/room-occupancy")
+    APIResponse<Map<String, Double>> getWeeklyOccupancyRate() {
+        return APIResponse.<Map<String, Double>>builder()
+                .result(adminService.calculateOccupancyRateForWeek())
+                .message("Get occupancy rate successfully")
                 .build();
     }
 }

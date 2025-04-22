@@ -55,15 +55,9 @@ public class SecurityConfig {
             "/*.svg"
     };//Các end-point được public mà không cần phải có sự can thiệp từ spring security
 
-    /*
-    private static final String[] ADMIN_ENDPOINTS = {
-            "/admin/get-customer/{customerId}",
-            "/admin/get-customers/list",
-            "/admin/get-employee/{employeeId}",
-            "/admin/get-employees/list"
+    //Các end-point được chỉ định để phân quyền riêng cho role admin!
+    private static final String[] ADMIN_ENDPOINTS = {"/admin/**"};
 
-    };//Các end-point được chỉ định để phân quyền riêng cho role admin!
-    */
 
     @Bean
     public PasswordEncoder bcryptPasswordEncoder(){ //Hàm nâng cấp độ khó của mã hóa mật khẩu(Sử dụng thuật toán BCrypt)
@@ -75,6 +69,7 @@ public class SecurityConfig {
         http
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
+                    .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

@@ -39,13 +39,6 @@ public class BookingRoom {
 
     @Column(nullable = true)
     String username;
-//    @Column(name = "price_type", nullable = false)
-//    @Enumerated(EnumType.STRING)
-//    PriceType priceType;
-
-//    @ManyToOne(fetch = FetchType.LAZY)
-//    @JoinColumn(name = "room_id", nullable = false)
-//    Room room;
 
     @OneToMany(mappedBy = "bookingRoom", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY, orphanRemoval = false)
     List<Room> rooms = new ArrayList<>();
