@@ -3,28 +3,51 @@ const API = {
     // Base URL with context path
     baseUrl: document.querySelector('meta[name="context-path"]')?.content || '',
     
-    // Token storage
-    token: localStorage.getItem('token'),
-    refreshToken: localStorage.getItem('refreshToken'),
+    // Get token from cookie
+    getToken: function() {
+        return this.getCookie('auth_token');
+    },
+    
+    // Get refresh token from cookie
+    getRefreshToken: function() {
+        return this.getCookie('refresh_token');
+    },
+    
+    // Get cookie by name
+    getCookie: function(name) {
+        const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+        return match ? match[2] : null;
+    },
+    
+    // Set secure cookie
+    setSecureCookie: function(name, value, expiryDays = 1) {
+        const date = new Date();
+        date.setTime(date.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
+        const expires = "expires=" + date.toUTCString();
+        // Use secure flags when in production (HTTPS)
+        const secure = location.protocol === 'https:' ? '; secure' : '';
+        document.cookie = name + "=" + value + "; " + expires + "; path=/; samesite=strict" + secure;
+    },
+    
+    // Clear cookie
+    clearCookie: function(name) {
+        document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    },
     
     // Set token
     setToken: function(token) {
-        this.token = token;
-        localStorage.setItem('token', token);
+        this.setSecureCookie('auth_token', token, 1);
     },
     
     // Set refresh token
     setRefreshToken: function(refreshToken) {
-        this.refreshToken = refreshToken;
-        localStorage.setItem('refreshToken', refreshToken);
+        this.setSecureCookie('refresh_token', refreshToken, 7); // Refresh token lasts longer
     },
     
     // Remove tokens
     removeToken: function() {
-        this.token = null;
-        this.refreshToken = null;
-        localStorage.removeItem('token');
-        localStorage.removeItem('refreshToken');
+        this.clearCookie('auth_token');
+        this.clearCookie('refresh_token');
     },
     
     // Get headers with token
@@ -32,8 +55,9 @@ const API = {
         const headers = {
             'Content-Type': 'application/json'
         };
-        if (this.token) {
-            headers['Authorization'] = `Bearer ${this.token}`;
+        const token = this.getToken();
+        if (token) {
+            headers['Authorization'] = `Bearer ${token}`;
         }
         return headers;
     },
@@ -43,47 +67,51 @@ const API = {
         return $.ajax({
             url: `${this.baseUrl}/auth/login`,
             method: 'POST',
-            headers: this.getHeaders(),
+            headers: { 'Content-Type': 'application/json' },
             data: JSON.stringify({ username, password })
         });
     },
     
     // Verify token
     verifyToken: function() {
-        if (!this.token) {
+        const token = this.getToken();
+        if (!token) {
             return Promise.reject('No token found');
         }
         return $.ajax({
             url: `${this.baseUrl}/auth/introspect`,
             method: 'POST',
             headers: this.getHeaders(),
-            data: JSON.stringify({ token: this.token })
+            data: JSON.stringify({ token: token })
         });
     },
     
     // Refresh token
     refreshToken: function() {
-        if (!this.refreshToken) {
-            return Promise.reject('No refresh token found');
+        const token = this.getToken();
+        if (!token) {
+            return Promise.reject('No token found');
         }
         return $.ajax({
             url: `${this.baseUrl}/auth/refresh`,
             method: 'POST',
             headers: this.getHeaders(),
-            data: JSON.stringify({ refreshToken: this.refreshToken })
+            data: JSON.stringify({ token: token })
         });
     },
     
     // Logout
     logout: function() {
-        if (!this.token) {
+        const token = this.getToken();
+        if (!token) {
+            this.removeToken();
             return Promise.resolve();
         }
         return $.ajax({
             url: `${this.baseUrl}/auth/logout`,
             method: 'POST',
             headers: this.getHeaders(),
-            data: JSON.stringify({ token: this.token })
+            data: JSON.stringify({ token: token })
         }).finally(() => {
             this.removeToken();
         });

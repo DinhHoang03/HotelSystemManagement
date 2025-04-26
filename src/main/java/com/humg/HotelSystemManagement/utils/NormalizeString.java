@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service.SystemService;
+package com.humg.HotelSystemManagement.utils;
 
 import org.springframework.stereotype.Component;
 

@@ -21,7 +21,8 @@ function checkAuth() {
         return;
     }
 
-    const token = localStorage.getItem('token');
+    // Get token from cookie instead of localStorage
+    const token = getAuthToken();
     if (!token) {
         window.location.href = '/login.html';
         return;
@@ -38,13 +39,39 @@ function checkAuth() {
     loadUserProfile();
 }
 
+// Get auth token from cookie
+function getAuthToken() {
+    return getCookie('auth_token');
+}
+
+// Get cookie by name
+function getCookie(name) {
+    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+    return match ? match[2] : null;
+}
+
+// Set secure cookie
+function setSecureCookie(name, value, expiryDays = 1) {
+    const date = new Date();
+    date.setTime(date.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
+    const expires = "expires=" + date.toUTCString();
+    // Use secure flags when in production (HTTPS)
+    const secure = location.protocol === 'https:' ? '; secure' : '';
+    document.cookie = name + "=" + value + "; " + expires + "; path=/; samesite=strict" + secure;
+}
+
+// Clear cookie
+function clearCookie(name) {
+    document.cookie = name + "=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+}
+
 // Load user profile information
 function loadUserProfile() {
     $.ajax({
         url: '/customer/profile',
         type: 'GET',
         headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('token')
+            'Authorization': 'Bearer ' + getAuthToken()
         },
         success: function(response) {
             console.log('Profile Response:', response);
@@ -71,8 +98,8 @@ function loadUserProfile() {
                 const memberType = user.memberType || 'Standard Member';
                 $('#menuUsername').next('span').text(memberType);
                 
-                // Store user ID for booking
-                localStorage.setItem('userId', user.id);
+                // Store user ID as a cookie with short expiry
+                setSecureCookie('userId', user.id, 1);
             } else {
                 console.error('Invalid profile response format:', response);
                 setDefaultUserInfo();
@@ -106,7 +133,9 @@ function setDefaultUserInfo() {
 
 // Handle logout
 function logout() {
-    localStorage.removeItem('token');
+    // Clear auth token cookie instead of localStorage
+    clearCookie('auth_token');
+    clearCookie('userId');
     window.location.href = '/login.html';
 }
 
@@ -114,7 +143,7 @@ function logout() {
 $(document).ajaxError(function(event, jqXHR, settings, error) {
     if (jqXHR.status === 401) {
         // Unauthorized - token invalid or expired
-        localStorage.removeItem('token');
+        clearCookie('auth_token');
         window.location.href = '/login.html';
     } else if (jqXHR.status === 403) {
         // Forbidden - user doesn't have permission

@@ -12,7 +12,7 @@ import com.humg.HotelSystemManagement.mapper.CustomerMapper;
 import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
-import com.humg.HotelSystemManagement.service.Interfaces.IGeneralCRUDService;
+import com.humg.HotelSystemManagement.utils.Interfaces.IGeneralCRUDService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

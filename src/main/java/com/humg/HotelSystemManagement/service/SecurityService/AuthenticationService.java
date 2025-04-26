@@ -8,18 +8,19 @@ import com.humg.HotelSystemManagement.dto.request.security.jwt.LogOutRequest;
 import com.humg.HotelSystemManagement.dto.request.security.jwt.RefreshRequest;
 import com.humg.HotelSystemManagement.dto.response.security.jwt.AuthenticationResponse;
 import com.humg.HotelSystemManagement.dto.response.security.jwt.IntrospectResponse;
-import com.humg.HotelSystemManagement.entity.authorizezation.InvalidatedToken;
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
-import com.humg.HotelSystemManagement.repository.authenticationRepository.InvalidatedTokenRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
+import com.humg.HotelSystemManagement.service.RedisService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -45,9 +46,9 @@ public class AuthenticationService {
     // Các repository để truy vấn thông tin Customer và Employee từ database.
     EmployeeRepository employeeRepository;
     CustomerRepository customerRepository;
-    InvalidatedTokenRepository invalidatedTokenRepository;
     // Config bảo mật chứa bcrypt encoder để mã hóa/matching mật khẩu.
     SecurityConfig securityConfig;
+    RedisService redisService;
     @NonFinal
     UserPrincipal userPrincipal;
 
@@ -63,6 +64,23 @@ public class AuthenticationService {
     @NonFinal
     @Value("${jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
+
+    //Phương thức thiết lập cookie
+    private void setCookies(HttpServletResponse response, String token, String role) {
+        //Cookie cho token
+        Cookie tokenCookie = new Cookie("token", token);
+        tokenCookie.setHttpOnly(true); //Ngăn JavaScript truy cập cookie
+        tokenCookie.setSecure(true); //Chỉ gửi qua https
+        tokenCookie.setPath("/"); //Có thể truy cập từ mọi đường dẫn
+        tokenCookie.setMaxAge((int) VALID_DURATION * 3600); //Thời gian sống của cookie (Tính bằng giây)
+        response.addCookie(tokenCookie);
+
+        //Cookie cho role
+        Cookie roleCookie = new Cookie("role", role);
+        roleCookie.setPath("/");
+        roleCookie.setMaxAge((int) VALID_DURATION * 3600);
+        response.addCookie(roleCookie);
+    }
 
     // Hàm kiểm tra tính hợp lệ của token JWT (introspection).
     public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
@@ -82,44 +100,56 @@ public class AuthenticationService {
                 .build();
     }
 
-    public void logout(LogOutRequest request) throws ParseException, JOSEException {
+    public void logout(LogOutRequest request, HttpServletResponse response) throws ParseException, JOSEException {
         try{
             var signedToken = verifyToken(request.getToken(), true);
 
             String jwtId = signedToken.getJWTClaimsSet().getJWTID();
-            Date expriredTime = signedToken.getJWTClaimsSet().getExpirationTime();
+            Date expiredTime = signedToken.getJWTClaimsSet().getExpirationTime();
 
-            InvalidatedToken invalidatedToken = InvalidatedToken
-                    .builder()
-                    .id(jwtId)
-                    .expiredTime(expriredTime.toInstant())
-                    .build();
+            /**@Param:expiredTime: thời điểm token hết hạn
+             * @Param: System.currentTimeMillis(): Lấy time hiện tại
+             * cả hai đều tính bằng miliseccond, công thức tính là expiredTime - time hiện tại = số thời gian còn lại để sống của token
+             * chia cho 1000 để đổi từ mili giây sang giây
+             */
+            long remainingSeconds = (expiredTime.getTime() - System.currentTimeMillis()) /1000;
+            //Redis lưu key blacklist:jwt trong đúng số giây còn sống đó. Sau khi token hết hạn thì key trong redis tự bay màu
+            redisService.blacklistToken(jwtId, remainingSeconds);
 
-            invalidatedTokenRepository.save(invalidatedToken);
+            Cookie tokenCookie = new Cookie("token", null);
+            tokenCookie.setMaxAge(0);
+            tokenCookie.setPath("/");
+            response.addCookie(tokenCookie);
+
+            Cookie roleCookie = new Cookie("role", null);
+            roleCookie.setMaxAge(0);
+            roleCookie.setPath("/");
+            response.addCookie(roleCookie);
+
         }catch (AppException e){
             log.info("Token is not valid!");
         }
     }
 
-    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+    public AuthenticationResponse refreshToken(RefreshRequest request, HttpServletResponse response) throws ParseException, JOSEException {
         var signedToken = verifyToken(request.getToken(), true);
         var jwtId = signedToken.getJWTClaimsSet().getJWTID();
         var expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jwtId)
-                .expiredTime(expirationTime.toInstant())
-                .build();
-
-        invalidatedTokenRepository.save(invalidatedToken);
+        long remainingSeconds = (expirationTime.getTime() - System.currentTimeMillis()) /1000;
+        redisService.blacklistToken(jwtId, remainingSeconds);
 
         var username = signedToken.getJWTClaimsSet().getSubject();
         var userPrincipal = findUser(username);
 
         var token = generateToken(userPrincipal);
+        var role = buildScope(userPrincipal);
+
+        setCookies(response, token, role);
 
         return AuthenticationResponse.builder()
                 .token(token)
+                .role(role)
                 .authenticated(true)
                 .build();
     }
@@ -147,7 +177,8 @@ public class AuthenticationService {
             var role = employee.get().getRoles();
             var password = employee.get().getPassword();
 
-            if(employee.get().getUserStatus().equals(UserStatus.PENDING) || employee.get().getUserStatus().equals(UserStatus.REJECTED))
+            if(employee.get().getUserStatus().equals(UserStatus.PENDING) ||
+                    employee.get().getUserStatus().equals(UserStatus.REJECTED))
                 throw new AppException(AppErrorCode.USER_NOT_APPROVE);
 
             userPrincipal = new UserPrincipal(
@@ -180,26 +211,14 @@ public class AuthenticationService {
         var verified = signedJWT.verify(verifier);
 
         // Token hợp lệ nếu chữ ký đúng và chưa hết hạn.
-        if(!verified && expriredTime
-                .after(
-                        new Date()
-                )
-        ){
-            throw new AppException(
-                    AppErrorCode.UNAUTHENTICATED
-            );
+        if(!verified || expriredTime.before(new Date())){
+            throw new AppException(AppErrorCode.UNAUTHENTICATED);
         }
 
         //Nếu Token đã log out thì sẽ bị disable vào hệ thống
-        if(invalidatedTokenRepository.existsById(
-                signedJWT
-                        .getJWTClaimsSet()
-                        .getJWTID())
-        ){
-            throw new AppException(
-                    AppErrorCode.UNAUTHENTICATED
-            );
-        }
+        if(redisService.isTokenBlacklisted(signedJWT.getJWTClaimsSet().getJWTID()))
+            throw new AppException(AppErrorCode.UNAUTHENTICATED);
+
 
         return signedJWT;
     }
@@ -207,7 +226,7 @@ public class AuthenticationService {
 
 
     // Hàm tạo token JWT với username và role, ký bằng HS512.
-    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+    public AuthenticationResponse authenticate(AuthenticationRequest request, HttpServletResponse response) throws ParseException, JOSEException {
         String username = request.getUsername();
         String password = request.getPassword();
 
@@ -219,15 +238,19 @@ public class AuthenticationService {
                 .matches(password, passwordToCheck);
 
         log.info("Password match: {}", authenticated);
-        // Nếu mật khẩu không khớp, ném ngoại lệ UNAUTHENTICATED.
+        // Nếu mật khẩu không khớp, ném ngoại lệ UNAUTHENTICATED
         if (!authenticated) throw new AppException(AppErrorCode.UNAUTHENTICATED);
 
         // Tạo token JWT với đối tượng user đã có
         var token = generateToken(userPrincipal);
+        var role = buildScope(userPrincipal);
+
+        setCookies(response, token, role);
 
         // Trả về response chứa token và trạng thái xác thực.
         return AuthenticationResponse.builder()
                 .token(token)
+                .role(role)
                 .authenticated(true)
                 .build();
     }
@@ -237,6 +260,7 @@ public class AuthenticationService {
         // Header và các thông tin chung như cũ
         JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
 
+        // Tạo payload với các thông tin như subject, issuer, thời gian tạo và hết hạn.
         JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
                 .subject(user.getUsername())
                 .issuer("hotel.com")
@@ -276,5 +300,15 @@ public class AuthenticationService {
             throw new AppException(AppErrorCode.NO_ROLES_ASSIGNED);
         }
         return stringJoiner.toString();
+    }
+
+    public String getRole(String token) throws ParseException, JOSEException {
+           var signedToken = verifyToken(token, false);
+           var scope = signedToken.getJWTClaimsSet().getClaim("scope");
+           if (scope instanceof String) {
+               return (String) scope;
+           }else {
+               throw new AppException(AppErrorCode.NO_ROLES_ASSIGNED);
+           }
     }
 }

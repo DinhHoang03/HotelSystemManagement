@@ -189,6 +189,16 @@
             once: true
         });
 
+        // Set secure cookie
+        function setSecureCookie(name, value, expiryDays = 1) {
+            const date = new Date();
+            date.setTime(date.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
+            const expires = "expires=" + date.toUTCString();
+            // Use secure flags when in production (HTTPS)
+            const secure = location.protocol === 'https:' ? '; secure' : '';
+            document.cookie = name + "=" + value + "; " + expires + "; path=/; samesite=strict" + secure;
+        }
+
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const icon = document.querySelector('#password + i');
@@ -215,6 +225,33 @@
         }
 
         $(document).ready(function() {
+            // Kiểm tra nếu đã đăng nhập thì chuyển hướng tương ứng
+            const token = document.cookie.split('; ').find(row => row.startsWith('auth_token='));
+            if (token) {
+                try {
+                    const tokenValue = token.split('=')[1];
+                    const payload = JSON.parse(atob(tokenValue.split('.')[1]));
+                    const role = payload.scope;
+                    
+                    if (role === 'ROLE_ADMIN') {
+                        window.location.href = '/admin-dashboard.html';
+                        return;
+                    } else if (role.includes('ROLE_ACCOUNTANT') || role.includes('ROLE_DEPARTMENT_HEAD') || 
+                              role.includes('ROLE_RECEPTIONIST') || role.includes('ROLE_CLEANER') || 
+                              role.includes('ROLE_WAITER')) {
+                        window.location.href = '/employee-dashboard.html';
+                        return;
+                    } else if (role.includes('ROLE_CUSTOMER')) {
+                        window.location.href = '/customer-dashboard.html';
+                        return;
+                    }
+                } catch (error) {
+                    console.error('Error parsing token:', error);
+                    // Xóa token không hợp lệ
+                    document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+                }
+            }
+
             $('#loginForm').submit(function(e) {
                 e.preventDefault();
                 hideError();
@@ -231,24 +268,30 @@
                     url: '/auth/login',
                     method: 'POST',
                     contentType: 'application/json',
+                    xhrFields: {
+                        withCredentials: true  // Important: This enables receiving cookies from cross-origin requests
+                    },
                     data: JSON.stringify({
                         username: username,
                         password: password
                     }),
                     success: function(response) {
                         if (response.result && response.result.token) {
-                            localStorage.setItem('token', response.result.token);
+                            // Lưu token vào cookie thay vì localStorage
+                            setSecureCookie('auth_token', response.result.token, 1);
                             
                             // Decode token to get user role
                             const payload = JSON.parse(atob(response.result.token.split('.')[1]));
                             const role = payload.scope; // Scope là một chuỗi đơn, không phải mảng
                             
+                            console.log("Login successful. User role:", role);
+                            
                             // Redirect based on role
-                            if (role === 'ROLE_ADMIN') {
+                            if (role.includes('ROLE_ADMIN')) {
                                 window.location.href = '/admin-dashboard.html';
-                            } else if (role === 'ROLE_ACCOUNTANT' || role === 'ROLE_DEPARTMENT_HEAD' || 
-                                      role === 'ROLE_RECEPTIONIST' || role === 'ROLE_CLEANER' || 
-                                      role === 'ROLE_WAITER') {
+                            } else if (role.includes('ROLE_ACCOUNTANT') || role.includes('ROLE_DEPARTMENT_HEAD') || 
+                                      role.includes('ROLE_RECEPTIONIST') || role.includes('ROLE_CLEANER') || 
+                                      role.includes('ROLE_WAITER')) {
                                 window.location.href = '/employee-dashboard.html';
                             } else {
                                 window.location.href = '/customer-dashboard.html';
@@ -258,6 +301,7 @@
                         }
                     },
                     error: function(xhr) {
+                        console.error('Login error:', xhr);
                         if (xhr.status === 401) {
                             try {
                                 // Cố gắng đọc phản hồi lỗi từ backend
@@ -289,6 +333,8 @@
                 });
             });
         });
+
+        localStorage.clear()
     </script>
 </body>
 </html> 

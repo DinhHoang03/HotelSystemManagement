@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service.Interfaces;
+package com.humg.HotelSystemManagement.utils.Interfaces;
 
 import org.springframework.data.domain.Page;
 
