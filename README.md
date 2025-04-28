@@ -48,7 +48,7 @@ Sản phẩm hướng tới sự đơn giản, ổn định, dễ tiếp cận c
 - **Lombok**: Giảm mã code lặp.
 - **Jackson**: Xử lý JSON hiệu quả.
 - **Apache HttpClient**: Thực hiện HTTP request.
-- **Commons Codec**: Mã hóa/giải mã Base64, Hash.
+- **Commons Codec**: Hỗ trợ mã hóa, giải mã (Base64, SHA-1, MD5...).
 - **MySQL**: Hệ quản trị cơ sở dữ liệu.
 - **Maven**: Quản lý build và dependency.
 - **Ngrok**: Expose localhost server để test webhook.
@@ -62,8 +62,13 @@ Sản phẩm hướng tới sự đơn giản, ổn định, dễ tiếp cận c
 
 - 📅 Hoàn thiện đầy đủ các chức năng Booking, Quản lý Phòng, Quản lý Khách hàng.
 - 🔒 Tăng cường tính năng phân quyền chi tiết theo vai trò.
-- 💬 Thêm hệ thống thông báo (Notification) cho người dùng.
-- 🌐 Xây dựng phiên bản hỗ trợ đa ngôn ngữ (Vietnamese/English).
+- 🧑‍💼 Phát triển thêm các tính năng quản lý chuyên sâu cho Employee và Admin.
 - 📊 Thống kê số liệu hoạt động và hiệu suất khách sạn bằng biểu đồ.
+
+---
+
+<div align="center" style="margin-top: 40px; font-style: italic; font-size: 14px;">
+Made with ❤️ by <b>Hoàng Bình Định</b> - 2025
+</div>
 
 </div>
