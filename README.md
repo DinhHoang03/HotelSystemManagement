@@ -21,7 +21,7 @@ Sản phẩm hướng tới sự đơn giản, ổn định, dễ tiếp cận c
 **Những điểm nhấn** trong dự án cá nhân này:
 
 - ✨ Giao diện dễ sử dụng, thân thiện với người mới.
-- ⚡ Hệ thống nhẹ, nhanh, ít tài nguyên.
+- ⚡ Hệ thống nhẹ, nhanh, ít tài nguyên.(Nah cái này bốc phét thôi nhưng mà viết cho oách xà lách)
 - 🔥 Đầy đủ các tính năng thiết yếu trong quản lý vận hành khách sạn.
 - 🛡️ Chú trọng đến bảo mật thông tin và dữ liệu người dùng.
 
