@@ -10,11 +10,11 @@
 
 # 🚀 MÔ TẢ DỰ ÁN
 
-Dự án cá nhân về **Quản lý khách sạn**!  
-This project helps you **do amazing things** easily and quickly.
+Dự án cá nhân về **Quản lý khách sạn** là dự án sẽ phục vụ cho khách sạn chủ yếu là nhân viên và khách hàng tiếp cận đến sản phẩm. 
+**Những điểm nhấn** trong dự án cá nhân này kể đến là:
 
-- ✨ Easy to use
-- ⚡ Fast and lightweight
-- 🔥 Powerful features
+- ✨ Dễ sử dụng
+- ⚡ Cơ bản nhưng ổn định
+- 🔥 Có các tính năng cần thiết cho mọi phạm trù đối tượng sử dụng
 
 </div>
