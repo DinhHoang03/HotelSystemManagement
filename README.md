@@ -52,6 +52,7 @@ Sản phẩm hướng tới sự đơn giản, ổn định, dễ tiếp cận c
 - **MySQL**: Hệ quản trị cơ sở dữ liệu.
 - **Maven**: Quản lý build và dependency.
 - **Ngrok**: Expose localhost server để test webhook.
+- **ZaloPay Sanbox**: Cổng thanh toán ZaloPay trên môi trường ảo.
 
 ## 🔮 **Front-end**:
 
