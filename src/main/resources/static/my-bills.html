@@ -508,10 +508,137 @@
             }
         });
 
-        // Check authentication
+        // Check login status and redirect if needed
+        function checkLoginStatus() {
+            const token = getAuthToken();
+            const userRole = getCookie('user_role') || localStorage.getItem('user_role');
+            
+            log('Checking login status...');
+            log('Token:', token ? 'Found' : 'Not found');
+            log('User role:', userRole || 'Not found');
+            
+            if (!token || !userRole) {
+                log('No token or role found, redirecting to login');
+                window.location.href = '/login.html?session_expired=true';
+                return;
+            }
+            
+            if (!userRole.includes('ROLE_CUSTOMER')) {
+                log('Invalid role, redirecting to login');
+                window.location.href = '/login.html?error=invalid_role';
+                return;
+            }
+            
+            log('Login status OK');
+        }
+
+        // Load bills
+        function loadBills() {
+            ajaxWithAuth({
+                url: '/customer/bills',
+                method: 'GET',
+                success: function(response) {
+                    if (response && response.result) {
+                        const bills = response.result;
+                        const billsContainer = $('#billsContainer');
+                        billsContainer.empty();
+                        
+                        if (bills.length === 0) {
+                            billsContainer.html('<div class="text-center py-8 text-gray-500">No bills found</div>');
+                            return;
+                        }
+                        
+                        bills.forEach(bill => {
+                            const billHtml = `
+                                <div class="bg-white rounded-lg shadow-md p-6 mb-4">
+                                    <div class="flex justify-between items-start">
+                                        <div>
+                                            <h3 class="text-lg font-semibold">Bill #${bill.id}</h3>
+                                            <p class="text-gray-600">Date: ${new Date(bill.createdAt).toLocaleDateString()}</p>
+                                        </div>
+                                        <span class="px-3 py-1 rounded-full ${bill.status === 'PAID' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}">
+                                            ${bill.status}
+                                        </span>
+                                    </div>
+                                    <div class="mt-4">
+                                        <p class="text-gray-700">Amount: ${formatCurrency(bill.amount)}</p>
+                                        <p class="text-gray-700">Booking ID: ${bill.bookingId}</p>
+                                    </div>
+                                    <div class="mt-4 flex justify-end">
+                                        <button onclick="viewBillDetails(${bill.id})" class="text-indigo-600 hover:text-indigo-800">
+                                            View Details
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                            billsContainer.append(billHtml);
+                        });
+                    }
+                },
+                error: function(xhr) {
+                    log('Error loading bills:', xhr);
+                    if (xhr.status === 401) {
+                        window.location.href = '/login.html?session_expired=true';
+                    } else {
+                        showMessage('Failed to load bills. Please try again.');
+                    }
+                }
+            });
+        }
+
+        // View bill details
+        function viewBillDetails(billId) {
+            ajaxWithAuth({
+                url: `/customer/bills/${billId}`,
+                method: 'GET',
+                success: function(response) {
+                    if (response && response.result) {
+                        const bill = response.result;
+                        // Show bill details in modal or new page
+                        showBillDetailsModal(bill);
+                    }
+                },
+                error: function(xhr) {
+                    log('Error loading bill details:', xhr);
+                    if (xhr.status === 401) {
+                        window.location.href = '/login.html?session_expired=true';
+                    } else {
+                        showMessage('Failed to load bill details. Please try again.');
+                    }
+                }
+            });
+        }
+
+        // Handle logout
+        function logout() {
+            ajaxWithAuth({
+                url: '/auth/logout',
+                method: 'POST',
+                success: function() {
+                    // Clear both storage methods
+                    clearAuthToken();
+                    localStorage.removeItem('user_role');
+                    setCookie('user_role', '', -1);
+                    
+                    window.location.href = '/login.html?logged_out=true';
+                },
+                error: function(xhr) {
+                    log('Error during logout:', xhr);
+                    // Still clear storage and redirect
+                    clearAuthToken();
+                    localStorage.removeItem('user_role');
+                    setCookie('user_role', '', -1);
+                    
+                    window.location.href = '/login.html?logged_out=true';
+                }
+            });
+        }
+
+        // Document ready
         $(document).ready(function() {
-            checkAuth();
-            loadCustomerProfile();
+            log('My bills page loaded');
+            checkLoginStatus();
+            loadBills();
         });
 
         // Toggle user menu

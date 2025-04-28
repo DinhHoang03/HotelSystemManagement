@@ -110,7 +110,7 @@ public class CustomerService implements IGeneralCRUDService<CustomerResponse, Cu
         return customerPage.map(customerMapper::toCustomerResponse);
     }
 
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    //@PreAuthorize("hasRole('ROLE_ADMIN')")
     //Get User by Id
     public CustomerResponse getById(String id) {
         Customer customer = customerRepository.findById(id)
@@ -119,7 +119,7 @@ public class CustomerService implements IGeneralCRUDService<CustomerResponse, Cu
         return customerMapper.toCustomerResponse(customer);
     }
 
-    @PreAuthorize("hasRole('CUSTOMER')")
+    //@PreAuthorize("hasRole('CUSTOMER')")
     //update User by Id
     public CustomerResponse update(String id, CustomerUpdateRequest request) {
         Customer customer = customerRepository.findById(id)
@@ -147,7 +147,7 @@ public class CustomerService implements IGeneralCRUDService<CustomerResponse, Cu
         return customerMapper.toCustomerResponse(updatedCustomer);
     }
 
-    @PreAuthorize("hasRole('CUSTOMER')")
+    //@PreAuthorize("hasRole('CUSTOMER')")
     public void delete(String id) {
         Customer customer = customerRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));

@@ -15,6 +15,57 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Auth Script -->
     <script src="/js/auth.js"></script>
+    <script src="/auth-helper.js"></script>
+    <!-- Debug Script -->
+    <script>
+        $(document).ready(function() {
+            // Debug token information
+            function debugEmployeeToken() {
+                // Helper to get cookie
+                function getCookie(name) {
+                    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
+                    return match ? match[2] : null;
+                }
+                
+                const token = getCookie('token');
+                console.log('Employee dashboard - token status:', token ? 'Found' : 'Not found');
+                
+                if (token) {
+                    try {
+                        // Parse JWT
+                        const payload = JSON.parse(atob(token.split('.')[1]));
+                        console.log('Token info:', {
+                            username: payload.sub,
+                            role: payload.scope,
+                            expires: new Date(payload.exp * 1000).toLocaleString()
+                        });
+                        
+                        // Verify role is appropriate for this dashboard
+                        const validRoles = [
+                            'ROLE_ACCOUNTANT', 
+                            'ROLE_DEPARTMENT_HEAD', 
+                            'ROLE_RECEPTIONIST', 
+                            'ROLE_CLEANER', 
+                            'ROLE_WAITER'
+                        ];
+                        
+                        const hasValidRole = validRoles.some(role => 
+                            payload.scope && payload.scope.includes(role)
+                        );
+                        
+                        console.log('Has valid employee role:', hasValidRole);
+                    } catch (e) {
+                        console.error('Error parsing token:', e);
+                    }
+                }
+            }
+            
+            // Run debug without interfering with auth.js
+            setTimeout(debugEmployeeToken, 1000);
+            
+            // Don't call checkAuth() here - it's already called in auth.js
+        });
+    </script>
     <style>
         .sidebar {
             transition: all 0.3s ease;
@@ -214,12 +265,6 @@
             once: true
         });
 
-        // Check authentication
-        $(document).ready(function() {
-            checkAuth();
-            loadDashboardData();
-        });
-
         // Toggle sidebar
         $('#toggleSidebar').click(function() {
             $('#sidebar').toggleClass('collapsed');
@@ -233,15 +278,32 @@
 
         // Load dashboard data
         function loadDashboardData() {
+            // Helper to get cookie
+            function getTokenFromCookie() {
+                const match = document.cookie.match(new RegExp('(^| )token=([^;]+)'));
+                return match ? match[2] : null;
+            }
+            
+            // Get token from cookie
+            const token = getTokenFromCookie();
+            if (!token) {
+                console.error('No token found in cookie');
+                return;
+            }
+            
             // Load available rooms
             $.ajax({
                 url: '/api/rooms/available',
                 type: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    'Authorization': 'Bearer ' + token
                 },
                 success: function(response) {
                     $('#availableRooms').text(response.length);
+                },
+                error: function(xhr) {
+                    $('#availableRooms').text('Error');
+                    console.error('Error loading available rooms:', xhr.status);
                 }
             });
 
@@ -250,10 +312,14 @@
                 url: '/api/bookings/today/checkins',
                 type: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    'Authorization': 'Bearer ' + token
                 },
                 success: function(response) {
                     $('#todayCheckins').text(response.length);
+                },
+                error: function(xhr) {
+                    $('#todayCheckins').text('Error');
+                    console.error('Error loading check-ins:', xhr.status);
                 }
             });
 
@@ -262,10 +328,14 @@
                 url: '/api/bookings/today/checkouts',
                 type: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    'Authorization': 'Bearer ' + token
                 },
                 success: function(response) {
                     $('#todayCheckouts').text(response.length);
+                },
+                error: function(xhr) {
+                    $('#todayCheckouts').text('Error');
+                    console.error('Error loading check-outs:', xhr.status);
                 }
             });
 
@@ -274,10 +344,14 @@
                 url: '/api/tasks/pending',
                 type: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    'Authorization': 'Bearer ' + token
                 },
                 success: function(response) {
                     $('#pendingTasks').text(response.length);
+                },
+                error: function(xhr) {
+                    $('#pendingTasks').text('Error');
+                    console.error('Error loading pending tasks:', xhr.status);
                 }
             });
 
@@ -286,7 +360,7 @@
                 url: '/api/bookings/recent',
                 type: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    'Authorization': 'Bearer ' + token
                 },
                 success: function(response) {
                     const bookingsHtml = response.map(booking => `
@@ -309,6 +383,10 @@
                         </tr>
                     `).join('');
                     $('#recentBookings').html(bookingsHtml);
+                },
+                error: function(xhr) {
+                    $('#recentBookings').html('<tr><td colspan="7" class="text-center py-4">Error loading bookings</td></tr>');
+                    console.error('Error loading recent bookings:', xhr.status);
                 }
             });
 
@@ -317,7 +395,7 @@
                 url: '/api/tasks/today',
                 type: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    'Authorization': 'Bearer ' + token
                 },
                 success: function(response) {
                     const tasksHtml = response.map(task => `
@@ -331,7 +409,11 @@
                             </button>
                         </div>
                     `).join('');
-                    $('#todayTasks').html(tasksHtml);
+                    $('#todayTasks').html(tasksHtml || '<div class="text-center py-4 text-gray-500">No tasks for today</div>');
+                },
+                error: function(xhr) {
+                    $('#todayTasks').html('<div class="text-center py-4 text-gray-500">Error loading tasks</div>');
+                    console.error('Error loading today tasks:', xhr.status);
                 }
             });
 
@@ -340,7 +422,7 @@
                 url: '/api/notifications/recent',
                 type: 'GET',
                 headers: {
-                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                    'Authorization': 'Bearer ' + token
                 },
                 success: function(response) {
                     const notificationsHtml = response.map(notification => `
@@ -355,7 +437,11 @@
                             </div>
                         </div>
                     `).join('');
-                    $('#recentNotifications').html(notificationsHtml);
+                    $('#recentNotifications').html(notificationsHtml || '<div class="text-center py-4 text-gray-500">No notifications</div>');
+                },
+                error: function(xhr) {
+                    $('#recentNotifications').html('<div class="text-center py-4 text-gray-500">Error loading notifications</div>');
+                    console.error('Error loading notifications:', xhr.status);
                 }
             });
         }
@@ -409,6 +495,12 @@
             // Implement task completion logic
             console.log('Completing task:', taskId);
         }
+        
+        // Document ready
+        $(document).ready(function() {
+            // Dashboard will be loaded after auth check is done by auth.js
+            setTimeout(loadDashboardData, 1000);
+        });
     </script>
 </body>
 </html> 

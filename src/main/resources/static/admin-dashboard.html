@@ -15,6 +15,7 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Auth Script -->
     <script src="/js/auth.js"></script>
+    <script src="/auth-helper.js"></script>
     <!-- Debug Script -->
     <script>
         // Debug authentication token
@@ -27,17 +28,14 @@
                 return match ? match[2] : null;
             }
             
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
+            const tokenFromCookie = getCookie('token'); // Correct cookie name
             
             console.log('Token from cookie:', tokenFromCookie ? 'Found' : 'Not found');
-            console.log('Token from localStorage:', tokenFromStorage ? 'Found' : 'Not found');
             
             // Try to decode and log token info
-            const token = tokenFromCookie || tokenFromStorage;
-            if (token) {
+            if (tokenFromCookie) {
                 try {
-                    const tokenParts = token.split('.');
+                    const tokenParts = tokenFromCookie.split('.');
                     if (tokenParts.length === 3) {
                         const payload = JSON.parse(atob(tokenParts[1]));
                         console.log('Token payload:', payload);
@@ -45,6 +43,12 @@
                         console.log('User role:', payload.scope);
                         console.log('Token expiry:', new Date(payload.exp * 1000).toLocaleString());
                         console.log('Is admin?', payload.scope && payload.scope.includes('ROLE_ADMIN'));
+                        
+                        // Check if user is admin, if not redirect to appropriate dashboard
+                        if (!payload.scope || !payload.scope.includes('ROLE_ADMIN')) {
+                            console.warn('Non-admin user detected, redirecting to appropriate dashboard');
+                            // Let auth.js handle redirection based on role
+                        }
                     } else {
                         console.error('Invalid token format');
                     }
@@ -61,6 +65,7 @@
         // Run debug on page load
         $(document).ready(function() {
             debugAuthToken();
+            // Don't call checkAuth() - auth.js will handle it
         });
     </script>
     <style>
@@ -341,13 +346,14 @@
         function logout() {
             console.log("Logging out...");
             
-            // Clear auth tokens from both localStorage and cookie
-            localStorage.removeItem('token');
-            document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            
-            // Redirect to login page
-            console.log("Redirecting to login page after logout");
-            window.location.href = '/login.html?logout=true';
+            // Call the logout function from auth.js
+            if (typeof window.logout === 'function') {
+                window.logout();
+            } else {
+                // Fallback if auth.js logout is not available
+                document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; samesite=strict";
+                window.location.href = '/login.html?logout=true';
+            }
         }
 
         // Function to load all dashboard data
@@ -747,20 +753,17 @@
 
         // Check admin authentication
         function checkAdminAuthentication() {
-            // Try to get token from cookie first, then localStorage as fallback
+            // Try to get token from cookie
             function getCookie(name) {
                 const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
                 return match ? match[2] : null;
             }
             
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
-            const token = tokenFromCookie || tokenFromStorage;
+            const token = getCookie('token');
             
             console.log("Admin authentication check - Token found:", !!token);
             
             if (!token) {
-                // Redirect to login if token doesn't exist
                 console.log("No token found. Redirecting to login page.");
                 window.location.href = 'login.html';
                 return false;
@@ -780,24 +783,20 @@
                 // Check if token has admin role (scope field)
                 if (!payload.scope || !payload.scope.includes('ROLE_ADMIN')) {
                     // Redirect if not admin
-                    console.log("User is not an admin. Redirecting to login page.");
-                    window.location.href = 'login.html';
+                    console.log("User is not an admin. Redirecting to appropriate dashboard.");
+                    if (payload.scope && payload.scope.includes('ROLE_CUSTOMER')) {
+                        window.location.href = 'customer-dashboard.html';
+                    } else if (payload.scope) {
+                        window.location.href = 'employee-dashboard.html';
+                    } else {
+                        window.location.href = 'login.html';
+                    }
                     return false;
                 }
                 
                 // Set admin username in header from token
                 $('#usernameDisplay').text(payload.sub || 'Admin');
                 console.log("Admin authentication successful");
-                
-                // If token was in localStorage but not in cookie, set it in cookie for consistency
-                if (tokenFromStorage && !tokenFromCookie) {
-                    const date = new Date();
-                    date.setTime(date.getTime() + (24 * 60 * 60 * 1000)); // 1 day
-                    const expires = "expires=" + date.toUTCString();
-                    const secure = location.protocol === 'https:' ? '; secure' : '';
-                    document.cookie = "auth_token=" + tokenFromStorage + "; " + expires + 
-                                      "; path=/; samesite=strict" + secure;
-                }
                 
                 return true;
             } catch (error) {

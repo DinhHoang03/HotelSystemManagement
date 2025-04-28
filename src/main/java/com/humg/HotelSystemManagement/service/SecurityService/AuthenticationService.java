@@ -70,7 +70,7 @@ public class AuthenticationService {
         //Cookie cho token
         Cookie tokenCookie = new Cookie("token", token);
         tokenCookie.setHttpOnly(true); //Ngăn JavaScript truy cập cookie
-        tokenCookie.setSecure(true); //Chỉ gửi qua https
+        tokenCookie.setSecure(false); //Chỉ gửi qua https
         tokenCookie.setPath("/"); //Có thể truy cập từ mọi đường dẫn
         tokenCookie.setMaxAge((int) VALID_DURATION * 3600); //Thời gian sống của cookie (Tính bằng giây)
         response.addCookie(tokenCookie);
@@ -216,7 +216,7 @@ public class AuthenticationService {
         }
 
         //Nếu Token đã log out thì sẽ bị disable vào hệ thống
-        if(redisService.isTokenBlacklisted(signedJWT.getJWTClaimsSet().getJWTID()))
+        if(redisService.isTokenBlackListed(signedJWT.getJWTClaimsSet().getJWTID()))
             throw new AppException(AppErrorCode.UNAUTHENTICATED);
 
 

@@ -149,7 +149,7 @@ public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, Em
         return employeeMapper.toEmployeeResponse(employee);
     }
 
-    @PreAuthorize("!hasRole('ADMIN') and !hasRole('CUSTOMER')")
+    //@PreAuthorize("!hasRole('ADMIN') and !hasRole('CUSTOMER')")
     public EmployeeResponse update(String id, EmployeeUpdateRequest request) {
         Employee employee = employeeRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));

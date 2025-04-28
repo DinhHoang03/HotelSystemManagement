@@ -28,8 +28,7 @@ public class SecurityConfig {
     private String signerKey; //SECRET KEY(Không được phép để lộ!)
 
     private static final String[] PUBLIC_ENDPOINTS = {
-            "/auth/login",
-            "/auth/introspect",
+            "/auth/**",
             "/customer/register",
             "/employee/register",
             "/zalopay",
@@ -58,6 +57,13 @@ public class SecurityConfig {
     //Các end-point được chỉ định để phân quyền riêng cho role admin!
     private static final String[] ADMIN_ENDPOINTS = {"/admin/**"};
 
+    private static final String[] CUSTOMER_ENDPOINTS = {
+            "/booking/**",
+            "/customer/**",
+            "/bill/**",
+            "/items/**",
+            "/rooms/**"
+    };
 
     @Bean
     public PasswordEncoder bcryptPasswordEncoder(){ //Hàm nâng cấp độ khó của mã hóa mật khẩu(Sử dụng thuật toán BCrypt)
@@ -70,6 +76,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(authorize -> authorize
                 .requestMatchers(PUBLIC_ENDPOINTS).permitAll()
                     .requestMatchers(ADMIN_ENDPOINTS).hasRole("ADMIN")
+                    .requestMatchers(CUSTOMER_ENDPOINTS).hasRole("CUSTOMER")
                 .anyRequest().authenticated()
             )
             .oauth2ResourceServer(oauth2 -> oauth2

@@ -34,7 +34,7 @@ public class RedisService {
      * @param tokenId The ID of the token to check.
      * @return true if the token is blacklisted, false otherwise.
      */
-    public boolean isTokenBlacklisted(String tokenId) {
+    public boolean isTokenBlackListed(String tokenId) {
         return redisTemplate.hasKey("blacklist:" + tokenId);
     }
 }
