@@ -113,7 +113,7 @@
                 <div id="errorAlert" class="hidden bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
                     <span class="block sm:inline" id="errorMessage"></span>
                     <span class="absolute top-0 bottom-0 right-0 px-4 py-3">
-                        <i class="fas fa-times cursor-pointer" onclick="hideMessage()"></i>
+                        <i class="fas fa-times cursor-pointer" onclick="hideError()"></i>
                     </span>
                 </div>
 
@@ -188,83 +188,7 @@
             duration: 1000,
             once: true
         });
-        
-        // Debug flag
-        const isDev = true;
-        function log(...args) {
-            if (isDev) console.log(...args);
-        }
 
-        // Get authentication token from cookies or localStorage
-        function getAuthToken() {
-            // First try to get from cookies
-            const token = getCookie('token');
-            if (token) {
-                log('Token found in cookies');
-                // Sync to localStorage
-                try {
-                    localStorage.setItem('token', token);
-                    log('Token synced to localStorage');
-                } catch (e) {
-                    log('Error syncing token to localStorage:', e);
-                }
-                return token;
-            }
-            
-            // If not in cookies, try localStorage
-            try {
-                const localToken = localStorage.getItem('token');
-                if (localToken) {
-                    log('Token found in localStorage');
-                    // Sync to cookies
-                    setCookie('token', localToken);
-                    log('Token synced to cookies');
-                    return localToken;
-                }
-            } catch (e) {
-                log('Error accessing localStorage:', e);
-            }
-            
-            log('No token found');
-            return null;
-        }
-
-        // Set authentication token in both cookies and localStorage
-        function setAuthToken(token) {
-            if (!token) {
-                log('Invalid token provided');
-                return;
-            }
-            
-            // Set in cookies
-            setCookie('token', token);
-            log('Token set in cookies');
-            
-            // Set in localStorage
-            try {
-                localStorage.setItem('token', token);
-                log('Token set in localStorage');
-            } catch (e) {
-                log('Error setting token in localStorage:', e);
-            }
-        }
-
-        // Clear authentication token from both cookies and localStorage
-        function clearAuthToken() {
-            // Clear from cookies
-            setCookie('token', '', -1);
-            log('Token cleared from cookies');
-            
-            // Clear from localStorage
-            try {
-                localStorage.removeItem('token');
-                log('Token cleared from localStorage');
-            } catch (e) {
-                log('Error clearing token from localStorage:', e);
-            }
-        }
-
-        // Toggle password visibility
         function togglePassword() {
             const passwordInput = document.getElementById('password');
             const icon = document.querySelector('#password + i');
@@ -279,161 +203,31 @@
             }
         }
 
-        // Show notification message
-        function showMessage(message, isSuccess = false) {
-            const alert = document.getElementById('errorAlert');
-            const messageEl = document.getElementById('errorMessage');
-            messageEl.textContent = message;
-            
-            // Set colors based on type
-            if (isSuccess) {
-                alert.classList.remove('bg-red-100', 'border-red-400', 'text-red-700');
-                alert.classList.add('bg-green-100', 'border-green-400', 'text-green-700');
-            } else {
-                alert.classList.remove('bg-green-100', 'border-green-400', 'text-green-700');
-                alert.classList.add('bg-red-100', 'border-red-400', 'text-red-700');
-            }
-            
-            alert.classList.remove('hidden');
+        function showError(message) {
+            const errorAlert = document.getElementById('errorAlert');
+            const errorMessage = document.getElementById('errorMessage');
+            errorMessage.textContent = message;
+            errorAlert.classList.remove('hidden');
         }
 
-        // Hide notification message
-        function hideMessage() {
+        function hideError() {
             document.getElementById('errorAlert').classList.add('hidden');
         }
-        
-        // Đọc cookie bằng tên
-        function getCookie(name) {
-            const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-            if (match) return match[2];
-            
-            // Nếu không tìm thấy token trong cookie nhưng có trong localStorage, sử dụng từ đó
-            if (name === 'token' && !match) {
-                try {
-                    const localToken = localStorage.getItem('token');
-                    if (localToken) {
-                        log('Token not found in cookie, using from localStorage');
-                        // Thử thiết lập lại cookie từ localStorage
-                        setCookie('token', localToken);
-                        return localToken;
-                    }
-                } catch (e) {
-                    log('Error accessing localStorage:', e);
-                }
-            }
-            
-            return null;
-        }
-        
-        // Thiết lập cookie bảo mật
-        function setCookie(name, value, expiryDays = 7) {
-            const date = new Date();
-            date.setTime(date.getTime() + (expiryDays * 24 * 60 * 60 * 1000));
-            const expires = "expires=" + date.toUTCString();
-            document.cookie = name + "=" + value + "; " + expires + "; path=/; SameSite=Lax";
-            log('Set cookie:', name, 'with value:', value, 'expires in', expiryDays, 'days');
-        }
-        
-        // Redirect based on user role
-        function redirectBasedOnRole(role) {
-            log('Redirecting with role:', role);
-            
-            if (!role) {
-                log('No role found, redirecting to customer dashboard by default');
-                window.location.href = '/customer-dashboard.html';
-                return;
-            }
-            
-            if (role.includes('ROLE_ADMIN')) {
-                window.location.href = '/admin-dashboard.html';
-            } else if (role.includes('ROLE_ACCOUNTANT') || 
-                      role.includes('ROLE_DEPARTMENT_HEAD') || 
-                      role.includes('ROLE_RECEPTIONIST') || 
-                      role.includes('ROLE_CLEANER') || 
-                      role.includes('ROLE_WAITER')) {
-                window.location.href = '/employee-dashboard.html';
-            } else if (role.includes('ROLE_CUSTOMER')) {
-                window.location.href = '/customer-dashboard.html';
-            } else {
-                log('Unknown role, using default redirect');
-                window.location.href = '/customer-dashboard.html';
-            }
-        }
-        
-        // Check for URL parameters
-        function checkUrlParams() {
-            const urlParams = new URLSearchParams(window.location.search);
-            if (urlParams.has('session_expired')) {
-                showMessage('Your session has expired. Please log in again.');
-            } else if (urlParams.has('error')) {
-                showMessage('Authentication error: ' + urlParams.get('error'));
-            } else if (urlParams.has('logged_out')) {
-                showMessage('You have been logged out successfully.', true);
-            }
-        }
-        
-        // Document ready
+
         $(document).ready(function() {
-            log('Login page loaded');
-            checkUrlParams();
-            
-            // Debug: Hiển thị tất cả cookie
-            log('All cookies:', document.cookie);
-            
-            // Kiểm tra trạng thái đăng nhập
-            const token = getAuthToken();
-            const userRole = getCookie('user_role') || getCookie('role') || getCookie('scope');
-            
-            // Kiểm tra localStorage
-            try {
-                const localRole = localStorage.getItem('user_role');
-                if (localRole) {
-                    log('Role found in localStorage:', localRole);
-                }
-            } catch (e) {
-                log('Error checking localStorage:', e);
-            }
-            
-            // Nếu cả token và role tồn tại, chuyển hướng
-            if (token && userRole) {
-                log('Found existing token and role, redirecting...');
-                showMessage('You are already logged in. Redirecting...', true);
-                
-                setTimeout(function() {
-                    redirectBasedOnRole(userRole);
-                }, 1000);
-            } 
-            // Nếu có role nhưng không có token, xóa role và hiển thị thông báo
-            else if (!token && userRole) {
-                log('Found role but no token, cleaning up cookies...');
-                logout();
-                showMessage('Your session has expired. Please log in again.');
-            }
-            
-            // Đảm bảo gửi cookie với tất cả các request AJAX
-            $.ajaxSetup({
-                xhrFields: {
-                    withCredentials: true
-                }
-            });
-            
-            // Handle login form submission
             $('#loginForm').submit(function(e) {
                 e.preventDefault();
-                hideMessage();
-                
+                hideError();
+
                 const username = $('#username').val();
                 const password = $('#password').val();
-                
+
                 if (!username || !password) {
-                    showMessage('Please fill in all fields');
+                    showError('Please fill in all fields');
                     return;
                 }
-                
-                log('Attempting login for:', username);
-                
-                // Login request using ajaxWithAuth
-                ajaxWithAuth({
+
+                $.ajax({
                     url: '/auth/login',
                     method: 'POST',
                     contentType: 'application/json',
@@ -442,90 +236,59 @@
                         password: password
                     }),
                     success: function(response) {
-                        log('Login response:', response);
-                        
-                        if (response && response.result) {
-                            log('Login successful');
-                            if (response.result.token) {
-                                log('Token from response:', response.result.token.substring(0, 20) + '...');
-                                
-                                // Set token in both storage methods
-                                setAuthToken(response.result.token);
-                                
-                                // Get role from response
-                                const userRole = response.result.user && response.result.user.roles ? 
-                                               response.result.user.roles : null;
-                                log('User role from response:', userRole);
-                                
-                                if (userRole) {
-                                    // Save role in both storage methods
-                                    setCookie('user_role', userRole);
-                                    try {
-                                        localStorage.setItem('user_role', userRole);
-                                        log('Role saved to both storage methods');
-                                    } catch (e) {
-                                        log('Failed to save role to localStorage:', e);
-                                    }
-                                }
-                                
-                                // Show success message and redirect after delay
-                                showMessage('Login successful! Redirecting...', true);
-                                setTimeout(function() {
-                                    redirectBasedOnRole(userRole);
-                                }, 1000);
+                        if (response.result && response.result.token) {
+                            localStorage.setItem('token', response.result.token);
+                            
+                            // Decode token to get user role
+                            const payload = JSON.parse(atob(response.result.token.split('.')[1]));
+                            const role = payload.scope; // Scope là một chuỗi đơn, không phải mảng
+                            
+                            // Redirect based on role
+                            if (role === 'ROLE_ADMIN') {
+                                window.location.href = '/admin-dashboard.html';
+                            } else if (role === 'ROLE_ACCOUNTANT' || role === 'ROLE_DEPARTMENT_HEAD' || 
+                                      role === 'ROLE_RECEPTIONIST' || role === 'ROLE_CLEANER' || 
+                                      role === 'ROLE_WAITER') {
+                                window.location.href = '/employee-dashboard.html';
+                            } else {
+                                window.location.href = '/customer-dashboard.html';
                             }
                         } else {
-                            showMessage('Invalid response from server');
+                            showError('Invalid response from server');
                         }
                     },
                     error: function(xhr) {
-                        log('Login error:', xhr.status);
-                        
-                        try {
-                            const errorResponse = JSON.parse(xhr.responseText);
-                            if (errorResponse && errorResponse.message) {
-                                showMessage(errorResponse.message);
-                            } else if (xhr.status === 401) {
-                                showMessage('Invalid username or password');
-                            } else {
-                                showMessage('An error occurred. Please try again.');
+                        if (xhr.status === 401) {
+                            try {
+                                // Cố gắng đọc phản hồi lỗi từ backend
+                                const errorResponse = JSON.parse(xhr.responseText);
+                                if (errorResponse && errorResponse.message) {
+                                    showError(errorResponse.message);
+                                } else {
+                                    showError('Invalid username or password');
+                                }
+                            } catch (e) {
+                                // Nếu không thể parse JSON, hiển thị thông báo lỗi mặc định
+                                showError('Invalid username or password');
                             }
-                        } catch (e) {
-                            showMessage('An error occurred. Please try again.');
+                        } else {
+                            try {
+                                // Cố gắng đọc phản hồi lỗi từ backend cho các lỗi khác
+                                const errorResponse = JSON.parse(xhr.responseText);
+                                if (errorResponse && errorResponse.message) {
+                                    showError(errorResponse.message);
+                                } else {
+                                    showError('An error occurred. Please try again.');
+                                }
+                            } catch (e) {
+                                // Nếu không thể parse JSON, hiển thị thông báo lỗi mặc định
+                                showError('An error occurred. Please try again.');
+                            }
                         }
                     }
                 });
             });
         });
-
-        // Add a function to clear all auth cookies
-        function clearAllAuthCookies() {
-            // Xóa cookie với các domain và path khác nhau để đảm bảo xóa hết
-            const cookiesToClear = ["token", "user_role", "role", "scope", "userId"];
-            const domains = ["", "localhost", ".localhost", window.location.hostname];
-            const paths = ["/", "", "/customer-dashboard.html", "/my-bookings.html"];
-            
-            cookiesToClear.forEach(cookieName => {
-                // Xóa với tất cả các domain và path có thể
-                domains.forEach(domain => {
-                    paths.forEach(path => {
-                        // Xóa cookie với domain
-                        if (domain) {
-                            document.cookie = `${cookieName}=; domain=${domain}; path=${path}; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
-                        }
-                        // Xóa cookie không có domain
-                        document.cookie = `${cookieName}=; path=${path}; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax`;
-                    });
-                });
-            });
-            
-            log('Cleared all authentication cookies');
-            
-            // Kiểm tra sau khi xóa
-            setTimeout(() => {
-                log('Cookies after clearing:', document.cookie);
-            }, 100);
-        }
     </script>
 </body>
 </html> 

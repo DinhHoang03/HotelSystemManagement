@@ -463,18 +463,21 @@
             document.getElementById('customerForm').classList.add('hidden');
         });
 
-        // Handle customer registration form submission
+        // Customer Registration
         $('#customerForm').submit(function(e) {
             e.preventDefault();
             hideError();
-            
-            // Basic frontend validation
+
+            // Validate required fields
             const requiredFields = [
                 'customerIdentityId',
                 'customerUsername',
                 'customerName',
                 'customerPhone',
                 'customerEmail',
+                'customerDob',
+                'customerGender',
+                'customerAddress',
                 'customerPassword',
                 'customerConfirmPassword'
             ];
@@ -485,18 +488,25 @@
                     return;
                 }
             }
-            
-            // Basic password validation
+
+            // Validate password match
             if ($('#customerPassword').val() !== $('#customerConfirmPassword').val()) {
                 showError('Passwords do not match');
                 return;
             }
-            
+
+            // Validate password strength
+            const password = $('#customerPassword').val();
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+
             // Show loading state
             const submitButton = $(this).find('button[type="submit"]');
             const originalText = submitButton.text();
             submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Processing...');
-            
+
             // Prepare form data
             const formData = {
                 identityId: $('#customerIdentityId').val(),
@@ -510,47 +520,61 @@
                 role: 'CUSTOMER',
                 password: $('#customerPassword').val()
             };
-            
-            // Send registration request using ajaxWithAuth
-            ajaxWithAuth({
+
+            // Send registration request
+            $.ajax({
                 url: '/customer/register',
-                method: 'POST',
+                type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(formData),
                 success: function(response) {
-                    showMessage('Registration successful! Redirecting to login...', true);
-                    setTimeout(function() {
-                        window.location.href = '/login.html?registered=true';
-                    }, 2000);
+                    window.location.href = '/registration-success.html';
                 },
                 error: function(xhr) {
-                    log('Registration error:', xhr);
+                    console.error('Registration error:', xhr);
                     let errorMessage = 'An error occurred. Please try again.';
                     
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
+                    if (xhr.status === 400) {
+                        const response = xhr.responseJSON;
+                        if (response && response.message) {
+                            errorMessage = response.message;
+                        } else {
+                            errorMessage = 'Invalid input data. Please check your information.';
+                        }
+                    } else if (xhr.status === 401) {
+                        errorMessage = 'Registration service is currently unavailable. Please try again later.';
+                    } else if (xhr.status === 403) {
+                        errorMessage = 'Access denied. Please try again.';
+                    } else if (xhr.status === 404) {
+                        errorMessage = 'Service not found. Please try again later.';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error. Please try again later.';
                     }
                     
                     showError(errorMessage);
                 },
                 complete: function() {
+                    // Reset button state
                     submitButton.prop('disabled', false).text(originalText);
                 }
             });
         });
 
-        // Handle employee registration form submission
+        // Employee Registration
         $('#employeeForm').submit(function(e) {
             e.preventDefault();
             hideError();
-            
-            // Basic frontend validation
+
+            // Validate required fields
             const requiredFields = [
                 'employeeName',
                 'employeeUsername',
                 'employeeEmail',
                 'employeePhone',
                 'employeeIdentityId',
+                'employeeDob',
+                'employeeGender',
+                'employeeAddress',
                 'employeeRole',
                 'employeePassword',
                 'employeeConfirmPassword'
@@ -562,18 +586,25 @@
                     return;
                 }
             }
-            
-            // Basic password validation
+
+            // Validate password match
             if ($('#employeePassword').val() !== $('#employeeConfirmPassword').val()) {
                 showError('Passwords do not match');
                 return;
             }
-            
+
+            // Validate password strength
+            const password = $('#employeePassword').val();
+            if (password.length < 8) {
+                showError('Password must be at least 8 characters long');
+                return;
+            }
+
             // Show loading state
             const submitButton = $(this).find('button[type="submit"]');
             const originalText = submitButton.text();
             submitButton.prop('disabled', true).html('<i class="fas fa-spinner fa-spin mr-2"></i>Processing...');
-            
+
             // Prepare form data
             const formData = {
                 name: $('#employeeName').val(),
@@ -587,30 +618,41 @@
                 role: $('#employeeRole').val(),
                 password: $('#employeePassword').val()
             };
-            
-            // Send registration request using ajaxWithAuth
-            ajaxWithAuth({
+
+            // Send registration request
+            $.ajax({
                 url: '/employee/register',
-                method: 'POST',
+                type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(formData),
                 success: function(response) {
-                    showMessage('Registration successful! Redirecting to login...', true);
-                    setTimeout(function() {
-                        window.location.href = '/login.html?registered=true';
-                    }, 2000);
+                    window.location.href = '/registration-success.html';
                 },
                 error: function(xhr) {
-                    log('Registration error:', xhr);
+                    console.error('Registration error:', xhr);
                     let errorMessage = 'An error occurred. Please try again.';
                     
-                    if (xhr.responseJSON && xhr.responseJSON.message) {
-                        errorMessage = xhr.responseJSON.message;
+                    if (xhr.status === 400) {
+                        const response = xhr.responseJSON;
+                        if (response && response.message) {
+                            errorMessage = response.message;
+                        } else {
+                            errorMessage = 'Invalid input data. Please check your information.';
+                        }
+                    } else if (xhr.status === 401) {
+                        errorMessage = 'Registration service is currently unavailable. Please try again later.';
+                    } else if (xhr.status === 403) {
+                        errorMessage = 'Access denied. Please try again.';
+                    } else if (xhr.status === 404) {
+                        errorMessage = 'Service not found. Please try again later.';
+                    } else if (xhr.status === 500) {
+                        errorMessage = 'Server error. Please try again later.';
                     }
                     
                     showError(errorMessage);
                 },
                 complete: function() {
+                    // Reset button state
                     submitButton.prop('disabled', false).text(originalText);
                 }
             });

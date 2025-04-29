@@ -275,50 +275,6 @@
     </div>
 
     <script>
-        // Debug authentication token
-        function debugAuthToken() {
-            console.group('Account Management Auth Debug');
-            
-            // Helper function to get cookie
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
-            
-            console.log('Token from cookie:', tokenFromCookie ? 'Found' : 'Not found');
-            console.log('Token from localStorage:', tokenFromStorage ? 'Found' : 'Not found');
-            
-            // Try to decode and log token info
-            const token = tokenFromCookie || tokenFromStorage;
-            if (token) {
-                try {
-                    const tokenParts = token.split('.');
-                    if (tokenParts.length === 3) {
-                        const payload = JSON.parse(atob(tokenParts[1]));
-                        console.log('Token payload:', payload);
-                        console.log('Username:', payload.sub);
-                        console.log('User role:', payload.scope);
-                        console.log('Token expiry:', new Date(payload.exp * 1000).toLocaleString());
-                        console.log('Is admin?', payload.scope && payload.scope.includes('ROLE_ADMIN'));
-                    } else {
-                        console.error('Invalid token format');
-                    }
-                } catch (error) {
-                    console.error('Error decoding token:', error);
-                }
-            } else {
-                console.warn('No authentication token found');
-            }
-            
-            console.groupEnd();
-        }
-        
-        // Run debug immediately
-        debugAuthToken();
-        
         // Initialize AOS
         AOS.init({
             duration: 1000
@@ -326,18 +282,7 @@
 
         // Authentication check for admin access
         function checkAdminAuth() {
-            // Helper function to get cookie
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            // Get token from cookie or localStorage
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
-            const adminToken = tokenFromCookie || tokenFromStorage;
-            
-            console.log("Admin auth check - Token found:", !!adminToken);
+            const adminToken = localStorage.getItem('token');
             
             if (!adminToken) {
                 // Redirect to login page if no admin token
@@ -348,7 +293,7 @@
                     confirmButtonText: 'Go to Login',
                     confirmButtonColor: '#4F46E5'
                 }).then(() => {
-                    window.location.href = '/login.html';
+                    window.location.href = '/login';
                 });
                 return false;
             }
@@ -356,17 +301,10 @@
             try {
                 // Decode token to check if user is admin
                 const tokenParts = adminToken.split('.');
-                if (tokenParts.length !== 3) {
-                    throw new Error('Invalid token format');
-                }
-                
                 const payload = JSON.parse(atob(tokenParts[1]));
-                console.log("Token payload:", payload);
-                console.log("User role from token:", payload.scope);
                 
-                // Check if token has admin role (using includes instead of exact match)
-                if (!payload.scope || !payload.scope.includes('ROLE_ADMIN')) {
-                    console.log("User does not have admin role");
+                // Check if token has admin role (using scope instead of roles array)
+                if (!payload.scope || payload.scope !== 'ROLE_ADMIN') {
                     // Redirect to home page if not admin
                     Swal.fire({
                         title: 'Permission Denied',
@@ -380,21 +318,9 @@
                     return false;
                 }
                 
-                // If token was in localStorage but not in cookie, set it in cookie for consistency
-                if (tokenFromStorage && !tokenFromCookie) {
-                    const date = new Date();
-                    date.setTime(date.getTime() + (24 * 60 * 60 * 1000)); // 1 day
-                    const expires = "expires=" + date.toUTCString();
-                    const secure = location.protocol === 'https:' ? '; secure' : '';
-                    document.cookie = "auth_token=" + tokenFromStorage + "; " + expires + 
-                                      "; path=/; samesite=strict" + secure;
-                    console.log("Token synchronized from localStorage to cookie");
-                }
-                
                 // Set admin username in the UI
                 $('#adminName').text(payload.sub);
                 $('#sidebarAdminName').text(payload.sub);
-                console.log("Admin authentication successful");
                 
                 return true;
             } catch (error) {
@@ -408,7 +334,7 @@
                     confirmButtonText: 'Go to Login',
                     confirmButtonColor: '#4F46E5'
                 }).then(() => {
-                    window.location.href = '/login.html';
+                    window.location.href = '/login';
                 });
                 return false;
             }
@@ -416,11 +342,8 @@
 
         // Admin logout function
         function adminLogout() {
-            console.log("Logging out admin...");
-            // Clear auth tokens from both localStorage and cookie
             localStorage.removeItem('token');
-            document.cookie = "auth_token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            window.location.href = '/login.html?logout=true';
+            window.location.href = '/login';
         }
 
         // Document ready function

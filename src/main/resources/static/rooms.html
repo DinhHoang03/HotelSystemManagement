@@ -299,21 +299,6 @@
                 duration: 1000,
                 once: true
             });
-            
-            // Check authentication status
-            const token = getAuthToken();
-            const userRole = getCookie('user_role') || localStorage.getItem('user_role');
-            
-            if (!token || !userRole) {
-                window.location.href = '/login.html?session_expired=true';
-                return;
-            }
-            
-            if (!userRole.includes('ROLE_CUSTOMER')) {
-                window.location.href = '/login.html?error=unauthorized';
-                return;
-            }
-            
             loadRooms();
             checkAuth();
             setupEventListeners();
@@ -345,9 +330,16 @@
 
         // Load available rooms
         function loadRooms() {
-            ajaxWithAuth({
-                url: '/room/list',
-                method: 'GET',
+            const apiUrl = `/room/list/${currentPage}/${pageSize}`;
+
+            console.log(`Calling API: ${apiUrl}`);
+
+            $.ajax({
+                url: apiUrl,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
                 success: function(response) {
                     console.log('API Response:', response);
 
@@ -364,72 +356,55 @@
                     const roomsContainer = $('#roomsContainer');
                     roomsContainer.empty();
 
-                    if (rooms.length === 0) {
-                        roomsContainer.html('<div class="col-span-3 text-center py-10"><p class="text-gray-500 text-xl">No rooms available.</p></div>');
-                        return;
-                    }
-
                     rooms.forEach(room => {
-                        const roomHtml = `
-                            <div class="room-card" data-aos="fade-up">
-                                <img src="${room.imageUrl || 'https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80'}" 
-                                     alt="${room.roomType}" 
-                                     class="w-full h-48 object-cover">
+                        console.log('Room:', room);
+
+                        const roomNumber = room.roomNumber || 'Room';
+                        const roomType = room.roomType || room.roomStatus || 'Standard Room';
+
+                        const roomCard = `
+                            <div class="room-card" data-room-number="${roomNumber}" data-aos="fade-up">
+                                <div class="room-image" style="background-image: url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80')"></div>
                                 <div class="p-6">
-                                    <h3 class="text-xl font-semibold mb-2">${room.roomType}</h3>
-                                    <p class="text-gray-600 mb-4">${room.description || 'No description available'}</p>
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-2xl font-bold text-indigo-600">${formatCurrency(room.price)}</span>
-                                        <button onclick="bookRoom('${room.roomNumber}')" 
-                                                class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-                                            Book Now
+                                    <h3 class="text-xl font-semibold mb-2">${roomNumber}</h3>
+                                    <p class="text-gray-600 mb-4">${roomType}</p>
+                                    <div class="space-y-4">
+                                        <div class="flex flex-col">
+                                            <label class="text-sm font-medium text-gray-700 mb-1">Check-in Date</label>
+                                            <input type="date" class="check-in-date px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500" 
+                                                min="${new Date().toISOString().split('T')[0]}">
+                                        </div>
+                                        <div class="flex flex-col">
+                                            <label class="text-sm font-medium text-gray-700 mb-1">Check-out Date</label>
+                                            <input type="date" class="check-out-date px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                                                min="${new Date().toISOString().split('T')[0]}">
+                                        </div>
+                                        <button class="select-room-btn w-full px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700" 
+                                            onclick="selectRoom('${roomNumber}', '${roomType}')">
+                                            <i class="fas fa-plus mr-1"></i> Select Room
                                         </button>
                                     </div>
                                 </div>
                             </div>
                         `;
-                        roomsContainer.append(roomHtml);
+                        roomsContainer.append(roomCard);
                     });
 
-                    // Update pagination
-                    updatePagination();
+                    // Load saved selections
+                    const selectedRooms = JSON.parse(localStorage.getItem('selectedRooms') || '[]');
+                    selectedRooms.forEach(room => {
+                        $(`.room-card[data-room-number="${room.roomNumber}"]`).addClass('selected');
+                        $(`.room-card[data-room-number="${room.roomNumber}"] .select-room-btn`).html('<i class="fas fa-check mr-1"></i> Selected');
+                    });
+
+                    updatePaginationUI();
+                    updateBookingSummary();
                 },
                 error: function(xhr) {
                     console.error('Error loading rooms:', xhr);
-                    if (xhr.status === 401) {
-                        window.location.href = '/login.html?session_expired=true';
-                    } else {
-                        $('#roomsContainer').html(`
-                            <div class="col-span-3 text-center py-10">
-                                <p class="text-red-500 text-xl">Failed to load rooms. Please try again.</p>
-                                <button onclick="loadRooms()" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700">
-                                    Retry
-                                </button>
-                            </div>
-                        `);
-                    }
+                    $('#roomsContainer').html('<div class="col-span-3 text-center py-10"><p class="text-gray-500 text-xl">Error loading rooms. Please try again later.</p></div>');
                 }
             });
-        }
-
-        // Book a room
-        function bookRoom(roomNumber) {
-            // Check if user is logged in
-            const token = getAuthToken();
-            if (!token) {
-                window.location.href = '/login.html?redirect=rooms.html';
-                return;
-            }
-
-            // Get user role
-            const userRole = getCookie('user_role') || localStorage.getItem('user_role');
-            if (!userRole || !userRole.includes('ROLE_CUSTOMER')) {
-                window.location.href = '/login.html?error=unauthorized';
-                return;
-            }
-
-            // Show booking modal or redirect to booking page
-            window.location.href = `/book-room.html?room=${roomNumber}`;
         }
 
         // Update pagination UI
@@ -500,15 +475,18 @@
                 checkOutDate
             });
             
-            ajaxWithAuth({
+            $.ajax({
                 url: '/rooms/create',
-                method: 'POST',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                },
                 data: JSON.stringify({
                     checkInDate: checkInDate,
                     checkOutDate: checkOutDate,
                     roomNumbers: [roomNumber]
                 }),
-                contentType: 'application/json',
                 success: function(response) {
                     console.log('Booking room created:', response);
                     // Update room selection with the response data
@@ -528,11 +506,23 @@
                 },
                 error: function(xhr) {
                     console.error('Error creating booking room:', xhr);
-                    if (xhr.status === 401) {
-                        window.location.href = '/login.html?session_expired=true';
-                    } else {
-                        alert('Failed to create booking. Please try again.');
+                    
+                    // Hiển thị thông báo lỗi cụ thể hơn
+                    let errorMessage = 'Failed to create booking room. Please try again.';
+                    
+                    if (xhr.responseJSON && xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
                     }
+                    
+                    alert(errorMessage);
+                    
+                    // Hủy trạng thái selected của phòng
+                    const roomCard = $(`.room-card[data-room-number="${roomNumber}"]`);
+                    roomCard.removeClass('selected');
+                    roomCard.find('.select-room-btn').html('<i class="fas fa-plus mr-1"></i> Select Room');
+                    
+                    // Xóa phòng khỏi localStorage
+                    removeRoomFromSelection(roomNumber);
                 }
             });
         }
@@ -548,9 +538,12 @@
                 return;
             }
             
-            ajaxWithAuth({
+            $.ajax({
                 url: `/rooms/del/${room.bookingRoomId}`,
-                method: 'DELETE',
+                type: 'DELETE',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
                 success: function(response) {
                     console.log('Booking room deleted:', response);
                 },

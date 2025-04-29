@@ -14,12 +14,14 @@ import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import com.humg.HotelSystemManagement.service.RedisService;
+import com.humg.HotelSystemManagement.utils.CookieUtils;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +51,7 @@ public class AuthenticationService {
     // Config bảo mật chứa bcrypt encoder để mã hóa/matching mật khẩu.
     SecurityConfig securityConfig;
     RedisService redisService;
+    CookieUtils cookieUtils;
     @NonFinal
     UserPrincipal userPrincipal;
 
@@ -66,7 +69,7 @@ public class AuthenticationService {
     protected long REFRESHABLE_DURATION;
 
     //Phương thức thiết lập cookie
-    private void setCookies(HttpServletResponse response, String token, String role) {
+    private void setCookies(HttpServletResponse response, String token, String role, String refreshToken) {
         //Cookie cho token
         Cookie tokenCookie = new Cookie("token", token);
         tokenCookie.setHttpOnly(true); //Ngăn JavaScript truy cập cookie
@@ -80,6 +83,13 @@ public class AuthenticationService {
         roleCookie.setPath("/");
         roleCookie.setMaxAge((int) VALID_DURATION * 3600);
         response.addCookie(roleCookie);
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", refreshToken);
+        refreshTokenCookie.setHttpOnly(true);
+        refreshTokenCookie.setSecure(false);
+        refreshTokenCookie.setPath("/");
+        refreshTokenCookie.setMaxAge((int) REFRESHABLE_DURATION * 3600);
+        response.addCookie(refreshTokenCookie);
     }
 
     // Hàm kiểm tra tính hợp lệ của token JWT (introspection).
@@ -100,42 +110,71 @@ public class AuthenticationService {
                 .build();
     }
 
-    public void logout(LogOutRequest request, HttpServletResponse response) throws ParseException, JOSEException {
-        try{
-            var signedToken = verifyToken(request.getToken(), true);
-
-            String jwtId = signedToken.getJWTClaimsSet().getJWTID();
-            Date expiredTime = signedToken.getJWTClaimsSet().getExpirationTime();
-
-            /**@Param:expiredTime: thời điểm token hết hạn
-             * @Param: System.currentTimeMillis(): Lấy time hiện tại
-             * cả hai đều tính bằng miliseccond, công thức tính là expiredTime - time hiện tại = số thời gian còn lại để sống của token
-             * chia cho 1000 để đổi từ mili giây sang giây
-             */
-            long remainingSeconds = (expiredTime.getTime() - System.currentTimeMillis()) /1000;
-            //Redis lưu key blacklist:jwt trong đúng số giây còn sống đó. Sau khi token hết hạn thì key trong redis tự bay màu
-            redisService.blacklistToken(jwtId, remainingSeconds);
-
-            Cookie tokenCookie = new Cookie("token", null);
-            tokenCookie.setMaxAge(0);
-            tokenCookie.setPath("/");
-            response.addCookie(tokenCookie);
-
-            Cookie roleCookie = new Cookie("role", null);
-            roleCookie.setMaxAge(0);
-            roleCookie.setPath("/");
-            response.addCookie(roleCookie);
-
-        }catch (AppException e){
-            log.info("Token is not valid!");
+    public void logout(LogOutRequest request, HttpServletResponse response, HttpServletRequest httpRequest) throws ParseException, JOSEException {
+        String token = request.getToken();
+        if (token == null) {
+            token = cookieUtils.getTokenFromCookie(httpRequest, "token");
         }
+
+        String refreshToken = cookieUtils.getTokenFromCookie(httpRequest, "refreshToken");
+
+        // Blacklist access token nếu có
+        if (token != null) {
+            try {
+                var signedToken = verifyToken(token, true);
+                String jwtId = signedToken.getJWTClaimsSet().getJWTID();
+                Date expiredTime = signedToken.getJWTClaimsSet().getExpirationTime();
+                long remainingSeconds = (expiredTime.getTime() - System.currentTimeMillis()) / 1000;
+                redisService.blacklistToken(jwtId, remainingSeconds);
+            } catch (AppException e) {
+                log.info("Access token is not valid!");
+            }
+        }
+
+        // Blacklist refresh token nếu có
+        if (refreshToken != null) {
+            try {
+                var signedToken = verifyToken(refreshToken, true);
+                String jwtId = signedToken.getJWTClaimsSet().getJWTID();
+                Date expiredTime = signedToken.getJWTClaimsSet().getExpirationTime();
+                long remainingSeconds = (expiredTime.getTime() - System.currentTimeMillis()) / 1000;
+                redisService.blacklistToken(jwtId, remainingSeconds);
+            } catch (AppException e) {
+                log.info("Refresh token is not valid!");
+            }
+        }
+
+        // Xóa cookie
+        Cookie tokenCookie = new Cookie("token", null);
+        tokenCookie.setMaxAge(0);
+        tokenCookie.setPath("/");
+        response.addCookie(tokenCookie);
+
+        Cookie roleCookie = new Cookie("role", null);
+        roleCookie.setMaxAge(0);
+        roleCookie.setPath("/");
+        response.addCookie(roleCookie);
+
+        Cookie refreshTokenCookie = new Cookie("refreshToken", null);
+        refreshTokenCookie.setMaxAge(0);
+        refreshTokenCookie.setPath("/");
+        response.addCookie(refreshTokenCookie);
     }
 
-    public AuthenticationResponse refreshToken(RefreshRequest request, HttpServletResponse response) throws ParseException, JOSEException {
-        var signedToken = verifyToken(request.getToken(), true);
+    public AuthenticationResponse refreshToken(HttpServletRequest request, HttpServletResponse response) throws ParseException, JOSEException {
+        //Đọc refresh token từ cookie
+        String refreshToken = Arrays.stream(request.getCookies())
+                .filter(cookie -> "refreshToken".equals(cookie.getName()))
+                .findFirst()
+                .map(Cookie::getValue)
+                .orElseThrow(() -> new AppException(AppErrorCode.UNAUTHENTICATED));
+
+        //Xác minh refresh token
+        var signedToken = verifyToken(refreshToken, true);
         var jwtId = signedToken.getJWTClaimsSet().getJWTID();
         var expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
 
+        //Blacklist token nếu hết hạn
         long remainingSeconds = (expirationTime.getTime() - System.currentTimeMillis()) /1000;
         redisService.blacklistToken(jwtId, remainingSeconds);
 
@@ -144,14 +183,37 @@ public class AuthenticationService {
 
         var token = generateToken(userPrincipal);
         var role = buildScope(userPrincipal);
+        var newRefreshToken = generateRefreshToken(userPrincipal);
 
-        setCookies(response, token, role);
+        setCookies(response, token, role, newRefreshToken);
 
         return AuthenticationResponse.builder()
                 .token(token)
                 .role(role)
                 .authenticated(true)
                 .build();
+    }
+
+    private String generateRefreshToken(UserPrincipal user){
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(user.getUsername())
+                .issuer("hotel.com")
+                .issueTime(new Date())
+                .expirationTime(new Date(Instant.now()
+                        .plus(REFRESHABLE_DURATION, ChronoUnit.DAYS).toEpochMilli()))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("scope", buildScope(user))
+                .build();
+
+        Payload payload = new Payload((jwtClaimsSet.toJSONObject()));
+        JWSObject jwsObject = new JWSObject(header, payload);
+        try {
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            return jwsObject.serialize();
+        } catch (JOSEException e) {
+            throw new AppException(AppErrorCode.SIGN_TOKEN_ERROR);
+        }
     }
 
     private UserPrincipal findUser(String username) {
@@ -242,10 +304,12 @@ public class AuthenticationService {
         if (!authenticated) throw new AppException(AppErrorCode.UNAUTHENTICATED);
 
         // Tạo token JWT với đối tượng user đã có
+        //Tạo luôn cả token và refreshtoken khi login
         var token = generateToken(userPrincipal);
+        var refreshToken = generateRefreshToken(userPrincipal);
         var role = buildScope(userPrincipal);
 
-        setCookies(response, token, role);
+        setCookies(response, token, role, refreshToken);
 
         // Trả về response chứa token và trạng thái xác thực.
         return AuthenticationResponse.builder()
@@ -280,7 +344,7 @@ public class AuthenticationService {
             throw new AppException(AppErrorCode.SIGN_TOKEN_ERROR);
         }
     }
-    
+
     // Thay đổi buildScope để chấp nhận đối tượng user
     private String buildScope(UserPrincipal user) {
         StringJoiner stringJoiner = new StringJoiner(" ");

@@ -16,93 +16,8 @@
     <!-- AOS Animation -->
     <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
-    <!-- Auth Helper Script (single source of authentication) -->
-    <script src="/auth-helper.js"></script>
-    <!-- Debug Script -->
-    <script>
-        $(document).ready(function() {
-            // Debug login information
-            function debugLoginInfo() {
-                // Get token from cookie
-                function getCookie(name) {
-                    const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                    return match ? match[2] : null;
-                }
-                
-                const token = getCookie('token');
-                console.log("Auth token from cookie:", token ? "Found" : "Not found");
-                
-                if (token) {
-                    try {
-                        // Decode token
-                        const payload = JSON.parse(atob(token.split('.')[1]));
-                        console.log("Token payload:", payload);
-                        console.log("User role:", payload.scope);
-                        console.log("Username:", payload.sub);
-                        console.log("Token expiry:", new Date(payload.exp * 1000).toLocaleString());
-                        
-                        // Verify user has ROLE_CUSTOMER
-                        if (!payload.scope || !payload.scope.includes('ROLE_CUSTOMER')) {
-                            console.log("User does not have customer role:", payload.scope);
-                            console.log("Redirecting to appropriate dashboard...");
-                            
-                            // Let auth.js handle the redirection
-                        }
-                    } catch (error) {
-                        console.error("Error decoding token:", error);
-                    }
-                } else {
-                    console.warn("No authentication token found");
-                    // Don't redirect here - auth.js will handle it
-                }
-            }
-            
-            // Only run debug if needed
-            debugLoginInfo();
-            
-            // Load profile data for customer
-            setTimeout(function() {
-                loadProfileData();
-            }, 1500);
-        });
-        
-        // Function to load customer profile data
-        function loadProfileData() {
-            // Get token from cookie
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const token = getCookie('token');
-            if (!token) {
-                console.error("Cannot load profile: No token found");
-                return;
-            }
-            
-            // Load customer profile data
-            $.ajax({
-                url: '/customer/profile',
-                type: 'GET',
-                xhrFields: {
-                    withCredentials: true
-                },
-                success: function(response) {
-                    if (response && response.name) {
-                        // Update UI with customer data
-                        $('#customerName').text(response.name);
-                        $('#customerAvatar').attr('alt', response.name);
-                        
-                        // If there are other elements to update
-                        // $('#otherElement').text(response.someProperty);
-                    }
-                },
-                error: function(xhr) {
-                    console.error("Error loading customer profile:", xhr.status);
-                }
-            });
-        }
-    </script>
+    <!-- Auth Script -->
+    <script src="/js/auth.js"></script>
     <style>
         .hero-overlay {
             background: linear-gradient(to bottom, rgba(0,0,0,0.3), rgba(0,0,0,0.7));
@@ -1236,6 +1151,13 @@
             });
         }
 
+        // Check authentication
+        $(document).ready(function() {
+            checkAuth();
+            // Load profile data immediately after page load
+            loadProfileData();
+        });
+
         // Toggle user menu
         $('#userMenuButton').click(function(e) {
             e.stopPropagation();
@@ -1268,15 +1190,15 @@
                     console.log('Profile response:', response);
                     if (response) {
                         // Update profile panel information
-                        $('#profilePanelName').text(response.name || 'Customer');
-                        $('#profilePanelAvatar').attr('src', `https://ui-avatars.com/api/?name=${encodeURIComponent(response.name || 'Customer')}&background=4F46E5&color=fff&size=128`);
-                        $('#profileEmail').text(response.email || '');
-                        $('#profilePhone').text(response.phone || '');
-                        $('#profileAddress').text(response.address || '');
+                        $('#profilePanelName').text(response.name || 'User');
+                        $('#profilePanelAvatar').attr('src', `https://ui-avatars.com/api/?name=${encodeURIComponent(response.name || 'User')}&background=4F46E5&color=fff&size=128`);
+                        $('#profileEmail').text(response.email || 'Not provided');
+                        $('#profilePhone').text(response.phone || 'Not provided');
+                        $('#profileAddress').text(response.address || 'Not provided');
                         
                         // Also update the navigation bar display
-                        $('#usernameDisplay').text(response.name || 'Customer');
-                        $('#userAvatar').attr('src', `https://ui-avatars.com/api/?name=${encodeURIComponent(response.name || 'Customer')}&background=4F46E5&color=fff&size=128`);
+                        $('#usernameDisplay').text(response.name || 'User');
+                        $('#userAvatar').attr('src', `https://ui-avatars.com/api/?name=${encodeURIComponent(response.name || 'User')}&background=4F46E5&color=fff&size=128`);
                     } else {
                         console.error('Invalid response format:', response);
                     }
@@ -1439,167 +1361,6 @@
 
         document.querySelectorAll('.counter').forEach(counter => {
             observer.observe(counter);
-        });
-
-        // Check login status and redirect if needed
-        function checkLoginStatus() {
-            const token = getAuthToken();
-            const userRole = getCookie('user_role') || localStorage.getItem('user_role');
-            
-            log('Checking login status...');
-            log('Token:', token ? 'Found' : 'Not found');
-            log('User role:', userRole || 'Not found');
-            
-            if (!token || !userRole) {
-                log('No token or role found, redirecting to login');
-                window.location.href = '/login.html?session_expired=true';
-                return;
-            }
-            
-            if (!userRole.includes('ROLE_CUSTOMER')) {
-                log('Invalid role, redirecting to login');
-                window.location.href = '/login.html?error=invalid_role';
-                return;
-            }
-            
-            log('Login status OK');
-        }
-
-        // Load user profile
-        function loadUserProfile() {
-            ajaxWithAuth({
-                url: '/customer/profile',
-                method: 'GET',
-                success: function(response) {
-                    if (response && response.result) {
-                        const user = response.result;
-                        $('#userName').text(user.name || 'Customer');
-                        $('#userEmail').text(user.email || '');
-                        $('#userPhone').text(user.phone || '');
-                        $('#userAddress').text(user.address || '');
-                        
-                        // Update profile form
-                        $('#profileName').val(user.name || '');
-                        $('#profileEmail').val(user.email || '');
-                        $('#profilePhone').val(user.phone || '');
-                        $('#profileAddress').val(user.address || '');
-                    }
-                },
-                error: function(xhr) {
-                    log('Error loading profile:', xhr);
-                    if (xhr.status === 401) {
-                        window.location.href = '/login.html?session_expired=true';
-                    }
-                }
-            });
-        }
-
-        // Handle profile update
-        $('#updateProfileForm').submit(function(e) {
-            e.preventDefault();
-            
-            const formData = {
-                name: $('#profileName').val(),
-                email: $('#profileEmail').val(),
-                phone: $('#profilePhone').val(),
-                address: $('#profileAddress').val()
-            };
-            
-            ajaxWithAuth({
-                url: '/customer/profile',
-                method: 'PUT',
-                contentType: 'application/json',
-                data: JSON.stringify(formData),
-                success: function(response) {
-                    if (response && response.result) {
-                        showMessage('Profile updated successfully!', true);
-                        loadUserProfile();
-                    }
-                },
-                error: function(xhr) {
-                    log('Error updating profile:', xhr);
-                    if (xhr.status === 401) {
-                        window.location.href = '/login.html?session_expired=true';
-                    } else {
-                        showMessage('Failed to update profile. Please try again.');
-                    }
-                }
-            });
-        });
-
-        // Handle password change
-        $('#changePasswordForm').submit(function(e) {
-            e.preventDefault();
-            
-            const currentPassword = $('#currentPassword').val();
-            const newPassword = $('#newPassword').val();
-            const confirmPassword = $('#confirmPassword').val();
-            
-            if (newPassword !== confirmPassword) {
-                showMessage('New passwords do not match');
-                return;
-            }
-            
-            ajaxWithAuth({
-                url: '/customer/change-password',
-                method: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify({
-                    currentPassword: currentPassword,
-                    newPassword: newPassword
-                }),
-                success: function(response) {
-                    if (response && response.result) {
-                        showMessage('Password changed successfully!', true);
-                        $('#changePasswordForm')[0].reset();
-                    }
-                },
-                error: function(xhr) {
-                    log('Error changing password:', xhr);
-                    if (xhr.status === 401) {
-                        window.location.href = '/login.html?session_expired=true';
-                    } else {
-                        showMessage('Failed to change password. Please try again.');
-                    }
-                }
-            });
-        });
-
-        // Handle logout
-        $('#logoutBtn').click(function() {
-            ajaxWithAuth({
-                url: '/auth/logout',
-                method: 'POST',
-                success: function() {
-                    // Clear both storage methods
-                    clearAuthToken();
-                    localStorage.removeItem('user_role');
-                    setCookie('user_role', '', -1);
-                    
-                    window.location.href = '/login.html?logged_out=true';
-                },
-                error: function(xhr) {
-                    log('Error during logout:', xhr);
-                    // Still clear storage and redirect
-                    clearAuthToken();
-                    localStorage.removeItem('user_role');
-                    setCookie('user_role', '', -1);
-                    
-                    window.location.href = '/login.html?logged_out=true';
-                }
-            });
-        });
-
-        // Document ready
-        $(document).ready(function() {
-            log('Customer dashboard loaded');
-            checkLoginStatus();
-            loadUserProfile();
-            
-            // Load initial data
-            loadRecentBookings();
-            loadUpcomingBookings();
-            loadRecentBills();
         });
     </script>
 </body>

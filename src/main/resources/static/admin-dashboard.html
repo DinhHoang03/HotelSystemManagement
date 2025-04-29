@@ -15,59 +15,6 @@
     <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
     <!-- Auth Script -->
     <script src="/js/auth.js"></script>
-    <script src="/auth-helper.js"></script>
-    <!-- Debug Script -->
-    <script>
-        // Debug authentication token
-        function debugAuthToken() {
-            console.group('Admin Authentication Debug');
-            
-            // Helper function to get cookie
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const tokenFromCookie = getCookie('token'); // Correct cookie name
-            
-            console.log('Token from cookie:', tokenFromCookie ? 'Found' : 'Not found');
-            
-            // Try to decode and log token info
-            if (tokenFromCookie) {
-                try {
-                    const tokenParts = tokenFromCookie.split('.');
-                    if (tokenParts.length === 3) {
-                        const payload = JSON.parse(atob(tokenParts[1]));
-                        console.log('Token payload:', payload);
-                        console.log('Username:', payload.sub);
-                        console.log('User role:', payload.scope);
-                        console.log('Token expiry:', new Date(payload.exp * 1000).toLocaleString());
-                        console.log('Is admin?', payload.scope && payload.scope.includes('ROLE_ADMIN'));
-                        
-                        // Check if user is admin, if not redirect to appropriate dashboard
-                        if (!payload.scope || !payload.scope.includes('ROLE_ADMIN')) {
-                            console.warn('Non-admin user detected, redirecting to appropriate dashboard');
-                            // Let auth.js handle redirection based on role
-                        }
-                    } else {
-                        console.error('Invalid token format');
-                    }
-                } catch (error) {
-                    console.error('Error decoding token:', error);
-                }
-            } else {
-                console.warn('No authentication token found');
-            }
-            
-            console.groupEnd();
-        }
-        
-        // Run debug on page load
-        $(document).ready(function() {
-            debugAuthToken();
-            // Don't call checkAuth() - auth.js will handle it
-        });
-    </script>
     <style>
         .sidebar {
             transition: all 0.3s ease;
@@ -295,66 +242,31 @@
             }).format(amount);
         }
 
-        // Initialize AOS
-        AOS.init();
-        
+        // Document ready function - entry point
         $(document).ready(function() {
-            // Check if user is authenticated as admin before loading data
-            if (checkAdminAuthentication()) {
-                console.log("Authentication successful, loading dashboard data");
-                
-                // Initialize the dashboard
-                setupToggleSidebar();
-                setupUserMenu();
-                loadDashboardData();
-                initializeCharts();
-                setupDailyRefresh();
-                setupChartRefresh();
-            } else {
-                console.log("Authentication failed, not loading dashboard data");
+            // Check if admin is logged in
+            if (!checkAdminAuthentication()) {
+                window.location.href = 'login.html';
+                return;
             }
-        });
 
-        // Toggle sidebar
-        function setupToggleSidebar() {
-            $('#toggleSidebar').click(function() {
-                $('#sidebar').toggleClass('collapsed');
-                $('#mainContent').toggleClass('expanded ml-64 ml-20');
-                
-                if ($('#sidebar').hasClass('collapsed')) {
-                    $('.sidebar-text').hide();
-                } else {
-                    $('.sidebar-text').show();
-                }
-            });
-        }
-
-        // User menu toggle
-        function setupUserMenu() {
-            $('#userMenuButton').click(function() {
-                $('#userMenu').toggleClass('hidden');
-            });
+            // Initialize animations
+            AOS.init();
             
+            // Load initial dashboard data
+            loadDashboardData();
+            
+            // Setup automatic refresh
+            setupDailyRefresh();
+            setupChartRefresh();
+
+            // Setup click outside to close profile menu
             $(document).click(function(event) {
                 if (!$(event.target).closest('#userMenuButton, #userMenu').length) {
                     $('#userMenu').addClass('hidden');
                 }
             });
-        }
-        
-        // Function to safely handle logout
-        function logout() {
-            console.log("Logging out...");
-            
-            // Call the logout function from auth.js
-            if (typeof window.logout === 'function') {
-                window.logout();
-            } else {
-                // Fallback if auth.js logout is not available
-                document.cookie = "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; samesite=strict";
-                window.location.href = '/login.html?logout=true';
-            }
-        }
+        });
 
         // Function to load all dashboard data
         function loadDashboardData() {
@@ -367,25 +279,13 @@
 
         // Load employee count
         function loadEmployeeCount() {
-            // Get token from cookie or localStorage
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
-            const token = tokenFromCookie || tokenFromStorage;
-            
+            const token = localStorage.getItem('token');
             if (!token) {
-                console.error('No auth token found for loadEmployeeCount');
                 $('#totalEmployeesCount').text('Auth Error');
                 return;
             }
             
-            console.log('Fetching employee count with token...');
-            
-            fetch('/admin/count-employees', {
+            fetch('https://localhost:8443/admin/count-employees', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -398,7 +298,6 @@
                 return response.json();
             })
             .then(data => {
-                console.log('Employee count response:', data);
                 if (data && data.result !== undefined) {
                     $('#totalEmployeesCount').text(data.result);
                 }
@@ -411,25 +310,13 @@
 
         // Load room count
         function loadRoomCount() {
-            // Get token from cookie or localStorage
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
-            const token = tokenFromCookie || tokenFromStorage;
-            
+            const token = localStorage.getItem('token');
             if (!token) {
-                console.error('No auth token found for loadRoomCount');
                 $('#totalRoomsCount').text('Auth Error');
                 return;
             }
             
-            console.log('Fetching room count with token...');
-            
-            fetch('/admin/count-rooms', {
+            fetch('https://localhost:8443/admin/count-rooms', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -442,7 +329,6 @@
                 return response.json();
             })
             .then(data => {
-                console.log('Room count response:', data);
                 if (data && data.result !== undefined) {
                     $('#totalRoomsCount').text(data.result);
                 }
@@ -455,26 +341,15 @@
 
         // Load today's bookings with current date
         function loadTodayBookings() {
-            // Get token from cookie or localStorage
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
-            const token = tokenFromCookie || tokenFromStorage;
-            
+            const token = localStorage.getItem('token');
             if (!token) {
-                console.error('No auth token found for loadTodayBookings');
                 $('#todayBookingsCount').text('Auth Error');
                 return;
             }
             
             const today = formatDateToYYYYMMDD(new Date());
-            console.log('Fetching today bookings for date:', today);
             
-            fetch(`/admin/today-bookings?date=${today}`, {
+            fetch(`https://localhost:8443/admin/today-bookings?date=${today}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -487,7 +362,6 @@
                 return response.json();
             })
             .then(data => {
-                console.log('Today bookings response:', data);
                 if (data && data.result !== undefined) {
                     $('#todayBookingsCount').text(data.result);
                 }
@@ -500,27 +374,16 @@
 
         // Load today's revenue with current date
         function loadTodayRevenue() {
-            // Get token from cookie or localStorage
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
-            const token = tokenFromCookie || tokenFromStorage;
-            
+            const token = localStorage.getItem('token');
             if (!token) {
-                console.error('No auth token found for loadTodayRevenue');
                 $('#todayRevenueCount').text('Auth Error');
                 return;
             }
             
             const today = formatDateToYYYYMMDD(new Date());
-            console.log('Fetching today revenue for date:', today);
             
             // Try POST method with date in body
-            fetch('/admin/today-revenue', {
+            fetch('https://localhost:8443/admin/today-revenue', {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -531,13 +394,11 @@
             .then(response => {
                 if (!response.ok) {
                     // Fallback to GET if POST fails
-                    console.log('POST request failed, trying GET...');
-                    return tryGetTodayRevenue(token);
+                    return tryGetTodayRevenue();
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Today revenue response:', data);
                 if (data && data.result !== undefined) {
                     $('#todayRevenueCount').text(formatCurrency(data.result));
                 }
@@ -549,12 +410,13 @@
         }
         
         // Fallback GET method for today's revenue
-        function tryGetTodayRevenue(token) {
+        function tryGetTodayRevenue() {
+            const token = localStorage.getItem('token');
             if (!token) return Promise.reject('No token');
             
             const today = formatDateToYYYYMMDD(new Date());
             
-            return fetch(`/admin/today-revenue?now=${today}`, {
+            return fetch(`https://localhost:8443/admin/today-revenue?now=${today}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -567,6 +429,23 @@
                 return response.json();
             });
         }
+
+        // Initialize AOS
+        AOS.init({
+            duration: 1000,
+            once: true
+        });
+
+        // Toggle sidebar
+        $('#toggleSidebar').click(function() {
+            $('#sidebar').toggleClass('collapsed');
+            $('#mainContent').toggleClass('expanded');
+        });
+
+        // Toggle user menu
+        $('#userMenuButton').click(function() {
+            $('#userMenu').toggleClass('hidden');
+        });
 
         // Initialize charts
         function initializeCharts() {
@@ -631,18 +510,8 @@
         
         // Load revenue data from API
         function loadRevenueData(chart, year, startMonth, endMonth) {
-            // Get token from cookie or localStorage
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
-            const token = tokenFromCookie || tokenFromStorage;
-            
+            const token = localStorage.getItem('token');
             if (!token) {
-                console.error('No auth token found for loadRevenueData');
                 chart.data.labels = ['Auth Error'];
                 chart.data.datasets[0].data = [0];
                 chart.update();
@@ -654,10 +523,8 @@
             chart.data.datasets[0].data = [0];
             chart.update();
             
-            console.log(`Fetching revenue data for year ${year}, months ${startMonth}-${endMonth}`);
-            
             // Call the revenue API
-            fetch(`/admin/revenue?year=${year}&startMonth=${startMonth}&endMonth=${endMonth}`, {
+            fetch(`https://localhost:8443/admin/revenue?year=${year}&startMonth=${startMonth}&endMonth=${endMonth}`, {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -665,12 +532,11 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Failed to load revenue data: ' + response.status);
+                    throw new Error('Failed to load revenue data');
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Revenue data response:', data);
                 if (data && data.result) {
                     const revenueData = data.result;
                     const labels = Object.keys(revenueData);
@@ -692,18 +558,8 @@
 
         // Load occupancy data from API
         function loadOccupancyData(chart) {
-            // Get token from cookie or localStorage
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const tokenFromCookie = getCookie('auth_token');
-            const tokenFromStorage = localStorage.getItem('token');
-            const token = tokenFromCookie || tokenFromStorage;
-            
+            const token = localStorage.getItem('token');
             if (!token) {
-                console.error('No auth token found for loadOccupancyData');
                 chart.data.labels = ['Auth Error'];
                 chart.data.datasets[0].data = [0];
                 chart.update();
@@ -715,10 +571,8 @@
             chart.data.datasets[0].data = [0];
             chart.update();
             
-            console.log('Fetching room occupancy data');
-            
             // Call the occupancy API
-            fetch('/admin/room-occupancy', {
+            fetch('https://localhost:8443/admin/room-occupancy', {
                 method: 'GET',
                 headers: {
                     'Authorization': `Bearer ${token}`
@@ -726,12 +580,11 @@
             })
             .then(response => {
                 if (!response.ok) {
-                    throw new Error('Failed to load occupancy data: ' + response.status);
+                    throw new Error('Failed to load occupancy data');
                 }
                 return response.json();
             })
             .then(data => {
-                console.log('Occupancy data response:', data);
                 if (data && data.result) {
                     const occupancyData = data.result;
                     const labels = Object.keys(occupancyData);
@@ -753,18 +606,10 @@
 
         // Check admin authentication
         function checkAdminAuthentication() {
-            // Try to get token from cookie
-            function getCookie(name) {
-                const match = document.cookie.match(new RegExp('(^| )' + name + '=([^;]+)'));
-                return match ? match[2] : null;
-            }
-            
-            const token = getCookie('token');
-            
-            console.log("Admin authentication check - Token found:", !!token);
+            const token = localStorage.getItem('token');
             
             if (!token) {
-                console.log("No token found. Redirecting to login page.");
+                // Redirect to login if token doesn't exist
                 window.location.href = 'login.html';
                 return false;
             }
@@ -777,32 +622,21 @@
                 }
                 
                 const payload = JSON.parse(atob(tokenParts[1]));
-                console.log("Token payload:", payload);
-                console.log("User role from token:", payload.scope);
                 
                 // Check if token has admin role (scope field)
-                if (!payload.scope || !payload.scope.includes('ROLE_ADMIN')) {
+                if (!payload.scope || payload.scope !== 'ROLE_ADMIN') {
                     // Redirect if not admin
-                    console.log("User is not an admin. Redirecting to appropriate dashboard.");
-                    if (payload.scope && payload.scope.includes('ROLE_CUSTOMER')) {
-                        window.location.href = 'customer-dashboard.html';
-                    } else if (payload.scope) {
-                        window.location.href = 'employee-dashboard.html';
-                    } else {
-                        window.location.href = 'login.html';
-                    }
+                    window.location.href = 'login.html';
                     return false;
                 }
                 
                 // Set admin username in header from token
                 $('#usernameDisplay').text(payload.sub || 'Admin');
-                console.log("Admin authentication successful");
                 
                 return true;
             } catch (error) {
                 console.error('Error validating admin token:', error);
                 // Redirect to login if token is invalid
-                console.log("Token validation error. Redirecting to login page.");
                 window.location.href = 'login.html';
                 return false;
             }
