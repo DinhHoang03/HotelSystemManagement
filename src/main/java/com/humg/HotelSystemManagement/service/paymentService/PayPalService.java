@@ -10,6 +10,8 @@ import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.Locale;
+
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
@@ -27,7 +29,9 @@ public class PayPalService {
         //Tạo đối tượng lưu trữ số tiền cho giao dịch
         Amount amount = new Amount();
         amount.setCurrency(currency);
-        amount.setTotal()
+        amount.setTotal(String.format(Locale.US, "%.2f", total));
+
+        return null;
     }
 
 }
