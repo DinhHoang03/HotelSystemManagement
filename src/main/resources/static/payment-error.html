@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lỗi thanh toán - DinhRise Hotel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/payment-pages.css">
+</head>
+<body class="text-gray-800">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto card-bg rounded-lg shadow-xl overflow-hidden animation-card error-animation">
+            <!-- Header -->
+            <div class="gradient-bg orange-gradient text-white p-8 text-center">
+                <div class="header-text">
+                    <h1 class="text-4xl font-bold orange-text">Lỗi thanh toán</h1>
+                    <p class="mt-4 text-gray-300">Đã xảy ra lỗi trong quá trình thanh toán PayPal</p>
+                </div>
+            </div>
+            
+            <!-- Error Icon -->
+            <div class="flex justify-center mt-8">
+                <svg class="status-icon error-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="status-icon__circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="status-icon__symbol" fill="none" d="M26 15 L26 33 M26 37 L26 39"/>
+                </svg>
+            </div>
+            
+            <!-- Error Info -->
+            <div class="p-8">
+                <div class="bg-gray-50 rounded-lg p-6 mb-8 border border-gray-200">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 orange-text">Thông tin lỗi</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                            <span class="text-gray-600">Trạng thái:</span>
+                            <span class="font-medium text-orange-600">Giao dịch thất bại</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                            <span class="text-gray-600">Mã đơn hàng:</span>
+                            <span class="font-medium" id="orderId">Loading...</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                            <span class="text-gray-600">Phương thức thanh toán:</span>
+                            <span class="font-medium">
+                                <span class="font-bold paypal-color">Pay</span><span class="font-bold paypal-highlight">Pal</span>
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-gray-600">Thời gian:</span>
+                            <span class="font-medium" id="errorTime">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Error Details -->
+                <div class="bg-orange-50 rounded-lg p-6 mb-8 border border-orange-200">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 orange-text">Chi tiết lỗi</h2>
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <i class="fas fa-exclamation-triangle text-orange-600 mt-1 mr-4 text-xl error-animation-pulse"></i>
+                            <div>
+                                <p class="text-gray-800 font-medium" id="errorTitle">Giao dịch không thành công</p>
+                                <p class="text-gray-600 text-sm mt-1" id="errorDetail">PayPal đã trả về lỗi khi xử lý giao dịch của bạn.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-orange-600 mt-1 mr-4 text-xl"></i>
+                            <div>
+                                <p class="text-gray-800 font-medium">Hành động đề xuất</p>
+                                <ul class="text-gray-600 text-sm mt-1 list-disc pl-5">
+                                    <li>Kiểm tra lại thông tin thanh toán của bạn</li>
+                                    <li>Đảm bảo tài khoản PayPal có đủ số dư</li>
+                                    <li>Thử một phương thức thanh toán khác</li>
+                                    <li>Liên hệ với đội ngũ hỗ trợ nếu vấn đề vẫn tiếp diễn</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                    <a href="/payment.html" id="retryBtn" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-lg text-center transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-redo-alt mr-2"></i> Thử lại
+                    </a>
+                    <a href="/customer-dashboard.html" id="homeBtn" class="flex-1 bg-white border-2 orange-border text-gray-900 hover:bg-gray-50 font-semibold py-4 px-6 rounded-lg text-center transition duration-300 flex items-center justify-center orange-hover">
+                        <i class="fas fa-home mr-2"></i> Về trang chủ
+                    </a>
+                </div>
+                
+                <!-- Support Link -->
+                <div class="text-center mt-6">
+                    <a href="#" class="text-orange-600 hover:text-orange-700 text-sm font-medium inline-flex items-center">
+                        <i class="fas fa-headset mr-2"></i> Liên hệ hỗ trợ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/payment-handlers.js"></script>
+    <script src="/js/payment-error.js"></script>
+</body>
+</html> 

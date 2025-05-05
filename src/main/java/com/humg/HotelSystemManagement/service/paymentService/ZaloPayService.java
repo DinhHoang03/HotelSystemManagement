@@ -19,6 +19,8 @@ import com.humg.HotelSystemManagement.repository.booking.BookingRepository;
 import com.humg.HotelSystemManagement.repository.booking.BookingRoomRepository;
 import com.humg.HotelSystemManagement.repository.booking.PaymentRepository;
 import com.humg.HotelSystemManagement.service.HotelService.booking.BookingService;
+import com.humg.HotelSystemManagement.service.HotelService.email.EmailService;
+import jakarta.mail.MessagingException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -55,6 +57,7 @@ public class ZaloPayService {
     BookingRoomRepository bookingRoomRepository;
     PaymentRepository paymentRepository;
     BookingService bookingService;
+    EmailService emailService;
 
     public static String getCurrentTimeString(String format){
         Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));
@@ -163,8 +166,11 @@ public class ZaloPayService {
 
                 String paymentId = result.getPaymentId();
                 String bookingId = bookingBill.getBooking().getBookingId();
-                
+
                 bookingService.updatePaymentStatus(bookingId, paymentId);
+
+                sendBookingConfirmationEmail(bookingBill.getBooking(), result.getStatus());
+                log.info("Email send successfully to {}", bookingBill.getBooking().getCustomer().getEmail());
 
                 return resultJsonString.toString();
             }
@@ -173,6 +179,11 @@ public class ZaloPayService {
             return "{\"error\": \"Failed to create order: " + e.getMessage() + "\"}";
         }
 
+    }
+
+    private void sendBookingConfirmationEmail(Booking booking, PaymentStatus status) {
+        if(status == PaymentStatus.COMPLETED)
+            emailService.sendBookingConfirmationEmail(booking);
     }
 
     public String getOrderStatus(String appTransId) {

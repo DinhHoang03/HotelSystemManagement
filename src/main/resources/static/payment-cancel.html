@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Thanh toán đã hủy - DinhRise Hotel</title>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="/css/payment-pages.css">
+</head>
+<body class="text-gray-800">
+    <div class="container mx-auto px-4 py-8">
+        <div class="max-w-2xl mx-auto card-bg rounded-lg shadow-xl overflow-hidden animation-card cancel-animation">
+            <!-- Header -->
+            <div class="gradient-bg red-gradient text-white p-8 text-center">
+                <div class="header-text">
+                    <h1 class="text-4xl font-bold red-text">Thanh toán đã hủy</h1>
+                    <p class="mt-4 text-gray-300">Giao dịch PayPal của bạn đã bị hủy</p>
+                </div>
+            </div>
+            
+            <!-- Cancel Icon -->
+            <div class="flex justify-center mt-8">
+                <svg class="status-icon cancel-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+                    <circle class="status-icon__circle" cx="26" cy="26" r="25" fill="none"/>
+                    <path class="status-icon__symbol" fill="none" d="M16 16 L36 36 M36 16 L16 36"/>
+                </svg>
+            </div>
+            
+            <!-- Details Box -->
+            <div class="p-8">
+                <div class="bg-gray-50 rounded-lg p-6 mb-8 border border-gray-200">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 red-text">Thông tin giao dịch</h2>
+                    <div class="space-y-4">
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                            <span class="text-gray-600">Trạng thái:</span>
+                            <span class="font-medium text-red-600">Đã hủy</span>
+                        </div>
+                        <div class="flex justify-between items-center py-2 border-b border-gray-200">
+                            <span class="text-gray-600">Phương thức thanh toán:</span>
+                            <span class="font-medium">
+                                <span class="font-bold paypal-color">Pay</span><span class="font-bold paypal-highlight">Pal</span>
+                            </span>
+                        </div>
+                        <div class="flex justify-between items-center py-2">
+                            <span class="text-gray-600">Thời gian:</span>
+                            <span class="font-medium" id="cancelTime">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Info Box -->
+                <div class="bg-gray-50 rounded-lg p-6 mb-8 border border-gray-200">
+                    <h2 class="text-2xl font-semibold text-gray-800 mb-6 red-text">Lý do có thể xảy ra</h2>
+                    <div class="space-y-6">
+                        <div class="flex items-start">
+                            <i class="fas fa-ban text-red-600 mt-1 mr-4 text-xl"></i>
+                            <div>
+                                <p class="text-gray-800 font-medium">Bạn đã hủy thanh toán</p>
+                                <p class="text-gray-600 text-sm mt-1">Bạn đã chọn không tiếp tục giao dịch PayPal</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start">
+                            <i class="fas fa-credit-card text-red-600 mt-1 mr-4 text-xl"></i>
+                            <div>
+                                <p class="text-gray-800 font-medium">Vấn đề về phương thức thanh toán</p>
+                                <p class="text-gray-600 text-sm mt-1">Có thể có vấn đề với thẻ hoặc tài khoản PayPal của bạn</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Action Buttons -->
+                <div class="flex flex-col sm:flex-row gap-4 mt-8">
+                    <a href="/payment.html" id="retryBtn" class="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-semibold py-4 px-6 rounded-lg text-center transition duration-300 flex items-center justify-center">
+                        <i class="fas fa-redo-alt mr-2"></i> Thử lại
+                    </a>
+                    <a href="/customer-dashboard.html" id="homeBtn" class="flex-1 bg-white border-2 red-border text-gray-900 hover:bg-gray-50 font-semibold py-4 px-6 rounded-lg text-center transition duration-300 flex items-center justify-center red-hover">
+                        <i class="fas fa-home mr-2"></i> Về trang chủ
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/payment-handlers.js"></script>
+    <script src="/js/payment-cancel.js"></script>
+</body>
+</html> 
