@@ -167,7 +167,7 @@
                     </div>
                     <div class="flex justify-between items-center py-2 border-b border-gray-200">
                         <span class="text-gray-600">Phương thức thanh toán:</span>
-                        <span class="font-medium">ZaloPay</span>
+                        <span class="font-medium" id="paymentMethod">Loading...</span>
                     </div>
                     <div class="flex justify-between items-center py-2">
                         <span class="text-gray-600">Thời gian:</span>
@@ -211,19 +211,22 @@
 </div>
 
 <script>
-    // Lấy thông tin từ URL parameters
-    const urlParams = new URLSearchParams(window.location.search);
-    const orderId = urlParams.get('orderId');
-    const amount = urlParams.get('amount');
-    const paymentTime = urlParams.get('paymentTime');
-
     // Lấy thông tin từ localStorage
     const bookingBillId = localStorage.getItem('currentBookingBillId');
-
+    const selectedPaymentMethod = localStorage.getItem('selectedPaymentMethod');
+    const bookingBillAmount = localStorage.getItem('bookingBillAmount');
+    
     // Cập nhật thông tin lên giao diện
-    document.getElementById('orderId').textContent = bookingBillId || orderId || 'N/A';
-    document.getElementById('amount').textContent = amount ? new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(amount) : 'N/A';
-    document.getElementById('paymentTime').textContent = paymentTime ? new Date(paymentTime).toLocaleString('vi-VN') : (new Date().toLocaleString('vi-VN'));
+    document.getElementById('orderId').textContent = bookingBillId || 'N/A';
+    document.getElementById('amount').textContent = bookingBillAmount ? 
+        new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(bookingBillAmount) : 'N/A';
+    
+    // Cập nhật phương thức thanh toán
+    const paymentMethodElement = document.querySelector('.flex.justify-between.items-center.py-2.border-b.border-gray-200:nth-child(3) .font-medium');
+    paymentMethodElement.textContent = selectedPaymentMethod === 'PAYPAL' ? 'PayPal' : 'ZaloPay';
+
+    // Cập nhật thời gian thanh toán
+    document.getElementById('paymentTime').textContent = new Date().toLocaleString('vi-VN');
 
     // Xử lý chức năng xóa bill khi nhấp vào nút điều hướng
     document.getElementById('viewBookingsBtn').addEventListener('click', function(e) {
@@ -238,20 +241,28 @@
 
     // Hàm xóa bill và chuyển hướng
     function deleteBillAndRedirect(url) {
-        const billId = bookingBillId || orderId;
+        const billId = bookingBillId;
         console.log('Attempting to delete bill ID:', billId);
 
         if (!billId) {
-            console.error('No bill ID found in localStorage or URL parameters');
+            console.error('No bill ID found in localStorage');
             alert('Không tìm thấy ID hóa đơn để xóa');
             window.location.href = url;
             return;
+        }
+
+        // Xóa thông tin thanh toán khỏi localStorage sau khi hoàn tất
+        function clearPaymentData() {
+            localStorage.removeItem('currentBookingBillId');
+            localStorage.removeItem('selectedPaymentMethod');
+            localStorage.removeItem('bookingBillAmount');
         }
 
         const token = localStorage.getItem('token');
         if (!token) {
             console.error('No authentication token found');
             alert('Bạn cần đăng nhập lại để hoàn tất quá trình này');
+            clearPaymentData();
             window.location.href = '/login.html';
             return;
         }
@@ -273,10 +284,6 @@
         `;
         document.body.appendChild(processingMessage);
 
-        console.log(`Sending DELETE request to: https://localhost:8443/bill/del/${billId}`);
-        console.log(`With token: ${token.substring(0, 10)}...`);
-
-        // Gọi API xóa bill
         fetch(`https://localhost:8443/bill/del/${billId}`, {
             method: 'DELETE',
             headers: {
@@ -285,31 +292,20 @@
             }
         })
         .then(response => {
-            console.log('Delete bill response status:', response.status);
-            console.log('Delete bill response headers:', [...response.headers.entries()]);
-
             if (!response.ok) {
                 throw new Error('Server returned status: ' + response.status);
             }
-
             return response.text().then(text => {
                 return text ? JSON.parse(text) : {};
-            }).catch(e => {
-                console.log('Response is not JSON or is empty:', e);
-                return {};
             });
         })
         .then(data => {
-            console.log('Delete bill success data:', data);
-            // Xóa bookingBillId khỏi localStorage
-            localStorage.removeItem('currentBookingBillId');
-            // Chuyển hướng đến trang đích không hiển thị thông báo
+            console.log('Delete bill success:', data);
+            clearPaymentData();
             window.location.href = url;
         })
         .catch(error => {
             console.error('Error deleting bill:', error);
-
-            // Hiển thị dialog lỗi chi tiết hơn
             const errorDialog = document.createElement('div');
             errorDialog.innerHTML = `
                 <div style="position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
@@ -327,19 +323,17 @@
             `;
             document.body.appendChild(errorDialog);
 
-            // Xử lý sự kiện đóng dialog
             document.getElementById('errorCloseBtn').addEventListener('click', function() {
                 document.body.removeChild(errorDialog);
             });
 
-            // Xử lý sự kiện tiếp tục
             document.getElementById('errorContinueBtn').addEventListener('click', function() {
                 document.body.removeChild(errorDialog);
+                clearPaymentData();
                 window.location.href = url;
             });
         })
         .finally(() => {
-            // Xóa thông báo đang xử lý
             if (processingMessage && processingMessage.parentNode) {
                 document.body.removeChild(processingMessage);
             }

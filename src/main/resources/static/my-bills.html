@@ -852,8 +852,16 @@
             const modal = document.getElementById('paymentModal');
             const modalContent = document.getElementById('modalContent');
             
-            // Store billId for later use
+            // Find the bill card element
+            const billCard = document.querySelector(`[onclick*="payBill('${billId}')"]`).closest('.bill-card');
+            
+            // Get the amount from the bill card
+            const amountElement = billCard.querySelector('.bill-price');
+            const amount = amountElement.textContent.replace(/[^\d]/g, ''); // Remove all non-digit characters
+            
+            // Store billId and amount for later use
             modal.setAttribute('data-bill-id', billId);
+            localStorage.setItem('bookingBillAmount', amount);
             
             // Show modal with animation
             modal.classList.remove('hidden');
@@ -895,6 +903,10 @@
                 const billId = modal.getAttribute('data-bill-id');
                 
                 console.log(`Processing ${method} payment for bill:`, billId);
+
+                // Lưu thông tin vào localStorage
+                localStorage.setItem('currentBookingBillId', billId);
+                localStorage.setItem('selectedPaymentMethod', method.toUpperCase());
                 
                 // Show loading state
                 const selectedOption = document.querySelector(`.payment-option[onclick*="${method}"]`);
@@ -925,18 +937,10 @@
                 selectedOption.innerHTML = originalContent;
 
                 if (!response.ok) {
-                    if (response.status === 401) {
-                        localStorage.removeItem('token');
-                        localStorage.removeItem('customerId');
-                        window.location.href = '/login.html';
-                        return;
-                    }
-                    
-                    // Try to get detailed error message from response
-                    let errorMessage = 'Unknown error occurred';
+                    let errorMessage = 'Payment processing failed';
                     try {
                         const errorData = await response.json();
-                        errorMessage = errorData.message || errorData.error || 'Server error occurred';
+                        errorMessage = errorData.message || errorMessage;
                     } catch (e) {
                         console.error('Error parsing error response:', e);
                     }
@@ -974,10 +978,16 @@
 
                 if (data && data.result) {
                     try {
+                        // Lưu số tiền vào localStorage
                         if (method === 'zalopay') {
                             // Parse the JSON string for ZaloPay
                             const zaloPayResponse = JSON.parse(data.result);
                             console.log('Parsed ZaloPay response:', zaloPayResponse);
+                            
+                            // Lưu số tiền từ ZaloPay response
+                            if (zaloPayResponse.amount) {
+                                localStorage.setItem('bookingBillAmount', zaloPayResponse.amount);
+                            }
                             
                             if (zaloPayResponse.return_code === 1 && zaloPayResponse.order_url) {
                                 window.open(zaloPayResponse.order_url, '_blank');
@@ -991,13 +1001,17 @@
                             } else {
                                 throw new Error(zaloPayResponse.return_message || 'ZaloPay payment failed');
                             }
-                        } else { // PayPal
-                            // For PayPal, use the result directly as the URL
-                            const paypalUrl = data.result;
-                            console.log('PayPal URL:', paypalUrl);
+                        } else {
+                            // For PayPal
+                            const paypalResponse = data.result;
                             
-                            if (paypalUrl && paypalUrl.includes('paypal.com')) {
-                                window.open(paypalUrl, '_blank');
+                            // Lưu số tiền từ PayPal response
+                            if (data.amount) {
+                                localStorage.setItem('bookingBillAmount', data.amount);
+                            }
+                            
+                            if (typeof paypalResponse === 'string' && paypalResponse.includes('paypal.com')) {
+                                window.open(paypalResponse, '_blank');
                                 closePaymentModal();
                                 Swal.fire({
                                     icon: 'info',
@@ -1028,16 +1042,11 @@
                     throw new Error('Invalid payment response');
                 }
             } catch (error) {
-                console.error('Error in payment process:', error);
-                // Only show error if it hasn't been shown already
-                if (!error.message.includes('Failed to create')) {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Lỗi Thanh Toán',
-                        text: error.message,
-                        confirmButtonColor: '#4F46E5'
-                    });
-                }
+                console.error('Payment processing error:', error);
+                // Clear payment data from localStorage on error
+                localStorage.removeItem('currentBookingBillId');
+                localStorage.removeItem('selectedPaymentMethod');
+                localStorage.removeItem('bookingBillAmount');
             }
         }
 

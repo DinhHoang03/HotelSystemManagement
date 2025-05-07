@@ -17,7 +17,7 @@ public enum AppErrorCode {
     USER_EXISTED(1001, "This account currently exists!", HttpStatus.BAD_REQUEST),
     USER_NOT_EXISTED(1002, "This account does not exist!", HttpStatus.NOT_FOUND),
     LIST_EMPTY(1003, "List is empty!", HttpStatus.BAD_REQUEST),
-    UNAUTHENTICATED(1004, "Unauthenticated!", HttpStatus.UNAUTHORIZED),
+    UNAUTHENTICATED(1004, "Password or username is wrong, please try again!", HttpStatus.UNAUTHORIZED),
     UNAUTHORIZED(1005, "Access denied! You have no permission to access this service!", HttpStatus.FORBIDDEN),
     SIGN_TOKEN_ERROR(1006, "Cannot create token", HttpStatus.INTERNAL_SERVER_ERROR),
     INVALID_STATUS(1007, "Status currently failed!", HttpStatus.BAD_REQUEST),
@@ -34,6 +34,7 @@ public enum AppErrorCode {
     ZALOPAY_ERROR(1017, "ZaloPay API Error", HttpStatus.BAD_REQUEST),
     USER_NOT_APPROVE(1018, "You need admin approve to grand access to our system, please contact to admin to unlock your account", HttpStatus.BAD_REQUEST),
     ORDER_CREATE_FAILED(1019, "Create order failed!", HttpStatus.BAD_REQUEST),
+    STRING_NULL(1020, "String is null!", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
