@@ -1,6 +1,5 @@
 package com.humg.HotelSystemManagement.service.HumanService;
 
-import com.humg.HotelSystemManagement.dto.request.admin.FindEmpStatusRequest;
 import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.entity.booking.Booking;
 import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
@@ -11,14 +10,13 @@ import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.EmployeeMapper;
 import com.humg.HotelSystemManagement.repository.booking.BookingRepository;
 import com.humg.HotelSystemManagement.repository.booking.BookingRoomRepository;
-import com.humg.HotelSystemManagement.repository.booking.PaymentRepository;
+import com.humg.HotelSystemManagement.repository.booking.PaymentBillRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import com.humg.HotelSystemManagement.repository.roomManagerment.RoomRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -40,7 +38,7 @@ public class AdminService {
     CustomerRepository customerRepository;
     RoomRepository roomRepository;
     BookingRoomRepository bookingRoomRepository;
-    PaymentRepository paymentRepository;
+    PaymentBillRepository paymentBillRepository;
     BookingRepository bookingRepository;
     EmployeeMapper employeeMapper;
 
@@ -124,7 +122,7 @@ public class AdminService {
     }
 
     public Long getTodayRevenue(LocalDate now) {
-        var revenue = paymentRepository.getTodayRenevue(now);
+        var revenue = paymentBillRepository.getTodayRenevue(now);
         return revenue;
     }
 

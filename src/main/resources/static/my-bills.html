@@ -691,7 +691,7 @@
                         // Get customer name from localStorage
                         const customerName = localStorage.getItem('customerName') || 'Khách hàng';
                         
-                        // Calculate days remaining for payment
+                        // Calculate days remaining for paymentBill
                         const today = new Date();
                         const daysRemaining = Math.ceil((paymentDate - today) / (1000 * 60 * 60 * 24));
                         const paymentStatus = daysRemaining > 0 ? `Còn ${daysRemaining} ngày` : 'Đã quá hạn!';
@@ -807,7 +807,7 @@
             }
         }
 
-        // Function to handle payment
+        // Function to handle paymentBill
         async function payBill(billId) {
             try {
                 const token = localStorage.getItem('token');
@@ -816,7 +816,7 @@
                     return;
                 }
 
-                console.log('Starting payment process for bill:', billId);
+                console.log('Starting paymentBill process for bill:', billId);
                 
                 // Lưu bookingBillId vào localStorage để sử dụng sau khi thanh toán thành công
                 localStorage.setItem('currentBookingBillId', billId);
@@ -841,7 +841,7 @@
                         window.location.href = '/login.html';
                         return;
                     }
-                    throw new Error('Failed to create payment order');
+                    throw new Error('Failed to create paymentBill order');
                 }
 
                 const data = await response.json();
@@ -877,7 +877,7 @@
                     alert('Phản hồi từ thanh toán không hợp lệ');
                 }
             } catch (error) {
-                console.error('Error in payment process:', error);
+                console.error('Error in paymentBill process:', error);
                 alert('Có lỗi xảy ra trong quá trình thanh toán: ' + error.message);
             }
         }

@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.service.SystemService;
+package com.humg.HotelSystemManagement.utils;
 
 import com.humg.HotelSystemManagement.repository.booking.BookingItemsRepository;
 import com.humg.HotelSystemManagement.repository.booking.BookingRoomRepository;

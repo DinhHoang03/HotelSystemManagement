@@ -1,12 +1,11 @@
 package com.humg.HotelSystemManagement.service.HotelService.booking;
 
-import com.humg.HotelSystemManagement.service.SystemService.NormalizeString;
+import com.humg.HotelSystemManagement.utils.NormalizeString;
 import com.humg.HotelSystemManagement.dto.request.booking.bookingItems.BookingItemRequest;
 import com.humg.HotelSystemManagement.dto.response.booking.bookingItems.BookingItemResponse;
 import com.humg.HotelSystemManagement.entity.booking.BookingItems;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
-import com.humg.HotelSystemManagement.mapper.BookingItemsMapper;
 import com.humg.HotelSystemManagement.repository.HotelOffersRepository;
 import com.humg.HotelSystemManagement.repository.booking.BookingItemsRepository;
 import lombok.AccessLevel;
@@ -14,10 +13,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor

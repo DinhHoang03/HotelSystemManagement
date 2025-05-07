@@ -2,7 +2,7 @@ package com.humg.HotelSystemManagement.entity.humanEntity;
 
 import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.booking.Booking;
-import com.humg.HotelSystemManagement.entity.booking.Payment;
+import com.humg.HotelSystemManagement.entity.booking.PaymentBill;
 import com.humg.HotelSystemManagement.entity.enums.Gender;
 import jakarta.persistence.*;
 import lombok.*;
@@ -56,5 +56,5 @@ public class Customer {
     List<Booking> bookings = new ArrayList<>();
 
     @OneToMany(mappedBy = "customer", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
-    List<Payment> payments = new ArrayList<>();
+    List<PaymentBill> paymentBills = new ArrayList<>();
 }

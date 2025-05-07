@@ -9,6 +9,5 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class PayPalOrderRequest {
-    String total;
-    String currency = "USD";
+    String bookingBillId;
 }

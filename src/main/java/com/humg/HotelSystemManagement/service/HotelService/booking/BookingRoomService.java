@@ -10,7 +10,7 @@ import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.booking.BookingRoomRepository;
 import com.humg.HotelSystemManagement.repository.roomManagerment.RoomRepository;
-import com.humg.HotelSystemManagement.service.Interfaces.ISimpleCRUDService;
+import com.humg.HotelSystemManagement.utils.Interfaces.ISimpleCRUDService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

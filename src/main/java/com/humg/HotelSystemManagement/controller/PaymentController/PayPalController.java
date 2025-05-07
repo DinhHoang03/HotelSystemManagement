@@ -1,15 +1,29 @@
 package com.humg.HotelSystemManagement.controller.PaymentController;
 
+import com.humg.HotelSystemManagement.dto.request.payment.PayPalOrderRequest;
+import com.humg.HotelSystemManagement.dto.response.APIResponse;
+import com.humg.HotelSystemManagement.service.paymentService.PayPalService;
+import com.paypal.api.payments.Payment;
+import com.paypal.base.rest.PayPalRESTException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/paypal")
 @RequiredArgsConstructor
+@Slf4j
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PayPalController {
+    PayPalService payPalService;
 
+    @PostMapping("/order")
+    public APIResponse<Payment> createOrder(@RequestBody PayPalOrderRequest request) throws PayPalRESTException {
+        return APIResponse.<Payment>builder()
+                .result(payPalService.createOrder(request))
+                .message("Create order successfully")
+                .build();
+    }
 }

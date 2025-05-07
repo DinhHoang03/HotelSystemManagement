@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.service.HotelService.booking;
 
-import com.humg.HotelSystemManagement.service.SystemService.NormalizeString;
+import com.humg.HotelSystemManagement.utils.NormalizeString;
 import com.humg.HotelSystemManagement.dto.request.room.hotelService.HotelOfferRequest;
 import com.humg.HotelSystemManagement.dto.response.hotelServiceResponse.HotelOfferResponse;
 import com.humg.HotelSystemManagement.entity.totalServices.HotelOffers;
@@ -8,7 +8,7 @@ import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.mapper.HotelOfferMapper;
 import com.humg.HotelSystemManagement.repository.HotelOffersRepository;
-import com.humg.HotelSystemManagement.service.Interfaces.ISimpleCRUDService;
+import com.humg.HotelSystemManagement.utils.Interfaces.ISimpleCRUDService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;

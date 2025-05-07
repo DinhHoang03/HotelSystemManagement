@@ -6,21 +6,18 @@ import com.humg.HotelSystemManagement.crypto.HMACUtil;
 import com.humg.HotelSystemManagement.configuration.payment.ZaloPayConfig;
 import com.humg.HotelSystemManagement.dto.request.payment.ZaloPayOrderRequest;
 import com.humg.HotelSystemManagement.entity.booking.Booking;
-import com.humg.HotelSystemManagement.entity.booking.BookingBill;
 import com.humg.HotelSystemManagement.entity.booking.BookingRoom;
-import com.humg.HotelSystemManagement.entity.booking.Payment;
+import com.humg.HotelSystemManagement.entity.booking.PaymentBill;
 import com.humg.HotelSystemManagement.entity.enums.BookingStatus;
 import com.humg.HotelSystemManagement.entity.enums.PaymentMethod;
 import com.humg.HotelSystemManagement.entity.enums.PaymentStatus;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.booking.BookingBillRepository;
-import com.humg.HotelSystemManagement.repository.booking.BookingRepository;
 import com.humg.HotelSystemManagement.repository.booking.BookingRoomRepository;
-import com.humg.HotelSystemManagement.repository.booking.PaymentRepository;
+import com.humg.HotelSystemManagement.repository.booking.PaymentBillRepository;
 import com.humg.HotelSystemManagement.service.HotelService.booking.BookingService;
 import com.humg.HotelSystemManagement.service.HotelService.email.EmailService;
-import jakarta.mail.MessagingException;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -28,21 +25,15 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
-import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
 import org.apache.http.message.BasicNameValuePair;
-import org.json.JSONArray;
-import org.json.JSONObject;
-import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Service;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.URISyntaxException;
 import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.util.*;
@@ -55,7 +46,7 @@ public class ZaloPayService {
     ZaloPayConfig zaloPayConfig;
     BookingBillRepository bookingBillRepository;
     BookingRoomRepository bookingRoomRepository;
-    PaymentRepository paymentRepository;
+    PaymentBillRepository paymentBillRepository;
     BookingService bookingService;
     EmailService emailService;
 
@@ -148,7 +139,7 @@ public class ZaloPayService {
                 }
                 System.out.println("Zalopay Response: " + resultJsonString.toString());
 
-                Payment payment = Payment.builder()
+                PaymentBill paymentBill = PaymentBill.builder()
                         .transactionId(zaloPayOrder.get("app_trans_id").toString())
                         .paymentMethod(PaymentMethod.ZALO_PAY)
                         .paidAmount(bookingBill.getGrandTotal())
@@ -157,7 +148,7 @@ public class ZaloPayService {
                         .customer(bookingBill.getBooking().getCustomer())
                         .build();
 
-                var result = paymentRepository.save(payment);
+                var result = paymentBillRepository.save(paymentBill);
 
                 List<BookingRoom> findBookingRoom = bookingRoomRepository.findByBooking(bookingBill.getBooking());
 

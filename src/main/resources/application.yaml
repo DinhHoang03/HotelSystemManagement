@@ -54,9 +54,12 @@ spring:
     exclude: org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration
 
 paypal:
+  mode: sandbox
   client-id: "AVyeLvSbaACMA-l1jkzaROgl9OD8oJJ40k1UrxEgk_1lG7qB36JYxbAnGmfuzKs-HGkF8DqbTkNTwe_D"
   client-secret: "EHLA-xCX8ngGGgMY7aU19u_ulsxket4WDwtIQ76KicoIhpasiz7zboFNjePG-pSAYg0KiusdmAjlN-8s"
-  mode: sandbox
+  cancel-url: "https://localhost:8443/payment-cancel.html"
+  success-url: "https://localhost:8443/payment-success.html"
+  error-url: "https://localhost:8443/payment-error.html"
 
 zalo-pay:
   app-id: 553
@@ -65,12 +68,19 @@ zalo-pay:
   create-order-url: "https://sb-openapi.zalopay.vn/v2/create"
   order-status-url: "https://sb-openapi.zalopay.vn/v2/query"
   redirect-url: "https://localhost:8443/payment-success.html"
-  callback-url: https://7ae0-14-248-209-136.ngrok-free.app/zalopay/callback
+  callback-url: https://1da6-118-70-128-190.ngrok-free.app/zalopay/callback
 
 jwt:
   signerKey: "rFpGwv/uscX+l9y5QCe6X5H`3Y825wsLAAuXHT2WgsBiibbVkUj/hrr9GFT+xoEDE"
   valid-duration: 1 #in hour
   refreshable-duration: 7 #in days
+
+
+
+
+
+
+
 
 
 

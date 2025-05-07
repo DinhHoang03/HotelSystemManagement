@@ -603,7 +603,7 @@
             }
 
             bookings.forEach(booking => {
-                // Ensure booking status and payment status exist and convert to lowercase, or use default values
+                // Ensure booking status and paymentBill status exist and convert to lowercase, or use default values
                 const bookingStatus = (booking.bookingStatus || 'PENDING').toLowerCase();
                 const paymentStatus = (booking.paymentStatus || 'PENDING').toLowerCase();
                 
@@ -885,7 +885,7 @@
                                         <p><strong>Bill ID:</strong> ${bookingBillId}</p>
                                         <p><strong>Amount:</strong> ${formatCurrency(amount)} VND</p>
                                     </div>
-                                    <p class="mt-4">Do you want to proceed with the payment via ZaloPay?</p>
+                                    <p class="mt-4">Do you want to proceed with the paymentBill via ZaloPay?</p>
                                 </div>
                             `,
                             icon: 'question',
@@ -893,13 +893,13 @@
                             confirmButtonColor: '#4F46E5',
                             cancelButtonColor: '#EF4444',
                             confirmButtonText: 'Yes, pay now',
-                            cancelButtonText: 'No, cancel payment'
+                            cancelButtonText: 'No, cancel paymentBill'
                         }).then((result) => {
                             if (result.isConfirmed) {
-                                // User wants to proceed with the payment
+                                // User wants to proceed with the paymentBill
                                 createZaloPayOrder(bookingBillId);
                             } else {
-                                // User wants to cancel the payment
+                                // User wants to cancel the paymentBill
                                 deleteBookingBill(bookingBillId);
                             }
                         });
@@ -921,7 +921,7 @@
                     
                     // Kiểm tra nếu lỗi là duplicate entry cho booking bill
                     if (xhr.responseText && xhr.responseText.includes('Duplicate entry') && xhr.responseText.includes('booking_bills')) {
-                        errorMessage = 'A payment has already been initiated for this booking. Please check your pending payments or try again later.';
+                        errorMessage = 'A paymentBill has already been initiated for this booking. Please check your pending payments or try again later.';
                         
                         Swal.fire({
                             title: 'Payment Already Initiated',
@@ -1052,7 +1052,7 @@
             // Show loading indicator
             Swal.fire({
                 title: 'Processing Payment',
-                text: 'Please wait while we redirect you to the payment gateway...',
+                text: 'Please wait while we redirect you to the paymentBill gateway...',
                 icon: 'info',
                 allowOutsideClick: false,
                 didOpen: () => {
@@ -1063,15 +1063,15 @@
             // Lưu bookingBillId vào localStorage để sử dụng sau khi thanh toán thành công
             localStorage.setItem('currentBookingBillId', bookingBillId);
             
-            // Prepare payment request data
+            // Prepare paymentBill request data
             const requestData = {
                 bookingBillId: bookingBillId  // ZaloPayOrderRequest uses bookingBillId field
             };
             
-            console.log('Sending ZaloPay payment request:', requestData);
+            console.log('Sending ZaloPay paymentBill request:', requestData);
             
             // Debug note
-            console.log('Debug: If payment fails with code 1015, check ZaloPay configuration in application.yaml file and ZaloPayConfig.java');
+            console.log('Debug: If paymentBill fails with code 1015, check ZaloPay configuration in application.yaml file and ZaloPayConfig.java');
             
             $.ajax({
                 url: '/zalopay/order',  // Updated endpoint
@@ -1091,12 +1091,12 @@
                             console.log('Parsed ZaloPay response:', zaloPayResponse);
                             
                             if (zaloPayResponse.return_code === 1 && zaloPayResponse.order_url) {
-                                // Redirect to ZaloPay payment page
+                                // Redirect to ZaloPay paymentBill page
                                 window.open(zaloPayResponse.order_url, '_blank');
                                 
                                 Swal.fire({
                                     title: 'Payment Initiated',
-                                    text: 'You have been redirected to ZaloPay. After completing payment, please return to this page to check your booking status.',
+                                    text: 'You have been redirected to ZaloPay. After completing paymentBill, please return to this page to check your booking status.',
                                     icon: 'success'
                                 }).then(() => {
                                     // Reload the bookings
@@ -1111,7 +1111,7 @@
                             } else {
                                 Swal.fire({
                                     title: 'Error',
-                                    text: 'Failed to create payment order. Error code: ' + (zaloPayResponse.return_code || 'Unknown') + 
+                                    text: 'Failed to create paymentBill order. Error code: ' + (zaloPayResponse.return_code || 'Unknown') +
                                           ', Message: ' + (zaloPayResponse.return_message || ''),
                                     icon: 'error'
                                 });
@@ -1127,7 +1127,7 @@
                     } else {
                         Swal.fire({
                             title: 'Error',
-                            text: 'Failed to create payment order. Please try again.',
+                            text: 'Failed to create paymentBill order. Please try again.',
                             icon: 'error'
                         });
                     }
@@ -1143,7 +1143,7 @@
                         error: error
                     });
                     
-                    let errorMessage = 'An error occurred while creating the payment order. Please try again.';
+                    let errorMessage = 'An error occurred while creating the paymentBill order. Please try again.';
                     let errorCode = null;
                     
                     if (xhr.responseJSON && xhr.responseJSON.message) {
