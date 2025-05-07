@@ -20,8 +20,8 @@ public class PayPalController {
     PayPalService payPalService;
 
     @PostMapping("/order")
-    public APIResponse<Payment> createOrder(@RequestBody PayPalOrderRequest request) throws PayPalRESTException {
-        return APIResponse.<Payment>builder()
+    public APIResponse<String> createOrder(@RequestBody PayPalOrderRequest request) throws PayPalRESTException {
+        return APIResponse.<String>builder()
                 .result(payPalService.createOrder(request))
                 .message("Create order successfully")
                 .build();

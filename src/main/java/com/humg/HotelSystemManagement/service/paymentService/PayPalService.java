@@ -35,7 +35,7 @@ public class PayPalService {
     PaymentBillRepository paymentBillRepository;
     BookingBillRepository bookingBillRepository;
 
-    public Payment createOrder(PayPalOrderRequest request) throws PayPalRESTException {
+    public String createOrder(PayPalOrderRequest request) throws PayPalRESTException {
         if (request == null) throw new AppException(AppErrorCode.REQUEST_IS_NULL);
 
         var bookingBill = bookingBillRepository.findById(request.getBookingBillId())
@@ -71,12 +71,20 @@ public class PayPalService {
         RedirectUrls redirectUrls = new RedirectUrls();
         redirectUrls.setCancelUrl(payPalConfig.getCancelUrl());
         redirectUrls.setReturnUrl(payPalConfig.getSuccessUrl());
-
         payment.setRedirectUrls(redirectUrls);
 
+        //Tạo order Paypal
+        Payment createPayment = payment.create(apiContext);
 
+        //Lấy approval_url
+        String approvalUrl = createPayment.getLinks().stream()
+                .filter(links -> "approval_url".equals(links.getRel()))
+                .findFirst()
+                .map(Links::getHref)
+                .orElseThrow(() -> new AppException(AppErrorCode.ORDER_CREATE_FAILED));
 
-        return payment.create(apiContext);
+        log.info("Created PayPal order with approval URL: {}", approvalUrl);
+        return approvalUrl;
     }
 
     public Payment executeOrder(String paymentId, String payerId) throws PayPalRESTException {

@@ -343,6 +343,46 @@
     </style>
 </head>
 <body>
+    <!-- Payment Modal -->
+    <div id="paymentModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-xl shadow-2xl p-6 w-96 transform transition-all duration-300 scale-95 opacity-0" id="modalContent">
+            <div class="flex justify-between items-center mb-6">
+                <h3 class="text-xl font-bold text-gray-900">Chọn phương thức thanh toán</h3>
+                <button onclick="closePaymentModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fas fa-times text-xl"></i>
+                </button>
+            </div>
+            
+            <div class="space-y-4">
+                <!-- ZaloPay Option -->
+                <div onclick="processPayment('zalopay')" class="payment-option flex items-center p-4 border rounded-lg cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300">
+                    <img src="https://play-lh.googleusercontent.com/NfFBz1Rxk0nQ7RsOk0kXbi1AEp1ZJ3rzJHbwRlmheZEDPPHh7dscqyxyX-ehxTl7tw" alt="ZaloPay" class="w-12 h-12 object-contain rounded-lg">
+                    <div class="ml-4">
+                        <h4 class="font-semibold text-gray-900">ZaloPay</h4>
+                        <p class="text-sm text-gray-500">Thanh toán qua ví điện tử ZaloPay</p>
+                    </div>
+                </div>
+                
+                <!-- PayPal Option -->
+                <div onclick="processPayment('paypal')" class="payment-option flex items-center p-4 border rounded-lg cursor-pointer hover:border-indigo-500 hover:bg-indigo-50 transition-all duration-300">
+                    <img src="https://www.paypalobjects.com/webstatic/icon/pp258.png" alt="PayPal" class="w-12 h-12 object-contain">
+                    <div class="ml-4">
+                        <h4 class="font-semibold text-gray-900">PayPal</h4>
+                        <p class="text-sm text-gray-500">Thanh toán qua PayPal</p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="mt-6 text-center text-sm text-gray-500">
+                <p>Giao dịch được bảo mật 100%</p>
+                <p class="flex items-center justify-center mt-2">
+                    <i class="fas fa-lock text-green-500 mr-2"></i>
+                    Thanh toán an toàn qua cổng thanh toán
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Hero Section -->
     <div class="hero-section flex items-center justify-center text-white">
         <div class="hero-content text-center">
@@ -807,8 +847,43 @@
             }
         }
 
-        // Function to handle paymentBill
-        async function payBill(billId) {
+        // Function to show payment modal
+        function showPaymentModal(billId) {
+            const modal = document.getElementById('paymentModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            // Store billId for later use
+            modal.setAttribute('data-bill-id', billId);
+            
+            // Show modal with animation
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            
+            // Animate modal content
+            setTimeout(() => {
+                modalContent.classList.remove('scale-95', 'opacity-0');
+                modalContent.classList.add('scale-100', 'opacity-100');
+            }, 50);
+        }
+
+        // Function to close payment modal
+        function closePaymentModal() {
+            const modal = document.getElementById('paymentModal');
+            const modalContent = document.getElementById('modalContent');
+            
+            // Animate modal content
+            modalContent.classList.remove('scale-100', 'opacity-100');
+            modalContent.classList.add('scale-95', 'opacity-0');
+            
+            // Hide modal after animation
+            setTimeout(() => {
+                modal.classList.remove('flex');
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // Function to process payment based on selected method
+        async function processPayment(method) {
             try {
                 const token = localStorage.getItem('token');
                 if (!token) {
@@ -816,13 +891,25 @@
                     return;
                 }
 
-                console.log('Starting paymentBill process for bill:', billId);
+                const modal = document.getElementById('paymentModal');
+                const billId = modal.getAttribute('data-bill-id');
                 
-                // Lưu bookingBillId vào localStorage để sử dụng sau khi thanh toán thành công
-                localStorage.setItem('currentBookingBillId', billId);
-                console.log('Saved bookingBillId to localStorage:', billId);
-
-                const response = await fetch('/zalopay/order', {
+                console.log(`Processing ${method} payment for bill:`, billId);
+                
+                // Show loading state
+                const selectedOption = document.querySelector(`.payment-option[onclick*="${method}"]`);
+                const originalContent = selectedOption.innerHTML;
+                selectedOption.innerHTML = `
+                    <div class="flex items-center justify-center w-full">
+                        <i class="fas fa-spinner fa-spin text-indigo-600 text-xl"></i>
+                        <span class="ml-3">Đang xử lý...</span>
+                    </div>
+                `;
+                
+                // Determine API endpoint based on payment method
+                const endpoint = method === 'zalopay' ? '/zalopay/order' : '/paypal/order';
+                
+                const response = await fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -834,6 +921,9 @@
 
                 console.log('Payment API response:', response);
 
+                // Reset loading state
+                selectedOption.innerHTML = originalContent;
+
                 if (!response.ok) {
                     if (response.status === 401) {
                         localStorage.removeItem('token');
@@ -841,7 +931,42 @@
                         window.location.href = '/login.html';
                         return;
                     }
-                    throw new Error('Failed to create paymentBill order');
+                    
+                    // Try to get detailed error message from response
+                    let errorMessage = 'Unknown error occurred';
+                    try {
+                        const errorData = await response.json();
+                        errorMessage = errorData.message || errorData.error || 'Server error occurred';
+                    } catch (e) {
+                        console.error('Error parsing error response:', e);
+                    }
+
+                    // Show error with SweetAlert2
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi Thanh Toán',
+                        html: `
+                            <div class="text-left">
+                                <p class="mb-2">Không thể xử lý thanh toán qua ${method === 'zalopay' ? 'ZaloPay' : 'PayPal'}.</p>
+                                <p class="text-sm text-gray-600">${errorMessage}</p>
+                                <div class="mt-4 p-3 bg-red-50 rounded-lg">
+                                    <p class="text-sm text-red-600">
+                                        <i class="fas fa-info-circle mr-2"></i>
+                                        Nếu lỗi vẫn tiếp tục, vui lòng:
+                                    </p>
+                                    <ul class="list-disc list-inside text-sm text-red-600 mt-2">
+                                        <li>Kiểm tra kết nối mạng</li>
+                                        <li>Thử lại sau vài phút</li>
+                                        <li>Liên hệ hỗ trợ nếu vẫn gặp vấn đề</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        `,
+                        confirmButtonText: 'Đóng',
+                        confirmButtonColor: '#4F46E5'
+                    });
+                    
+                    throw new Error(`Failed to create ${method} order: ${errorMessage}`);
                 }
 
                 const data = await response.json();
@@ -849,37 +974,76 @@
 
                 if (data && data.result) {
                     try {
-                        // Parse the JSON string từ response 
-                        const zaloPayResponse = JSON.parse(data.result);
-                        console.log('Parsed ZaloPay response:', zaloPayResponse);
-                        
-                        if (zaloPayResponse.return_code === 1 && zaloPayResponse.order_url) {
-                            // Thành công, mở trang thanh toán ZaloPay
-                            window.open(zaloPayResponse.order_url, '_blank');
-                            alert('Vui lòng hoàn tất thanh toán trên ZaloPay. Sau khi thanh toán, trang sẽ tự động cập nhật.');
+                        if (method === 'zalopay') {
+                            // Parse the JSON string for ZaloPay
+                            const zaloPayResponse = JSON.parse(data.result);
+                            console.log('Parsed ZaloPay response:', zaloPayResponse);
                             
-                            // Sau 5 giây sẽ tải lại danh sách hóa đơn
-                            setTimeout(() => {
-                                loadBills(currentPage);
-                            }, 5000);
-                        } else if (zaloPayResponse.error) {
-                            // Hiển thị lỗi từ ZaloPay service
-                            alert(`Lỗi thanh toán: ${zaloPayResponse.error}`);
-                        } else {
-                            // Lỗi khác từ ZaloPay
-                            alert(`Lỗi thanh toán. Mã lỗi: ${zaloPayResponse.return_code || 'Unknown'}, Thông báo: ${zaloPayResponse.return_message || ''}`);
+                            if (zaloPayResponse.return_code === 1 && zaloPayResponse.order_url) {
+                                window.open(zaloPayResponse.order_url, '_blank');
+                                closePaymentModal();
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Thanh Toán ZaloPay',
+                                    text: 'Vui lòng hoàn tất thanh toán trên ZaloPay. Sau khi thanh toán, trang sẽ tự động cập nhật.',
+                                    confirmButtonColor: '#4F46E5'
+                                });
+                            } else {
+                                throw new Error(zaloPayResponse.return_message || 'ZaloPay payment failed');
+                            }
+                        } else { // PayPal
+                            // For PayPal, use the result directly as the URL
+                            const paypalUrl = data.result;
+                            console.log('PayPal URL:', paypalUrl);
+                            
+                            if (paypalUrl && paypalUrl.includes('paypal.com')) {
+                                window.open(paypalUrl, '_blank');
+                                closePaymentModal();
+                                Swal.fire({
+                                    icon: 'info',
+                                    title: 'Thanh Toán PayPal',
+                                    text: 'Vui lòng hoàn tất thanh toán trên PayPal. Sau khi thanh toán, trang sẽ tự động cập nhật.',
+                                    confirmButtonColor: '#4F46E5'
+                                });
+                            } else {
+                                throw new Error('Invalid PayPal payment URL');
+                            }
                         }
+                        
+                        // Reload bills after 5 seconds
+                        setTimeout(() => {
+                            loadBills(currentPage);
+                        }, 5000);
+                        
                     } catch (parseError) {
-                        console.error('Error parsing ZaloPay response:', parseError);
-                        alert('Không thể xử lý phản hồi từ ZaloPay. Vui lòng thử lại sau.');
+                        console.error(`Error parsing ${method} response:`, parseError);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Lỗi Xử Lý',
+                            text: `Không thể xử lý phản hồi từ ${method === 'zalopay' ? 'ZaloPay' : 'PayPal'}. Vui lòng thử lại sau.`,
+                            confirmButtonColor: '#4F46E5'
+                        });
                     }
                 } else {
-                    alert('Phản hồi từ thanh toán không hợp lệ');
+                    throw new Error('Invalid payment response');
                 }
             } catch (error) {
-                console.error('Error in paymentBill process:', error);
-                alert('Có lỗi xảy ra trong quá trình thanh toán: ' + error.message);
+                console.error('Error in payment process:', error);
+                // Only show error if it hasn't been shown already
+                if (!error.message.includes('Failed to create')) {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Lỗi Thanh Toán',
+                        text: error.message,
+                        confirmButtonColor: '#4F46E5'
+                    });
+                }
             }
+        }
+
+        // Update the payBill function to show modal instead of direct payment
+        function payBill(billId) {
+            showPaymentModal(billId);
         }
 
         // Event listeners for pagination

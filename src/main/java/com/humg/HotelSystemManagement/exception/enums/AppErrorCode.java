@@ -32,7 +32,8 @@ public enum AppErrorCode {
     PAYMENT_CREATION_FAILED(1015, "Payment creation failed!", HttpStatus.BAD_REQUEST),
     INVALID_AMOUNT(1016, "Invalid amount", HttpStatus.BAD_REQUEST),
     ZALOPAY_ERROR(1017, "ZaloPay API Error", HttpStatus.BAD_REQUEST),
-    USER_NOT_APPROVE(1018, "You need admin approve to grand access to our system, please contact to admin to unlock your account", HttpStatus.BAD_REQUEST)
+    USER_NOT_APPROVE(1018, "You need admin approve to grand access to our system, please contact to admin to unlock your account", HttpStatus.BAD_REQUEST),
+    ORDER_CREATE_FAILED(1019, "Create order failed!", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
