@@ -6,17 +6,19 @@ server:
   ssl:
     enabled: true
     key-store: classpath:keystore.jks
-    key-store-password: dinh1012
+    key-store-password:
     key-store-type: JKS
     key-alias: myssl
-    key-password: dinh1012
+    key-password:
 
 spring:
+  config:
+    import: optional:application-secret.yaml
   mail:
     host: smtp.gmail.com
     port: 587
-    username: "dinhhoang121999@gmail.com"
-    password: "f b p s b s w v t w a n s c g p"
+    username:
+    password:
     properties:
       mail:
         smtp:
@@ -43,8 +45,8 @@ spring:
     allow-bean-definition-overriding: true
   datasource:
     url: jdbc:mysql://localhost:3306/hotel_database_management
-    username: root
-    password: dinh1012
+    username:
+    password:
     driver-class-name: com.mysql.cj.jdbc.Driver
   jpa:
     hibernate:
@@ -55,25 +57,29 @@ spring:
 
 paypal:
   mode: sandbox
-  client-id: "AVyeLvSbaACMA-l1jkzaROgl9OD8oJJ40k1UrxEgk_1lG7qB36JYxbAnGmfuzKs-HGkF8DqbTkNTwe_D"
-  client-secret: "EHLA-xCX8ngGGgMY7aU19u_ulsxket4WDwtIQ76KicoIhpasiz7zboFNjePG-pSAYg0KiusdmAjlN-8s"
+  client-id:
+  client-secret:
   cancel-url: "https://localhost:8443/payment-cancel.html"
   success-url: "https://localhost:8443/payment-success.html"
   error-url: "https://localhost:8443/payment-error.html"
 
 zalo-pay:
-  app-id: 553
-  key1: "9phuAOYhan4urywHTh0ndEXiV3pKHr5Q"
-  key2: "Iyz2habzyr7AG8SgvoBCbKwKi3UzlLi3"
+  app-id:
+  key1:
+  key2:
   create-order-url: "https://sb-openapi.zalopay.vn/v2/create"
   order-status-url: "https://sb-openapi.zalopay.vn/v2/query"
   redirect-url: "https://localhost:8443/payment-success.html"
-  callback-url: https://dc22-118-70-128-190.ngrok-free.app/zalopay/callback
+  callback-url: https://c607-1-55-211-22.ngrok-free.app/zalopay/callback
 
 jwt:
-  signerKey: "rFpGwv/uscX+l9y5QCe6X5H`3Y825wsLAAuXHT2WgsBiibbVkUj/hrr9GFT+xoEDE"
+  signerKey:
   valid-duration: 1 #in hour
   refreshable-duration: 7 #in days
+
+
+
+
 
 
 

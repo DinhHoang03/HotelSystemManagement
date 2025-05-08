@@ -15,6 +15,7 @@ import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.repository.authenticationRepository.InvalidatedTokenRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
+import com.humg.HotelSystemManagement.service.redis.RedisService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
 import com.nimbusds.jose.crypto.MACVerifier;
@@ -45,7 +46,8 @@ public class AuthenticationService {
     // Các repository để truy vấn thông tin Customer và Employee từ database.
     EmployeeRepository employeeRepository;
     CustomerRepository customerRepository;
-    InvalidatedTokenRepository invalidatedTokenRepository;
+    //InvalidatedTokenRepository invalidatedTokenRepository;
+    RedisService redisService;
     // Config bảo mật chứa bcrypt encoder để mã hóa/matching mật khẩu.
     SecurityConfig securityConfig;
     @NonFinal
@@ -89,13 +91,16 @@ public class AuthenticationService {
             String jwtId = signedToken.getJWTClaimsSet().getJWTID();
             Date expriredTime = signedToken.getJWTClaimsSet().getExpirationTime();
 
-            InvalidatedToken invalidatedToken = InvalidatedToken
-                    .builder()
-                    .id(jwtId)
-                    .expiredTime(expriredTime.toInstant())
-                    .build();
+            long remainingSeconds = (expriredTime.getTime() - System.currentTimeMillis()) / 1000;
+            redisService.blackListToken(jwtId, remainingSeconds);
 
-            invalidatedTokenRepository.save(invalidatedToken);
+//            InvalidatedToken invalidatedToken = InvalidatedToken
+//                    .builder()
+//                    .id(jwtId)
+//                    .expiredTime(expriredTime.toInstant())
+//                    .build();
+//
+//            invalidatedTokenRepository.save(invalidatedToken);
         }catch (AppException e){
             log.info("Token is not valid!");
         }
@@ -106,12 +111,15 @@ public class AuthenticationService {
         var jwtId = signedToken.getJWTClaimsSet().getJWTID();
         var expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
 
-        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
-                .id(jwtId)
-                .expiredTime(expirationTime.toInstant())
-                .build();
+        long renmainingSeconds = (expirationTime.getTime() - System.currentTimeMillis()) / 1000;
+        redisService.blackListToken(jwtId, renmainingSeconds);
 
-        invalidatedTokenRepository.save(invalidatedToken);
+//        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+//                .id(jwtId)
+//                .expiredTime(expirationTime.toInstant())
+//                .build();
+//
+//        invalidatedTokenRepository.save(invalidatedToken);
 
         var username = signedToken.getJWTClaimsSet().getSubject();
         var userPrincipal = findUser(username);
@@ -163,8 +171,10 @@ public class AuthenticationService {
     private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
         // Tạo verifier để kiểm tra chữ ký của token bằng khóa SIGNER_KEY.
         JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+
         // Parse token thành đối tượng SignedJWT để truy cập các thành phần (header, payload, signature).
         SignedJWT signedJWT = SignedJWT.parse(token);
+
         // Lấy thời gian hết hạn từ claims trong token.
         Date expriredTime = (isRefresh) ?
                 new Date(
@@ -180,26 +190,13 @@ public class AuthenticationService {
         var verified = signedJWT.verify(verifier);
 
         // Token hợp lệ nếu chữ ký đúng và chưa hết hạn.
-        if(!verified && expriredTime
-                .after(
-                        new Date()
-                )
-        ){
-            throw new AppException(
-                    AppErrorCode.UNAUTHENTICATED
-            );
-        }
+        if(!verified && expriredTime.after(new Date()))
+            throw new AppException(AppErrorCode.UNAUTHENTICATED);
+
 
         //Nếu Token đã log out thì sẽ bị disable vào hệ thống
-        if(invalidatedTokenRepository.existsById(
-                signedJWT
-                        .getJWTClaimsSet()
-                        .getJWTID())
-        ){
-            throw new AppException(
-                    AppErrorCode.UNAUTHENTICATED
-            );
-        }
+        if(redisService.isTokenBlackListed(signedJWT.getJWTClaimsSet().getJWTID()))
+            throw new AppException(AppErrorCode.UNAUTHENTICATED);
 
         return signedJWT;
     }
