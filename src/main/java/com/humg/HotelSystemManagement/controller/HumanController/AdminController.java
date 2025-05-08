@@ -43,8 +43,8 @@ public class AdminController {
     //Get all sort by pages
     @GetMapping("/get-customers/list")
     APIResponse<Page<CustomerResponse>> getAllCustomers(
-            @RequestParam("page") int page,
-            @RequestParam("size") int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ){
         return APIResponse.<
                         Page<CustomerResponse>
@@ -57,8 +57,8 @@ public class AdminController {
     //Get all sort by pages
     @GetMapping("/get-employees/list")
     APIResponse<Page<EmployeeResponse>> getAllEmployees(
-            @RequestParam("page") int page,
-            @RequestParam("size") int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ){
         return APIResponse.<Page<EmployeeResponse>>builder()
                 .result(employeeService.getAll(page, size))
