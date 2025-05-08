@@ -1,9 +1,9 @@
 package com.humg.HotelSystemManagement.service.HumanService;
 
 import com.humg.HotelSystemManagement.configuration.security.SecurityConfig;
-import com.humg.HotelSystemManagement.dto.request.employee.EmployeeCreationRequest;
-import com.humg.HotelSystemManagement.dto.request.employee.EmployeeUpdateRequest;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
+import com.humg.HotelSystemManagement.dto.request.user.employee.EmployeeCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.user.employee.EmployeeUpdateRequest;
+import com.humg.HotelSystemManagement.dto.response.user.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.enums.Gender;
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
@@ -29,6 +29,7 @@ import org.springframework.stereotype.Service;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -112,6 +113,7 @@ public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, Em
     }
 
 
+    /**
     public List<EmployeeResponse> getAll() {
         List<EmployeeResponse> list = employeeRepository.findAll()
                 .stream()
@@ -123,12 +125,30 @@ public class EmployeeService implements IGeneralCRUDService<EmployeeResponse, Em
         }
         return list;
     }
-
+*/
     public Page<EmployeeResponse> getAll(int page, int size){
         Pageable pageable = PageRequest.of(page, size);
         Page<Employee> employeePage = employeeRepository.findAll(pageable);
 
-        return employeePage.map(employeeMapper::toEmployeeResponse);
+        Page<EmployeeResponse> response = employeePage.map(employeeMapper -> {
+            return EmployeeResponse.builder()
+                    .id(employeeMapper.getId())
+                    .username(employeeMapper.getUsername())
+                    .name(employeeMapper.getName())
+                    .gender(employeeMapper.getGender() != null ? employeeMapper.getGender().name() : null)
+                    .dob(employeeMapper.getDob())
+                    .email(employeeMapper.getEmail())
+                    .phone(employeeMapper.getPhone())
+                    .address(employeeMapper.getAddress())
+                    .identityId(employeeMapper.getIdentityId())
+                    .userStatus(employeeMapper.getUserStatus().toString())
+                    .role(employeeMapper.getRoles()
+                            .stream()
+                            .map(Role::getName)
+                            .collect(Collectors.joining(", ")))
+                    .build();
+        });
+        return response;
     }
 
     public EmployeeResponse getById(String id) {

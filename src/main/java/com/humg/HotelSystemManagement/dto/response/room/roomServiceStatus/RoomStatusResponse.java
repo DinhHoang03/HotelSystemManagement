@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.response.roomServiceStatus;
+package com.humg.HotelSystemManagement.dto.response.room.roomServiceStatus;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

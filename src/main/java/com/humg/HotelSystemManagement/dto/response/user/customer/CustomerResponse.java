@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.response.humanEntity.customer;
+package com.humg.HotelSystemManagement.dto.response.user.customer;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;

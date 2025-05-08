@@ -1,8 +1,8 @@
 package com.humg.HotelSystemManagement.service.EmployeeService;
 
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.AttendanceResponse;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.CheckInResponse;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.CheckOutResponse;
+import com.humg.HotelSystemManagement.dto.response.user.employee.AttendanceResponse;
+import com.humg.HotelSystemManagement.dto.response.user.employee.CheckInResponse;
+import com.humg.HotelSystemManagement.dto.response.user.employee.CheckOutResponse;
 import com.humg.HotelSystemManagement.entity.staffManagerment.Attendance;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
@@ -15,17 +15,14 @@ import com.humg.HotelSystemManagement.repository.staffManagerment.AttendanceRepo
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.cglib.core.Local;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.Duration;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.Temporal;
 
 @Service
 @RequiredArgsConstructor

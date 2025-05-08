@@ -2,7 +2,7 @@ package com.humg.HotelSystemManagement.controller.HotelController.room;
 
 import com.humg.HotelSystemManagement.dto.request.room.roomType.RoomTypeRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.roomType.RoomTypeResponse;
+import com.humg.HotelSystemManagement.dto.response.room.roomType.RoomTypeResponse;
 import com.humg.HotelSystemManagement.service.HotelService.hotel.RoomTypeService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

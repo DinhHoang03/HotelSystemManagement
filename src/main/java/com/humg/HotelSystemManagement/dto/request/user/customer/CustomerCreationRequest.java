@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.request.customer;
+package com.humg.HotelSystemManagement.dto.request.user.customer;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.validation.constraints.*;

@@ -1,9 +1,9 @@
 package com.humg.HotelSystemManagement.controller.HumanController;
 
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.customer.CustomerResponse;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.AttendanceResponse;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
+import com.humg.HotelSystemManagement.dto.response.user.customer.CustomerResponse;
+import com.humg.HotelSystemManagement.dto.response.user.employee.AttendanceResponse;
+import com.humg.HotelSystemManagement.dto.response.user.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.service.EmployeeService.AttendanceService;
 import com.humg.HotelSystemManagement.service.HumanService.AdminService;
@@ -13,11 +13,9 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Map;
 
 @RestController

@@ -1,7 +1,7 @@
 package com.humg.HotelSystemManagement.service.HotelService.hotel;
 
 import com.humg.HotelSystemManagement.dto.request.room.roomType.RoomTypeRequest;
-import com.humg.HotelSystemManagement.dto.response.roomType.RoomTypeResponse;
+import com.humg.HotelSystemManagement.dto.response.room.roomType.RoomTypeResponse;
 import com.humg.HotelSystemManagement.entity.roomManagerment.RoomType;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;

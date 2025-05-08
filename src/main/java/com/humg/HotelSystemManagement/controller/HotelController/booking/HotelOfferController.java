@@ -2,13 +2,12 @@ package com.humg.HotelSystemManagement.controller.HotelController.booking;
 
 import com.humg.HotelSystemManagement.dto.request.room.hotelService.HotelOfferRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.hotelServiceResponse.HotelOfferResponse;
+import com.humg.HotelSystemManagement.dto.response.room.hotelService.HotelOfferResponse;
 import com.humg.HotelSystemManagement.service.HotelService.booking.HotelOfferService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController

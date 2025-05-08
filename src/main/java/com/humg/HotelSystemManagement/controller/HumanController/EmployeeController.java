@@ -1,12 +1,12 @@
 package com.humg.HotelSystemManagement.controller.HumanController;
 
-import com.humg.HotelSystemManagement.dto.request.employee.EmployeeCreationRequest;
-import com.humg.HotelSystemManagement.dto.request.employee.EmployeeUpdateRequest;
+import com.humg.HotelSystemManagement.dto.request.user.employee.EmployeeCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.user.employee.EmployeeUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.AttendanceResponse;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.CheckInResponse;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.CheckOutResponse;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.employee.EmployeeResponse;
+import com.humg.HotelSystemManagement.dto.response.user.employee.AttendanceResponse;
+import com.humg.HotelSystemManagement.dto.response.user.employee.CheckInResponse;
+import com.humg.HotelSystemManagement.dto.response.user.employee.CheckOutResponse;
+import com.humg.HotelSystemManagement.dto.response.user.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.service.EmployeeService.AttendanceService;
 import com.humg.HotelSystemManagement.service.HumanService.EmployeeService;
 import jakarta.validation.Valid;

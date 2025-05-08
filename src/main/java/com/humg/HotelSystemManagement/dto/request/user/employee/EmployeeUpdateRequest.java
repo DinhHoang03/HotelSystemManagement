@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.request.employee;
+package com.humg.HotelSystemManagement.dto.request.user.employee;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;

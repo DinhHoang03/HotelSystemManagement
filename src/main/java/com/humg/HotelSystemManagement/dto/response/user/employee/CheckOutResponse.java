@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.response.humanEntity.employee;
+package com.humg.HotelSystemManagement.dto.response.user.employee;
 
 import lombok.*;
 import lombok.experimental.FieldDefaults;

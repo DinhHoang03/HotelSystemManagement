@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.dto.response.roomType;
+package com.humg.HotelSystemManagement.dto.response.room.roomType;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;

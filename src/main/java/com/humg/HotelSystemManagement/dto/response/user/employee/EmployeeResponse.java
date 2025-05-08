@@ -1,10 +1,10 @@
-package com.humg.HotelSystemManagement.dto.response.humanEntity.employee;
+package com.humg.HotelSystemManagement.dto.response.user.employee;
 
-import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
 import java.time.LocalDate;
+import java.util.Set;
 
 @Data
 @AllArgsConstructor

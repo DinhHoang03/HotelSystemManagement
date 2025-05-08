@@ -1,6 +1,5 @@
-package com.humg.HotelSystemManagement.dto.request.employee;
+package com.humg.HotelSystemManagement.dto.request.user.employee;
 
-import com.humg.HotelSystemManagement.entity.enums.Gender;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

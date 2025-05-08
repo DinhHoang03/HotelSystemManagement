@@ -1,8 +1,8 @@
 package com.humg.HotelSystemManagement.mapper;
 
-import com.humg.HotelSystemManagement.dto.request.customer.CustomerCreationRequest;
-import com.humg.HotelSystemManagement.dto.request.customer.CustomerUpdateRequest;
-import com.humg.HotelSystemManagement.dto.response.humanEntity.customer.CustomerResponse;
+import com.humg.HotelSystemManagement.dto.request.user.customer.CustomerCreationRequest;
+import com.humg.HotelSystemManagement.dto.request.user.customer.CustomerUpdateRequest;
+import com.humg.HotelSystemManagement.dto.response.user.customer.CustomerResponse;
 import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;

@@ -2,7 +2,7 @@ package com.humg.HotelSystemManagement.service.HotelService.booking;
 
 import com.humg.HotelSystemManagement.utils.NormalizeString;
 import com.humg.HotelSystemManagement.dto.request.room.hotelService.HotelOfferRequest;
-import com.humg.HotelSystemManagement.dto.response.hotelServiceResponse.HotelOfferResponse;
+import com.humg.HotelSystemManagement.dto.response.room.hotelService.HotelOfferResponse;
 import com.humg.HotelSystemManagement.entity.totalServices.HotelOffers;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
