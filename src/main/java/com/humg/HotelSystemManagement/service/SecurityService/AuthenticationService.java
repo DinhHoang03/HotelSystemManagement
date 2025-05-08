@@ -8,11 +8,9 @@ import com.humg.HotelSystemManagement.dto.request.security.jwt.LogOutRequest;
 import com.humg.HotelSystemManagement.dto.request.security.jwt.RefreshRequest;
 import com.humg.HotelSystemManagement.dto.response.security.jwt.AuthenticationResponse;
 import com.humg.HotelSystemManagement.dto.response.security.jwt.IntrospectResponse;
-import com.humg.HotelSystemManagement.entity.authorizezation.InvalidatedToken;
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
-import com.humg.HotelSystemManagement.repository.authenticationRepository.InvalidatedTokenRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
 import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
 import com.humg.HotelSystemManagement.service.redis.RedisService;
@@ -46,7 +44,6 @@ public class AuthenticationService {
     // Các repository để truy vấn thông tin Customer và Employee từ database.
     EmployeeRepository employeeRepository;
     CustomerRepository customerRepository;
-    //InvalidatedTokenRepository invalidatedTokenRepository;
     RedisService redisService;
     // Config bảo mật chứa bcrypt encoder để mã hóa/matching mật khẩu.
     SecurityConfig securityConfig;
