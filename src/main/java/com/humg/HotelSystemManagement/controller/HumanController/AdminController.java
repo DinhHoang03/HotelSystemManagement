@@ -6,9 +6,9 @@ import com.humg.HotelSystemManagement.dto.response.user.employee.AttendanceRespo
 import com.humg.HotelSystemManagement.dto.response.user.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.service.EmployeeService.AttendanceService;
-import com.humg.HotelSystemManagement.service.HumanService.AdminService;
-import com.humg.HotelSystemManagement.service.HumanService.CustomerService;
-import com.humg.HotelSystemManagement.service.HumanService.EmployeeService;
+import com.humg.HotelSystemManagement.service.UserService.AdminService;
+import com.humg.HotelSystemManagement.service.UserService.CustomerService;
+import com.humg.HotelSystemManagement.service.UserService.EmployeeService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -36,7 +36,6 @@ public class AdminController {
                 .message("Successfully get user by follow id!")
                 .build();
     }
-
 
     //Get all sort by pages
     @GetMapping("/get-customers/list")

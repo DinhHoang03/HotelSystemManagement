@@ -25,10 +25,10 @@ public class HotelOfferController {
                 .build();
     }
 
-    @GetMapping("/list/{page}/{size}")
+    @GetMapping("/list/")
     APIResponse<Page<HotelOfferResponse>> getAllHotelOffers(
-            @PathVariable("page") int page,
-            @PathVariable("size") int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ){
         return APIResponse.<Page<HotelOfferResponse>>builder()
                 .result(hotelService.getAll(page, size))
@@ -37,10 +37,10 @@ public class HotelOfferController {
     }
 
     @DeleteMapping("/del/{serviceName}")
-    APIResponse delete(@RequestParam("serviceName") String serviceName){
+    APIResponse<String> delete(@PathVariable("serviceName") String serviceName){
         hotelService.delete(serviceName);
 
-        return APIResponse.builder()
+        return APIResponse.<String>builder()
                 .message("Delete permission " + serviceName + " successfully")
                 .build();
     }

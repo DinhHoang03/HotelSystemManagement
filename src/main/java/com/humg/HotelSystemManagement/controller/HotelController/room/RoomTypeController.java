@@ -25,10 +25,10 @@ public class RoomTypeController {
                 .build();
     }
 
-    @GetMapping("/get-all/list/{page}/{size}")
+    @GetMapping("/get-all/list")
     APIResponse<Page<RoomTypeResponse>> getAllCustomers(
-            @RequestParam("page") int page,
-            @RequestParam("size") int size
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
     ){
         return APIResponse.<Page<RoomTypeResponse>>builder()
                 .result(roomTypeService.getAll(page, size))
@@ -37,10 +37,10 @@ public class RoomTypeController {
     }
 
     @DeleteMapping("/del/{serviceName}")
-    APIResponse delete(@PathVariable("serviceName") Long id){
+    APIResponse<String> delete(@PathVariable("serviceName") Long id){
         roomTypeService.delete(id);
 
-        return APIResponse.builder()
+        return APIResponse.<String>builder()
                 .message("Delete permission " + id + " successfully")
                 .build();
     }

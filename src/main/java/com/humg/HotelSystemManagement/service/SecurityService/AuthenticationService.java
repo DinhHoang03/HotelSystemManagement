@@ -11,8 +11,8 @@ import com.humg.HotelSystemManagement.dto.response.security.jwt.IntrospectRespon
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
 import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
-import com.humg.HotelSystemManagement.repository.humanEntity.CustomerRepository;
-import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
+import com.humg.HotelSystemManagement.repository.User.CustomerRepository;
+import com.humg.HotelSystemManagement.repository.User.EmployeeRepository;
 import com.humg.HotelSystemManagement.service.redis.RedisService;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;

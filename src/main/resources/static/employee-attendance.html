@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Attendance Management - DinhRise Hotel</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Auth Script -->
+    <script src="/js/auth.js"></script>
+    <style>
+        .sidebar {
+            transition: all 0.3s ease;
+        }
+        .sidebar.collapsed {
+            width: 80px;
+        }
+        .sidebar.collapsed .sidebar-text {
+            display: none;
+        }
+        .main-content {
+            transition: all 0.3s ease;
+        }
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+        .attendance-card {
+            transition: all 0.3s ease;
+        }
+        .attendance-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+    <!-- Sidebar -->
+    <div class="sidebar fixed h-screen bg-white shadow-lg w-64" id="sidebar">
+        <div class="p-4">
+            <div class="flex items-center justify-between mb-8">
+                <div class="flex items-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Hotel Logo" class="h-8 w-auto">
+                    <span class="ml-2 text-xl font-bold text-gray-800 sidebar-text">DinhRise Hotel</span>
+                </div>
+                <button id="toggleSidebar" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-bars"></i>
+                </button>
+            </div>
+            <div class="space-y-2">
+                <a href="/employee-dashboard.html" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-home w-6"></i>
+                    <span class="ml-3 sidebar-text">Dashboard</span>
+                </a>
+                <a href="/employee-attendance.html" class="flex items-center p-2 text-gray-700 rounded-lg bg-gray-100">
+                    <i class="fas fa-calendar-check w-6"></i>
+                    <span class="ml-3 sidebar-text">Check-in/Check-out</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-bed w-6"></i>
+                    <span class="ml-3 sidebar-text">Room Management</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-concierge-bell w-6"></i>
+                    <span class="ml-3 sidebar-text">Services</span>
+                </a>
+                <a href="#" class="flex items-center p-2 text-gray-700 rounded-lg hover:bg-gray-100">
+                    <i class="fas fa-user w-6"></i>
+                    <span class="ml-3 sidebar-text">Profile</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content ml-64 p-8" id="mainContent">
+        <!-- Top Navigation -->
+        <div class="flex justify-between items-center mb-8">
+            <h1 class="text-2xl font-bold text-gray-800">Attendance Management</h1>
+            <div class="flex items-center space-x-4">
+                <div class="relative">
+                    <button id="userMenuButton" class="flex items-center text-gray-700 hover:text-gray-900">
+                        <i class="fas fa-user-circle text-2xl mr-2"></i>
+                        <span id="usernameDisplay" class="mr-2">Loading...</span>
+                        <i class="fas fa-chevron-down"></i>
+                    </button>
+                    <div id="userMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1">
+                        <a href="#" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Profile</a>
+                        <a href="#" onclick="logout()" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">Logout</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Card -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+            <div class="attendance-card bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Today's Attendance</h2>
+                <div class="flex flex-col space-y-6">
+                    <!-- Status Display -->
+                    <div class="text-center">
+                        <div id="clockDisplay" class="text-4xl font-bold text-gray-800 mb-2">00:00:00</div>
+                        <div id="dateDisplay" class="text-lg text-gray-600">Loading...</div>
+                    </div>
+                    
+                    <!-- Status Badge -->
+                    <div id="attendanceStatus" class="text-center">
+                        <span id="statusBadge" class="px-4 py-2 rounded-full text-sm font-medium">
+                            Loading...
+                        </span>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex justify-center space-x-4">
+                        <button id="checkInBtn" class="flex-1 bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out flex items-center justify-center">
+                            <i class="fas fa-sign-in-alt mr-2"></i>
+                            Check In
+                        </button>
+                        <button id="checkOutBtn" class="flex-1 bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 ease-in-out flex items-center justify-center">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Check Out
+                        </button>
+                    </div>
+
+                    <!-- Last Action -->
+                    <div id="lastCheckTime" class="text-sm text-gray-600 text-center">
+                        Last action: Not available
+                    </div>
+                </div>
+            </div>
+
+            <!-- Attendance Summary -->
+            <div class="attendance-card bg-white rounded-lg shadow-md p-6">
+                <h2 class="text-xl font-semibold text-gray-800 mb-6">Attendance Summary</h2>
+                <div class="space-y-4">
+                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Total Work Hours</span>
+                        <span id="totalWorkHours" class="font-semibold">Loading...</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Days Present</span>
+                        <span id="daysPresent" class="font-semibold">Loading...</span>
+                    </div>
+                    <div class="flex justify-between items-center p-4 bg-gray-50 rounded-lg">
+                        <span class="text-gray-600">Average Hours/Day</span>
+                        <span id="averageHours" class="font-semibold">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance History -->
+        <div class="bg-white rounded-lg shadow-md p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-semibold text-gray-800">Attendance History</h2>
+                <div class="flex space-x-2">
+                    <button id="prevPage" class="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        <i class="fas fa-chevron-left"></i>
+                    </button>
+                    <button id="nextPage" class="px-3 py-1 bg-gray-100 rounded-lg hover:bg-gray-200">
+                        <i class="fas fa-chevron-right"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check In</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Check Out</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Work Hours</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attendanceHistory" class="bg-white divide-y divide-gray-200">
+                        <!-- Attendance history will be loaded here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 0;
+        const pageSize = 10;
+        let isCheckedIn = false;
+        let currentCheckInTime = null;
+        let currentCheckOutTime = null;
+
+        // Initialize
+        $(document).ready(function() {
+            checkAuth();
+            initializePage();
+            updateClock();
+            loadAttendanceHistory();
+            setInterval(updateClock, 1000);
+        });
+
+        function initializePage() {
+            // Toggle sidebar
+            $('#toggleSidebar').click(function() {
+                $('#sidebar').toggleClass('collapsed');
+                $('#mainContent').toggleClass('expanded');
+            });
+
+            // Toggle user menu
+            $('#userMenuButton').click(function() {
+                $('#userMenu').toggleClass('hidden');
+            });
+
+            // Initialize buttons
+            $('#checkInBtn').click(handleCheckIn);
+            $('#checkOutBtn').click(handleCheckOut);
+            $('#prevPage').click(() => changePage(-1));
+            $('#nextPage').click(() => changePage(1));
+
+            // Initially disable check-out button
+            $('#checkOutBtn').prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+        }
+
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleTimeString();
+            const dateString = now.toLocaleDateString('en-US', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            $('#clockDisplay').text(timeString);
+            $('#dateDisplay').text(dateString);
+        }
+
+        function updateAttendanceStatus(status, time) {
+            const statusBadge = document.getElementById('statusBadge');
+            const lastCheckTime = document.getElementById('lastCheckTime');
+            
+            if (status === 'CHECKED_IN') {
+                statusBadge.className = 'px-4 py-2 rounded-full text-sm font-medium bg-green-100 text-green-800';
+                statusBadge.textContent = 'Checked In';
+                isCheckedIn = true;
+            } else if (status === 'CHECKED_OUT') {
+                statusBadge.className = 'px-4 py-2 rounded-full text-sm font-medium bg-red-100 text-red-800';
+                statusBadge.textContent = 'Checked Out';
+                isCheckedIn = false;
+            } else {
+                statusBadge.className = 'px-4 py-2 rounded-full text-sm font-medium bg-gray-100 text-gray-800';
+                statusBadge.textContent = 'Not Available';
+            }
+
+            if (time) {
+                lastCheckTime.textContent = `Last action: ${time}`;
+            }
+        }
+
+        function handleCheckIn() {
+            if (isCheckedIn) {
+                showError('You are already checked in!');
+                return;
+            }
+
+            $.ajax({
+                url: 'https://localhost:8443/employee/check-in',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    if (response.result) {
+                        showSuccess('Successfully checked in!');
+                        currentCheckInTime = response.result.checkInDate;
+                        updateAttendanceStatus('CHECKED_IN', response.result.checkInDate);
+                        
+                        // Disable check-in button and enable check-out button
+                        $('#checkInBtn').prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+                        $('#checkOutBtn').prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
+                    }
+                },
+                error: function(xhr) {
+                    showError('Failed to check in. Please try again.');
+                    console.error('Check-in error:', xhr);
+                }
+            });
+        }
+
+        function handleCheckOut() {
+            if (!isCheckedIn) {
+                showError('You need to check in first!');
+                return;
+            }
+
+            $.ajax({
+                url: 'https://localhost:8443/employee/check-out',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    if (response.result) {
+                        showSuccess('Successfully checked out!');
+                        currentCheckOutTime = response.result.checkOutDate;
+                        updateAttendanceStatus('CHECKED_OUT', response.result.checkOutDate);
+                        
+                        // Create attendance record with check-in and check-out times
+                        createAttendanceRecord(currentCheckInTime, currentCheckOutTime);
+                        
+                        // Enable check-in button and disable check-out button
+                        $('#checkInBtn').prop('disabled', false).removeClass('opacity-50 cursor-not-allowed');
+                        $('#checkOutBtn').prop('disabled', true).addClass('opacity-50 cursor-not-allowed');
+
+                        // Reset times
+                        currentCheckInTime = null;
+                        currentCheckOutTime = null;
+
+                        // Reload attendance history
+                        loadAttendanceHistory();
+                    }
+                },
+                error: function(xhr) {
+                    showError('Failed to check out. Please try again.');
+                    console.error('Check-out error:', xhr);
+                }
+            });
+        }
+
+        function createAttendanceRecord(checkInTime, checkOutTime) {
+            if (!checkInTime || !checkOutTime) {
+                showError('Missing check-in or check-out time');
+                return;
+            }
+
+            const attendanceData = {
+                checkIn: checkInTime,
+                checkOut: checkOutTime
+            };
+
+            $.ajax({
+                url: 'https://localhost:8443/employee/attendance/create',
+                type: 'POST',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                    'Content-Type': 'application/json'
+                },
+                data: JSON.stringify(attendanceData),
+                success: function(response) {
+                    if (response.result) {
+                        showSuccess('Attendance record created successfully!');
+                    }
+                },
+                error: function(xhr) {
+                    showError('Failed to create attendance record.');
+                    console.error('Create attendance error:', xhr);
+                }
+            });
+        }
+
+        function loadAttendanceHistory() {
+            $.ajax({
+                url: `https://localhost:8443/employee/list?page=${currentPage}&size=${pageSize}`,
+                type: 'GET',
+                headers: {
+                    'Authorization': 'Bearer ' + localStorage.getItem('token')
+                },
+                success: function(response) {
+                    if (response.result && response.result.content) {
+                        const attendanceHtml = response.result.content.map(record => `
+                            <tr>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${new Date(record.checkIn).toLocaleDateString()}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${record.checkIn}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${record.checkOut}
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    ${record.workHour} hours
+                                </td>
+                            </tr>
+                        `).join('');
+                        
+                        $('#attendanceHistory').html(attendanceHtml);
+
+                        // Update pagination buttons
+                        $('#prevPage').prop('disabled', currentPage === 0);
+                        $('#nextPage').prop('disabled', !response.result.hasNext);
+
+                        // Update summary
+                        updateAttendanceSummary(response.result.content);
+                    }
+                },
+                error: function(xhr) {
+                    showError('Failed to load attendance history.');
+                }
+            });
+        }
+
+        function updateAttendanceSummary(records) {
+            if (!records || records.length === 0) {
+                $('#totalWorkHours').text('0 hours');
+                $('#daysPresent').text('0 days');
+                $('#averageHours').text('0 hours/day');
+                return;
+            }
+
+            const totalHours = records.reduce((sum, record) => sum + record.workHour, 0);
+            const daysPresent = records.length;
+            const averageHours = (totalHours / daysPresent).toFixed(1);
+
+            $('#totalWorkHours').text(`${totalHours} hours`);
+            $('#daysPresent').text(`${daysPresent} days`);
+            $('#averageHours').text(`${averageHours} hours/day`);
+        }
+
+        function changePage(delta) {
+            currentPage += delta;
+            if (currentPage < 0) currentPage = 0;
+            loadAttendanceHistory();
+        }
+
+        function showSuccess(message) {
+            Swal.fire({
+                icon: 'success',
+                title: 'Success',
+                text: message,
+                timer: 2000,
+                showConfirmButton: false
+            });
+        }
+
+        function showError(message) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: message
+            });
+        }
+    </script>
+</body>
+</html> 

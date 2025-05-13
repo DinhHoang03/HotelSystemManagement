@@ -2,8 +2,8 @@ package com.humg.HotelSystemManagement.configuration.webApp;
 
 import com.humg.HotelSystemManagement.entity.authorizezation.Role;
 import com.humg.HotelSystemManagement.entity.enums.UserStatus;
-import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
-import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
+import com.humg.HotelSystemManagement.entity.User.Employee;
+import com.humg.HotelSystemManagement.repository.User.EmployeeRepository;
 import com.humg.HotelSystemManagement.repository.authenticationRepository.RoleRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

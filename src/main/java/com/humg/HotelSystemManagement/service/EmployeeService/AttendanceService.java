@@ -8,7 +8,7 @@ import com.humg.HotelSystemManagement.exception.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exception.exceptions.AppException;
 import com.humg.HotelSystemManagement.redis.CheckInCache;
 import com.humg.HotelSystemManagement.redis.CheckOutCache;
-import com.humg.HotelSystemManagement.repository.humanEntity.EmployeeRepository;
+import com.humg.HotelSystemManagement.repository.User.EmployeeRepository;
 import com.humg.HotelSystemManagement.repository.redis.CheckInRepository;
 import com.humg.HotelSystemManagement.repository.redis.CheckOutRepository;
 import com.humg.HotelSystemManagement.repository.staffManagerment.AttendanceRepository;
@@ -37,15 +37,17 @@ public class AttendanceService {
         var employee = employeeRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
+        var name = employee.getName();
         var employeeId = employee.getId();
 
         //Làm logic kiểm tra username
         DateTimeFormatter format = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"); //Không cần format
 
+        //Lỗi ở đây
         var checkInCache = checkInRepository.findById(employeeId)
-                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+                .orElseThrow(() -> new AppException(AppErrorCode.UNVALID_CHECK_DATE));
         var checkOutCache = checkOutRepository.findById(employeeId)
-                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+                .orElseThrow(() -> new AppException(AppErrorCode.UNVALID_CHECK_DATE));
 
         var checkIn = checkInCache.getCheckInTime();
         var checkOut = checkOutCache.getCheckOutTime();
@@ -155,8 +157,10 @@ public class AttendanceService {
                 .checkOutTime(checkOut)
                 .build();
 
+        var result = checkOutRepository.save(checkOutCache);
+
         var response = CheckOutResponse.builder()
-                .checkOutDate(checkOut.format(formatter))
+                .checkOutDate(result.getCheckOutTime().format(formatter))
                 .employeeName(employeeName)
                 .build();
 

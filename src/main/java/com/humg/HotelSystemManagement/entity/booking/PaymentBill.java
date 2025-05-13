@@ -2,7 +2,7 @@ package com.humg.HotelSystemManagement.entity.booking;
 
 import com.humg.HotelSystemManagement.entity.enums.PaymentMethod;
 import com.humg.HotelSystemManagement.entity.enums.PaymentStatus;
-import com.humg.HotelSystemManagement.entity.humanEntity.Customer;
+import com.humg.HotelSystemManagement.entity.User.Customer;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

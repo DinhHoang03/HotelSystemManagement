@@ -4,7 +4,7 @@ import com.humg.HotelSystemManagement.dto.request.user.customer.CustomerCreation
 import com.humg.HotelSystemManagement.dto.request.user.customer.CustomerUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.APIResponse;
 import com.humg.HotelSystemManagement.dto.response.user.customer.CustomerResponse;
-import com.humg.HotelSystemManagement.service.HumanService.CustomerService;
+import com.humg.HotelSystemManagement.service.UserService.CustomerService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;

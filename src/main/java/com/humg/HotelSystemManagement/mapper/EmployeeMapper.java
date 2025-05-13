@@ -2,7 +2,7 @@ package com.humg.HotelSystemManagement.mapper;
 
 import com.humg.HotelSystemManagement.dto.request.user.employee.EmployeeUpdateRequest;
 import com.humg.HotelSystemManagement.dto.response.user.employee.EmployeeResponse;
-import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
+import com.humg.HotelSystemManagement.entity.User.Employee;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
 import org.mapstruct.MappingTarget;

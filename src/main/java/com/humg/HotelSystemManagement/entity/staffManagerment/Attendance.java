@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.entity.staffManagerment;
 
-import com.humg.HotelSystemManagement.entity.humanEntity.Employee;
+import com.humg.HotelSystemManagement.entity.User.Employee;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;

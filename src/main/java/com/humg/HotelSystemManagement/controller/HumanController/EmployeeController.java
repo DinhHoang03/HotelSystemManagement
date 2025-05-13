@@ -8,7 +8,7 @@ import com.humg.HotelSystemManagement.dto.response.user.employee.CheckInResponse
 import com.humg.HotelSystemManagement.dto.response.user.employee.CheckOutResponse;
 import com.humg.HotelSystemManagement.dto.response.user.employee.EmployeeResponse;
 import com.humg.HotelSystemManagement.service.EmployeeService.AttendanceService;
-import com.humg.HotelSystemManagement.service.HumanService.EmployeeService;
+import com.humg.HotelSystemManagement.service.UserService.EmployeeService;
 import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -46,7 +46,7 @@ public class EmployeeController {
     APIResponse<String> deleteEmployee(@PathVariable("empId") String empId){
         employeeService.delete(empId);
         return APIResponse.<String>builder()
-                .message("Delete waiter number id " + empId + " successfully!")
+                .message("Delete emp number id " + empId + " successfully!")
                 .build();
     }
 

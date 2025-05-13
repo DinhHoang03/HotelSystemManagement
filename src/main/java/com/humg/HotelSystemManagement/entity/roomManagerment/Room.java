@@ -29,7 +29,6 @@ public class Room {
     @JoinColumn(name = "room_type_id", nullable = false)
     RoomType roomType;
 
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_room_id", nullable = true)
     BookingRoom bookingRoom;

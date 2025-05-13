@@ -14,7 +14,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
-@RedisHash(value = "CheckOut", timeToLive = 3600)
+@RedisHash(value = "CheckOut", timeToLive = 86400) //Thời hạn: 1 ngày
 public class CheckOutCache implements Serializable {
     @Id
     String employeeId;

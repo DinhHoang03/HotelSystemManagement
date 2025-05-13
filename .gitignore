@@ -31,3 +31,8 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+# Ignore application secret config
+# .gitignore
+src/main/resources/application-secret.yaml
