@@ -1061,6 +1061,43 @@
         </div>
     </div>
 
+    <!-- Chat Widget -->
+    <div id="chatWidget" class="fixed bottom-4 right-4 z-50">
+        <!-- Chat Button -->
+        <button id="chatButton" class="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-all duration-300">
+            <i class="fas fa-comments text-2xl"></i>
+        </button>
+
+        <!-- Chat Window -->
+        <div id="chatWindow" class="hidden fixed bottom-20 right-4 w-96 bg-white rounded-lg shadow-xl flex flex-col h-[500px]">
+            <!-- Chat Header -->
+            <div class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <h3 class="font-semibold">Chat Support</h3>
+                <button id="closeChat" class="text-white hover:text-gray-200">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Chat Messages -->
+            <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
+                <!-- Messages will be added here -->
+            </div>
+
+            <!-- Chat Input -->
+            <div class="border-t p-4">
+                <form id="chatForm" class="flex space-x-2">
+                    <input type="text" id="messageInput" 
+                           class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                           placeholder="Type your message...">
+                    <button type="submit" 
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
     <script>
         // Initialize AOS
         AOS.init({
@@ -1361,6 +1398,104 @@
 
         document.querySelectorAll('.counter').forEach(counter => {
             observer.observe(counter);
+        });
+
+        // Chat functionality
+        $(document).ready(function() {
+            const chatButton = $('#chatButton');
+            const chatWindow = $('#chatWindow');
+            const closeChat = $('#closeChat');
+            const chatForm = $('#chatForm');
+            const messageInput = $('#messageInput');
+            const chatMessages = $('#chatMessages');
+
+            // Toggle chat window
+            chatButton.click(function() {
+                chatWindow.toggleClass('hidden');
+            });
+
+            closeChat.click(function() {
+                chatWindow.addClass('hidden');
+            });
+
+            // Add a welcome message
+            addMessage('bot', 'Hello! How can I help you today?');
+
+            // Handle form submission
+            chatForm.submit(function(e) {
+                e.preventDefault();
+                const message = messageInput.val().trim();
+                
+                if (message) {
+                    // Add user message
+                    addMessage('user', message);
+                    messageInput.val('');
+
+                    // Show typing indicator
+                    addTypingIndicator();
+
+                    // Send message to server
+                    $.ajax({
+                        url: 'https://localhost:8443/gemini/ask',
+                        type: 'POST',
+                        headers: {
+                            'Authorization': 'Bearer ' + localStorage.getItem('token'),
+                            'Content-Type': 'application/json'
+                        },
+                        data: JSON.stringify(message),
+                        success: function(response) {
+                            // Remove typing indicator
+                            removeTypingIndicator();
+                            
+                            // Add bot response
+                            if (response.result) {
+                                addMessage('bot', response.result);
+                            }
+                        },
+                        error: function(xhr) {
+                            removeTypingIndicator();
+                            addMessage('bot', 'Sorry, I encountered an error. Please try again later.');
+                            console.error('Chat error:', xhr);
+                        }
+                    });
+                }
+            });
+
+            function addMessage(type, message) {
+                const messageHtml = `
+                    <div class="flex ${type === 'user' ? 'justify-end' : 'justify-start'}">
+                        <div class="max-w-[80%] ${type === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg px-4 py-2">
+                            ${message}
+                        </div>
+                    </div>
+                `;
+                chatMessages.append(messageHtml);
+                scrollToBottom();
+            }
+
+            function addTypingIndicator() {
+                const typingHtml = `
+                    <div class="flex justify-start" id="typingIndicator">
+                        <div class="bg-gray-100 text-gray-800 rounded-lg px-4 py-2">
+                            <div class="flex space-x-1">
+                                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+                                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></div>
+                                <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                chatMessages.append(typingHtml);
+                scrollToBottom();
+            }
+
+            function removeTypingIndicator() {
+                $('#typingIndicator').remove();
+            }
+
+            function scrollToBottom() {
+                chatMessages.scrollTop(chatMessages[0].scrollHeight);
+            }
         });
     </script>
 </body>

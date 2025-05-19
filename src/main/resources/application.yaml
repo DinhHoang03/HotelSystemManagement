@@ -70,16 +70,29 @@ zalo-pay:
   create-order-url: "https://sb-openapi.zalopay.vn/v2/create"
   order-status-url: "https://sb-openapi.zalopay.vn/v2/query"
   redirect-url: "https://localhost:8443/payment-success.html"
-  callback-url: https://1fcb-42-114-121-167.ngrok-free.app/zalopay/callback
+  callback-url: https://d9f5-118-70-120-168.ngrok-free.app/zalopay/callback
 
 jwt:
   signerKey:
   valid-duration: 1 #in hour
   refreshable-duration: 7 #in days
 
-botpress:
-  bot-id:
-  url: "https://localhost:8072/api/v1/bots/"
+gemini:
+  api-key:
+  url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent"
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

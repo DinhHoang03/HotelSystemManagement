@@ -36,6 +36,7 @@ public enum AppErrorCode {
     ORDER_CREATE_FAILED(1019, "Create order failed!", HttpStatus.BAD_REQUEST),
     STRING_NULL(1020, "String is null!", HttpStatus.BAD_REQUEST),
     UNVALID_CHECK_DATE(1021, "Check in date is invalid!", HttpStatus.BAD_REQUEST),
+    QUESTION_NOT_VALID(1022, "Question is not valid!", HttpStatus.BAD_REQUEST),
     ;
 
     int code;
