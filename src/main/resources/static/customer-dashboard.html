@@ -551,8 +551,8 @@
         /* Scroll to top button */
         #scrollToTop {
             position: fixed;
-            bottom: 30px;
-            right: 30px;
+            bottom: 16px;
+            left: 16px;
             width: 50px;
             height: 50px;
             background: linear-gradient(to right, #4F46E5, #7C3AED);
@@ -592,11 +592,65 @@
         .rainbow-text {
             animation: rainbow 3s linear infinite;
         }
+        /* Chat window smooth transition */
+        #chatWindow {
+            transition: opacity 0.3s, transform 0.3s;
+            opacity: 0;
+            transform: translateY(30px) scale(0.98);
+            pointer-events: none;
+            color: #000000; /* Force black text color */
+        }
+        #chatWindow.visible {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            pointer-events: auto;
+        }
+        #chatMessages {
+            color: #000000; /* Force black text color for messages */
+        }
+        #chatMessages .bg-gray-100 {
+            color: #000000 !important; /* Force black text color for bot messages */
+        }
+        #loadscreen {
+            transition: opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        #loadscreen.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="min-h-screen">
+    <!-- Loadscreen -->
+    <div id="loadscreen" style="position:fixed;z-index:9999;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:white;">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Logo" style="width:80px;height:80px;margin-bottom:24px;">
+        <div class="loader" style="border:6px solid #f3f3f3;border-top:6px solid #4F46E5;border-radius:50%;width:48px;height:48px;animation:spin 1s linear infinite;"></div>
+        <style>@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>
+    </div>
+    <script>
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                document.getElementById('loadscreen').classList.add('hide');
+                setTimeout(function() {
+                    document.getElementById('loadscreen').style.display = 'none';
+                }, 400);
+            }, 800);
+        });
+        // Hiệu ứng mượt khi logout
+        function smoothGotoLogin() {
+            const loadscreen = document.getElementById('loadscreen');
+            loadscreen.style.display = 'flex';
+            loadscreen.classList.remove('hide');
+            setTimeout(() => {
+                loadscreen.classList.add('hide');
+                setTimeout(() => {
+                    window.location.href = '/login.html';
+                }, 400);
+            }, 10);
+        }
+    </script>
     <!-- Scroll to top button -->
-    <button id="scrollToTop" onclick="scrollToTop()">
+    <button id="scrollToTop" onclick="scrollToTop()" class="fixed bottom-4 left-4 z-40">
         <i class="fas fa-arrow-up"></i>
     </button>
     <!-- Top Navigation -->
@@ -1064,33 +1118,36 @@
     <!-- Chat Widget -->
     <div id="chatWidget" class="fixed bottom-4 right-4 z-50">
         <!-- Chat Button -->
-        <button id="chatButton" class="bg-blue-600 text-white rounded-full p-4 shadow-lg hover:bg-blue-700 transition-all duration-300">
+        <button id="chatButton" class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-full p-4 shadow-lg hover:from-blue-600 hover:to-indigo-700 transition-all duration-300 transform hover:scale-110">
             <i class="fas fa-comments text-2xl"></i>
         </button>
 
         <!-- Chat Window -->
         <div id="chatWindow" class="hidden fixed bottom-20 right-4 w-96 bg-white rounded-lg shadow-xl flex flex-col h-[500px]">
             <!-- Chat Header -->
-            <div class="bg-blue-600 text-white p-4 rounded-t-lg flex justify-between items-center">
-                <h3 class="font-semibold">Chat Support</h3>
-                <button id="closeChat" class="text-white hover:text-gray-200">
+            <div class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white p-4 rounded-t-lg flex justify-between items-center">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-comments text-xl"></i>
+                    <h3 class="font-semibold">Hotel Assistant</h3>
+                </div>
+                <button id="closeChat" class="text-white hover:text-gray-200 transition-colors">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
 
             <!-- Chat Messages -->
             <div id="chatMessages" class="flex-1 overflow-y-auto p-4 space-y-4">
-                <!-- Messages will be added here -->
+                <!-- Welcome message will be added here -->
             </div>
 
             <!-- Chat Input -->
             <div class="border-t p-4">
                 <form id="chatForm" class="flex space-x-2">
                     <input type="text" id="messageInput" 
-                           class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500"
+                           class="flex-1 border rounded-lg px-4 py-2 focus:outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
                            placeholder="Type your message...">
                     <button type="submit" 
-                            class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                            class="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-700 transition-colors transform hover:scale-105">
                         <i class="fas fa-paper-plane"></i>
                     </button>
                 </form>
@@ -1155,6 +1212,19 @@
                 $('#userMenuButton').css('background', 'rgba(79, 70, 229, 0.1)');
                 $('.hotel-name').addClass('rainbow-text');
                 $('.hotel-name').css('color', 'transparent');
+                // Update Book Now button text color
+                $('.nav-link.bg-indigo-600').css({
+                    'color': 'white',
+                    'text-shadow': 'none'
+                });
+                // Update chat bot text color
+                $('#chatButton, #chatHeader').css({
+                    'color': '#ffffff'
+                });
+                // Update username and view profile text color
+                $('#userMenuButton span').css({
+                    'color': '#000000'
+                });
             } else {
                 $('nav').css({
                     'background': 'rgba(255, 255, 255, 0.1)',
@@ -1176,6 +1246,19 @@
                 $('#userMenuButton').css('background', 'rgba(255, 255, 255, 0.2)');
                 $('.hotel-name').removeClass('rainbow-text');
                 $('.hotel-name').css('color', 'white');
+                // Update Book Now button text color
+                $('.nav-link.bg-indigo-600').css({
+                    'color': 'white',
+                    'text-shadow': 'none'
+                });
+                // Update chat bot text color
+                $('#chatButton, #chatHeader').css({
+                    'color': '#ffffff'
+                });
+                // Update username and view profile text color
+                $('#userMenuButton span').css({
+                    'color': '#ffffff'
+                });
             }
         });
 
@@ -1408,33 +1491,103 @@
             const chatForm = $('#chatForm');
             const messageInput = $('#messageInput');
             const chatMessages = $('#chatMessages');
+            const chatHeader = $('#chatHeader');
 
-            // Toggle chat window
-            chatButton.click(function() {
-                chatWindow.toggleClass('hidden');
+            // Make chat widget draggable
+            let isDragging = false;
+            let currentX;
+            let currentY;
+            let initialX;
+            let initialY;
+            let xOffset = 0;
+            let yOffset = 0;
+
+            function dragStart(e) {
+                if (e.type === "touchstart") {
+                    initialX = e.touches[0].clientX - xOffset;
+                    initialY = e.touches[0].clientY - yOffset;
+                } else {
+                    initialX = e.clientX - xOffset;
+                    initialY = e.clientY - yOffset;
+                }
+
+                if (e.target === chatButton[0] || e.target === chatHeader[0]) {
+                    isDragging = true;
+                }
+            }
+
+            function dragEnd(e) {
+                initialX = currentX;
+                initialY = currentY;
+                isDragging = false;
+            }
+
+            function drag(e) {
+                if (isDragging) {
+                    e.preventDefault();
+
+                    if (e.type === "touchmove") {
+                        currentX = e.touches[0].clientX - initialX;
+                        currentY = e.touches[0].clientY - initialY;
+                    } else {
+                        currentX = e.clientX - initialX;
+                        currentY = e.clientY - initialY;
+                    }
+
+                    xOffset = currentX;
+                    yOffset = currentY;
+
+                    setTranslate(currentX, currentY, chatButton);
+                    if (!chatWindow.hasClass('hidden')) {
+                        setTranslate(currentX, currentY, chatWindow);
+                    }
+                }
+            }
+
+            function setTranslate(xPos, yPos, el) {
+                el.css({
+                    transform: `translate3d(${xPos}px, ${yPos}px, 0)`
+                });
+            }
+
+            // Add event listeners for drag and drop
+            document.addEventListener("touchstart", dragStart, false);
+            document.addEventListener("touchend", dragEnd, false);
+            document.addEventListener("touchmove", drag, false);
+
+            document.addEventListener("mousedown", dragStart, false);
+            document.addEventListener("mouseup", dragEnd, false);
+            document.addEventListener("mousemove", drag, false);
+
+            // Toggle chat window with smooth effect
+            chatButton.click(function(e) {
+                if (!isDragging) {
+                    if (chatWindow.hasClass('visible')) {
+                        chatWindow.removeClass('visible');
+                        setTimeout(() => chatWindow.addClass('hidden'), 300);
+                    } else {
+                        chatWindow.removeClass('hidden');
+                        setTimeout(() => chatWindow.addClass('visible'), 10);
+                    }
+                }
             });
 
             closeChat.click(function() {
-                chatWindow.addClass('hidden');
+                chatWindow.removeClass('visible');
+                setTimeout(() => chatWindow.addClass('hidden'), 300);
             });
 
-            // Add a welcome message
-            addMessage('bot', 'Hello! How can I help you today?');
+            // Add a welcome message with emoji
+            addMessage('bot', '👋 Chào bạn! Tôi có thể giúp được gì cho bạn hôm nay? 😊');
 
             // Handle form submission
             chatForm.submit(function(e) {
                 e.preventDefault();
                 const message = messageInput.val().trim();
-                
                 if (message) {
-                    // Add user message
                     addMessage('user', message);
                     messageInput.val('');
-
-                    // Show typing indicator
                     addTypingIndicator();
-
-                    // Send message to server
                     $.ajax({
                         url: 'https://localhost:8443/gemini/ask',
                         type: 'POST',
@@ -1444,17 +1597,16 @@
                         },
                         data: JSON.stringify(message),
                         success: function(response) {
-                            // Remove typing indicator
                             removeTypingIndicator();
-                            
-                            // Add bot response
                             if (response.result) {
-                                addMessage('bot', response.result);
+                                // Remove ** characters and replace with spaces
+                                const cleanedResponse = response.result.replace(/\*\*/g, ' ');
+                                addMessageLetterByLetter('bot', cleanedResponse);
                             }
                         },
                         error: function(xhr) {
                             removeTypingIndicator();
-                            addMessage('bot', 'Sorry, I encountered an error. Please try again later.');
+                            addMessage('bot', '😔 Xin lỗi, tôi gặp một chút vấn đề. Bạn có thể thử lại sau được không?');
                             console.error('Chat error:', xhr);
                         }
                     });
@@ -1462,15 +1614,41 @@
             });
 
             function addMessage(type, message) {
+                // Convert \n to <br>
+                message = message.replace(/\n/g, '<br>');
                 const messageHtml = `
                     <div class="flex ${type === 'user' ? 'justify-end' : 'justify-start'}">
-                        <div class="max-w-[80%] ${type === 'user' ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg px-4 py-2">
+                        <div class="max-w-[80%] ${type === 'user' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg px-4 py-2 shadow-sm">
                             ${message}
                         </div>
                     </div>
                 `;
                 chatMessages.append(messageHtml);
                 scrollToBottom();
+            }
+
+            // Render bot answer letter by letter
+            function addMessageLetterByLetter(type, message) {
+                message = message.replace(/\n/g, '<br>');
+                const container = $(`<div class="flex ${type === 'user' ? 'justify-end' : 'justify-start'}"><div class="max-w-[80%] ${type === 'user' ? 'bg-gradient-to-r from-blue-500 to-indigo-600 text-white' : 'bg-gray-100 text-gray-800'} rounded-lg px-4 py-2 shadow-sm"></div></div>`);
+                chatMessages.append(container);
+                const msgDiv = container.find('div').last();
+                let i = 0;
+                function typeChar() {
+                    if (i < message.length) {
+                        // Handle <br> as a unit
+                        if (message.substring(i, i+4) === '<br>') {
+                            msgDiv.append('<br>');
+                            i += 4;
+                        } else {
+                            msgDiv.append(message[i]);
+                            i++;
+                        }
+                        scrollToBottom();
+                        setTimeout(typeChar, 15);
+                    }
+                }
+                typeChar();
             }
 
             function addTypingIndicator() {

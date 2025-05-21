@@ -38,7 +38,7 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
         if(roomRepository.existsByRoomNumber(request.getRoomNumber()))
             throw new AppException(AppErrorCode.OBJECT_EXISTED);
 
-        var roomType = roomTypeRepository.findByRoomTypes(roomTypeNormalized)
+        var roomType = roomTypeRepository.findByRoomTypes(request.getRoomType())
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
         //var roomStatus = roomStatusRepository.findByRoomStatus(roomStatusNormalized);
 
@@ -70,6 +70,7 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
 
         Page<RoomResponse> response = result.map(room -> {
             return RoomResponse.builder()
+                    .roomId(room.getRoomId())  // Đảm bảo trả về roomId
                     .roomNumber(room.getRoomNumber())
                     .roomType(room.getRoomType().getRoomTypes())
                     .roomStatus(room.getRoomStatus().toString())

@@ -1,0 +1,63 @@
+    <div class="loadscreen">
+        <div class="loadscreen-content">
+            <img src="images/logo.png" alt="Hotel Logo" class="loadscreen-logo">
+            <div class="spinner"></div>
+        </div>
+    </div>
+    <script>
+        // Add smooth transition functions
+        function smoothGoto(url) {
+            document.querySelector('.loadscreen').style.display = 'flex';
+            document.querySelector('.loadscreen').style.opacity = '1';
+            setTimeout(() => {
+                window.location.href = url;
+            }, 500);
+        }
+
+        function smoothLogout() {
+            document.querySelector('.loadscreen').style.display = 'flex';
+            document.querySelector('.loadscreen').style.opacity = '1';
+            setTimeout(() => {
+                window.location.href = 'index.html';
+            }, 500);
+        }
+
+        // Show loadscreen on page load
+        window.addEventListener('load', function() {
+            const loadscreen = document.querySelector('.loadscreen');
+            loadscreen.style.display = 'flex';
+            setTimeout(() => {
+                loadscreen.style.opacity = '0';
+                setTimeout(() => {
+                    loadscreen.style.display = 'none';
+                }, 500);
+            }, 500);
+        });
+
+        // Update all navigation links to use smooth transition
+        document.addEventListener('DOMContentLoaded', function() {
+            const links = document.querySelectorAll('a[href]');
+            links.forEach(link => {
+                if (link.getAttribute('href').startsWith('#')) return;
+                if (link.getAttribute('href').startsWith('tel:')) return;
+                if (link.getAttribute('href').startsWith('mailto:')) return;
+                if (link.getAttribute('href').startsWith('javascript:')) return;
+                
+                link.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    smoothGoto(this.getAttribute('href'));
+                });
+            });
+
+            // Update logout button
+            const logoutBtn = document.querySelector('.logout-btn');
+            if (logoutBtn) {
+                logoutBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    smoothLogout();
+                });
+            }
+        });
+    </script>
+</body>
+</html> 

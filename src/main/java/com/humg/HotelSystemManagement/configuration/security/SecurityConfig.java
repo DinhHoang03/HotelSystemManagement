@@ -56,7 +56,7 @@ public class SecurityConfig {
     };//Các end-point được public mà không cần phải có sự can thiệp từ spring security
 
     //Các end-point được chỉ định để phân quyền riêng cho role admin!
-    private static final String[] ADMIN_ENDPOINTS = {"/admin/**"};
+    private static final String[] ADMIN_ENDPOINTS = {"/admin/**", "/room/create"};
 
 
     @Bean

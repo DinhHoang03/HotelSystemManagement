@@ -219,9 +219,30 @@
             color: #4F46E5;
             opacity: 0.2;
         }
+        #loadscreen {
+            position: fixed;
+            z-index: 9999;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: white;
+            transition: opacity 0.4s cubic-bezier(0.4,0,0.2,1);
+        }
+        #loadscreen.hide {
+            opacity: 0;
+            pointer-events: none;
+        }
     </style>
 </head>
 <body class="bg-gray-50">
+    <!-- Loadscreen -->
+    <div id="loadscreen">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="Logo" style="width:80px;height:80px;margin-bottom:24px;">
+        <div class="loader" style="border:6px solid #f3f3f3;border-top:6px solid #4F46E5;border-radius:50%;width:48px;height:48px;animation:spin 1s linear infinite;"></div>
+        <style>@keyframes spin{0%{transform:rotate(0deg);}100%{transform:rotate(360deg);}}</style>
+    </div>
     <!-- Top Navigation -->
     <nav class="nav-container fixed w-full z-50">
         <div class="max-w-7xl mx-auto px-4">
@@ -716,6 +737,47 @@
                 confirmButtonColor: '#4F46E5'
             });
         }
+
+        window.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                document.getElementById('loadscreen').classList.add('hide');
+                setTimeout(function() {
+                    document.getElementById('loadscreen').style.display = 'none';
+                }, 400);
+            }, 800);
+        });
+        // Chuyển trang mượt
+        function smoothGoto(url) {
+            const loadscreen = document.getElementById('loadscreen');
+            loadscreen.style.display = 'flex';
+            loadscreen.classList.remove('hide');
+            setTimeout(() => {
+                loadscreen.classList.add('hide');
+                setTimeout(() => {
+                    window.location.href = url;
+                }, 400);
+            }, 10);
+        }
+        // Logout mượt
+        function smoothLogout() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('userId');
+            smoothGoto('/login.html');
+        }
+        // Bắt sự kiện click cho các link nội bộ
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('a[href]').forEach(function(link) {
+                const url = link.getAttribute('href');
+                if (url && url.startsWith('/') && !url.startsWith('//') && !link.hasAttribute('target')) {
+                    link.addEventListener('click', function(e) {
+                        if (!link.classList.contains('no-smooth')) {
+                            e.preventDefault();
+                            smoothGoto(url);
+                        }
+                    });
+                }
+            });
+        });
     </script>
 </body>
 </html> 

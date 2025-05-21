@@ -390,7 +390,7 @@
 
         // Load available services
         function loadServices() {
-            const apiUrl = `/offer/list/${currentPage}/${pageSize}`;
+            const apiUrl = `/offer/list/?page=${currentPage}&size=${pageSize}`;
 
             console.log(`Calling API: ${apiUrl}`);
 

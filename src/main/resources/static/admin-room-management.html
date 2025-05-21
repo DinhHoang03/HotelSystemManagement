@@ -426,13 +426,18 @@
         // API calls
         async function fetchRoomTypes() {
             try {
-                const response = await fetch(`https://localhost:8443/type/get-all/list/${currentPage}/${pageSize}`, {
+                const response = await fetch(`https://localhost:8443/type/get-all/list`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
                 const data = await response.json();
-                return data.result.content;
+                if (data && data.result && data.result.content) {
+                    return data.result.content;
+                } else {
+                    console.error('Unexpected API response format:', data);
+                    return [];
+                }
             } catch (error) {
                 console.error('Error fetching room types:', error);
                 return [];
@@ -447,7 +452,12 @@
                     }
                 });
                 const data = await response.json();
-                return data.result.content;
+                if (data && data.result && data.result.content) {
+                    return data.result.content;
+                } else {
+                    console.error('Unexpected API response format:', data);
+                    return [];
+                }
             } catch (error) {
                 console.error('Error fetching rooms:', error);
                 return [];
@@ -498,21 +508,39 @@
         }
 
         async function deleteRoom(id) {
+            // Kiểm tra id hợp lệ
+            if (!id || id === 'null' || id === 'undefined') {
+                alert('Không thể xóa phòng này vì thiếu thông tin ID. Vui lòng làm mới trang và thử lại.');
+                return;
+            }
+            
+            console.log(`Attempting to delete room with ID: ${id}`);
+            
             showConfirmationModal(
                 'Bạn có chắc chắn muốn xóa phòng này không? Hành động này không thể hoàn tác.',
                 async () => {
                     try {
-                        await fetch(`https://localhost:8443/room/del/${id}`, {
+                        const response = await fetch(`https://localhost:8443/room/del/${id}`, {
                             method: 'DELETE',
                             headers: {
                                 'Authorization': `Bearer ${token}`
                             }
                         });
-                        await loadRooms();
-                        await loadRoomStats();
+                        
+                        console.log('Delete response status:', response.status);
+                        
+                        if (response.ok) {
+                            console.log('Room successfully deleted');
+                            await loadRooms();
+                            await loadRoomStats();
+                        } else {
+                            const responseText = await response.text();
+                            console.error('Error deleting room:', responseText);
+                            alert(`Failed to delete room: ${responseText}`);
+                        }
                     } catch (error) {
                         console.error('Error deleting room:', error);
-                        alert('Failed to delete room');
+                        alert('Failed to delete room: Network error');
                     }
                 }
             );
@@ -539,8 +567,19 @@
 
         async function loadRooms() {
             const rooms = await fetchRooms();
+            
+            // Debug: kiểm tra dữ liệu phòng
+            console.log('Loaded rooms:', rooms);
+            if (rooms.length > 0) {
+                console.log('Sample room data:', rooms[0]);
+            }
+            
             const tableBody = document.getElementById('roomTableBody');
-            tableBody.innerHTML = rooms.map(room => `
+            tableBody.innerHTML = rooms.map(room => {
+                // Debug: log từng phòng để tìm vấn đề
+                console.log(`Room: ${room.roomNumber}, ID=${room.roomId}`);
+                
+                return `
                 <tr class="table-row">
                     <td class="px-6 py-4 whitespace-nowrap">${room.roomNumber}</td>
                     <td class="px-6 py-4 whitespace-nowrap">${room.roomType}</td>
@@ -551,12 +590,13 @@
                         </span>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <button onclick="deleteRoom(${room.roomId})" class="text-red-600 hover:text-red-900">
+                        <button onclick="deleteRoom(${room.roomId || 'null'})" class="text-red-600 hover:text-red-900">
                             <i class="fas fa-trash"></i>
                         </button>
                     </td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         async function loadRoomStats() {
@@ -601,9 +641,25 @@
         async function populateRoomTypeSelect() {
             const roomTypes = await fetchRoomTypes();
             const select = document.getElementById('roomType');
-            select.innerHTML = roomTypes.map(type => 
-                `<option value="${type.roomTypes}">${type.roomTypes}</option>`
-            ).join('');
+            
+            if (roomTypes && roomTypes.length > 0) {
+                console.log('Available room types:', roomTypes);
+                // Hiển thị chi tiết từng loại phòng để debug
+                roomTypes.forEach(type => {
+                    console.log(`Room type: id=${type.roomTypeId}, name=${type.roomTypes}`);
+                });
+                
+                // Store room types for later use
+                window.availableRoomTypes = roomTypes;
+                
+                // Use roomTypeId as the value to guarantee correct match with backend
+                select.innerHTML = roomTypes.map(type => 
+                    `<option value="${type.roomTypeId}" data-name="${type.roomTypes}">${type.roomTypes}</option>`
+                ).join('');
+            } else {
+                console.error('No room types available for dropdown');
+                select.innerHTML = '<option value="">No room types available</option>';
+            }
         }
 
         // Form handlers
@@ -645,12 +701,33 @@
         async function handleRoomSubmit(event) {
             event.preventDefault();
             const formData = new FormData(event.target);
+            
+            // Get the room type ID from the form's select
+            const roomTypeId = formData.get('roomType');
+            
+            // Find the room type from our global list by ID
+            const roomTypeObj = window.availableRoomTypes.find(type => type.roomTypeId == roomTypeId);
+            
+            if (!roomTypeObj) {
+                alert('Room type not found! Please select a valid room type.');
+                return;
+            }
+            
+            // Use the exact roomType value from database
+            const roomTypeName = roomTypeObj.roomTypes;
+            
+            console.log(`Selected room type: ID=${roomTypeId}, ExactDatabaseName=${roomTypeName}`);
+            
             const roomData = {
                 roomNumber: formData.get('roomNumber'),
-                roomType: formData.get('roomType')
+                roomType: roomTypeName // Use EXACT format from database
             };
+            
+            console.log('Sending room data:', roomData);
 
             try {
+                console.log('Token being sent:', token);
+                
                 const response = await fetch('https://localhost:8443/room/create', {
                     method: 'POST',
                     headers: {
@@ -660,14 +737,22 @@
                     body: JSON.stringify(roomData)
                 });
 
+                console.log('Response status:', response.status);
+                const responseText = await response.text();
+                console.log('Response body:', responseText);
+                
                 if (response.ok) {
                     closeModal('roomModal');
                     event.target.reset();
                     await loadRooms();
                     await loadRoomStats();
                 } else {
-                    const error = await response.json();
-                    alert(error.message || 'Failed to create room');
+                    try {
+                        const error = JSON.parse(responseText);
+                        alert(error.message || 'Failed to create room');
+                    } catch(e) {
+                        alert(`Failed to create room: ${responseText}`);
+                    }
                 }
             } catch (error) {
                 console.error('Error creating room:', error);

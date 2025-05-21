@@ -104,6 +104,71 @@
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             overflow: hidden;
         }
+
+        /* Avatar Selection Styles */
+        .avatar-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 2px solid transparent;
+            overflow: hidden;
+            border-radius: 0.5rem;
+        }
+
+        .avatar-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .avatar-option.selected {
+            border-color: #4F46E5;
+            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        }
+
+        .avatar-option img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+
+        .avatar-option:hover img {
+            transform: scale(1.1);
+        }
+
+        /* Contact Modal Animation */
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.8) translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes modalFadeOut {
+            from {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+            to {
+                opacity: 0;
+                transform: scale(0.8) translateY(-20px);
+            }
+        }
+
+        .modal-content {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+
+        .modal-content.closing {
+            animation: modalFadeOut 0.3s ease-in forwards;
+        }
+
+        .modal-backdrop {
+            transition: opacity 0.3s ease;
+        }
     </style>
 </head>
 <body class="min-h-screen">
@@ -111,20 +176,24 @@
     <div class="navbar py-4 px-6">
         <div class="container mx-auto">
             <div class="flex justify-between items-center">
-                <a href="/" class="flex items-center">
-                    <img src="images/logo.png" alt="Luxury Hotel Logo" class="h-8 mr-3">
-                    <span class="text-xl font-semibold text-gray-800">Luxury Hotel</span>
+                <a href="/customer-dashboard.html" class="flex items-center">
+                    <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="DinhRise Hotel Logo" class="h-8 mr-3">
+                    <span class="text-xl font-semibold text-gray-800">DinhRise Hotel</span>
                 </a>
-                <nav class="hidden md:flex space-x-8">
-                    <a href="/" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Home</a>
-                    <a href="/rooms.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Rooms</a>
-                    <a href="/amenities.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Amenities</a>
-                    <a href="/services.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Services</a>
-                    <a href="/contact.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Contact</a>
-                    <a href="/customer-dashboard.html" class="nav-link text-indigo-600 font-medium">Dashboard</a>
+                <nav class="hidden md:flex justify-center flex-1">
+                    <div class="flex space-x-8">
+                        <a href="/customer-dashboard.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Home</a>
+                        <a href="/customer-dashboard.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">Luxury Hotel</a>
+                        <a href="/my-bookings.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">My Bookings</a>
+                        <a href="/my-bills.html" class="nav-link text-gray-600 hover:text-indigo-600 font-medium">My Bills</a>
+                        <button onclick="openContactModal()" class="nav-link text-gray-600 hover:text-indigo-600 font-medium flex items-center">
+                            <i class="fas fa-headset mr-2"></i>
+                            Contact
+                        </button>
+                    </div>
                 </nav>
                 <div class="flex items-center space-x-4">
-                    <a href="/book-room.html" class="hidden md:block px-6 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors font-medium">Book Now</a>
+                    <a href="/book-room.html" class="hidden md:block px-6 py-2 bg-gradient-to-r from-indigo-500 to-purple-600 text-white rounded-lg hover:from-indigo-600 hover:to-purple-700 transition-all duration-300 font-medium transform hover:scale-105">Book Now</a>
                     <div class="relative" id="userMenuContainer">
                         <button id="userMenuButton" class="flex items-center focus:outline-none">
                             <img id="userAvatar" src="https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff" alt="User" class="w-10 h-10 rounded-full border-2 border-indigo-200">
@@ -139,6 +208,44 @@
         </div>
     </div>
 
+    <!-- Avatar Selection Modal -->
+    <div id="avatarModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="min-h-screen px-4 text-center">
+            <div class="fixed inset-0" aria-hidden="true">
+                <div class="absolute inset-0 bg-gray-500 opacity-75"></div>
+            </div>
+            <span class="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
+            <div class="inline-block w-full max-w-2xl p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                <div class="flex justify-between items-center mb-6">
+                    <h3 class="text-2xl font-bold text-gray-900">Choose Your Avatar</h3>
+                    <button onclick="closeAvatarModal()" class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                    <div class="avatar-option p-2 rounded-lg" onclick="selectAvatar('default')">
+                        <div class="aspect-square bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg flex items-center justify-center">
+                            <span id="initialsAvatar" class="text-4xl font-bold text-white"></span>
+                        </div>
+                        <p class="text-center mt-2 text-sm font-medium text-gray-600">Default</p>
+                    </div>
+                    <div class="avatar-option p-2 rounded-lg" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/9286/9286938.png')">
+                        <img src="https://cdn-icons-png.flaticon.com/512/9286/9286938.png" alt="3D Boy" class="w-full">
+                        <p class="text-center mt-2 text-sm font-medium text-gray-600">3D Boy</p>
+                    </div>
+                    <div class="avatar-option p-2 rounded-lg" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/9286/9286937.png')">
+                        <img src="https://cdn-icons-png.flaticon.com/512/9286/9286937.png" alt="3D Girl" class="w-full">
+                        <p class="text-center mt-2 text-sm font-medium text-gray-600">3D Girl</p>
+                    </div>
+                    <div class="avatar-option p-2 rounded-lg" onclick="selectAvatar('https://cdn-icons-png.flaticon.com/512/9286/9286940.png')">
+                        <img src="https://cdn-icons-png.flaticon.com/512/9286/9286940.png" alt="3D Cool" class="w-full">
+                        <p class="text-center mt-2 text-sm font-medium text-gray-600">3D Cool</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Main Content -->
     <main class="container mx-auto pt-28 px-4 pb-16">
         <div class="flex flex-col items-center" data-aos="fade-up">
@@ -147,39 +254,56 @@
             
             <div class="form-container w-full max-w-2xl p-8 mb-12">
                 <div class="flex flex-col items-center mb-8">
-                    <div class="profile-picture w-32 h-32 mb-4">
-                        <img id="profileAvatar" src="https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff&size=128" alt="Profile Picture" class="w-full h-full object-cover">
+                    <div class="profile-picture w-32 h-32 mb-4 relative group">
+                        <img id="profileAvatar" src="https://ui-avatars.com/api/?name=User&background=4F46E5&color=fff&size=128" alt="Profile Picture" class="w-full h-full object-cover rounded-full border-4 border-white shadow-lg">
+                        <div class="absolute inset-0 bg-black bg-opacity-50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center">
+                            <button onclick="openAvatarModal()" class="cursor-pointer text-white">
+                                <i class="fas fa-pencil-alt text-2xl"></i>
+                            </button>
+                        </div>
                     </div>
                     <h2 id="profileName" class="text-xl font-semibold text-gray-800">User Name</h2>
-                    <p id="memberType" class="text-sm text-indigo-600 font-medium">Standard Member</p>
+                    <p id="memberType" class="text-sm text-indigo-600 font-medium">Premium Member</p>
                 </div>
                 
                 <form id="profileEditForm" class="space-y-6">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
+                        <div class="transform hover:scale-105 transition-transform duration-300">
                             <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
-                            <input type="text" id="name" name="name" class="input-field w-full p-3 focus:outline-none" placeholder="Your full name">
+                            <div class="relative">
+                                <i class="fas fa-user absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="name" name="name" class="input-field w-full p-3 pl-10 focus:outline-none" placeholder="Your full name">
+                            </div>
                         </div>
-                        <div>
+                        <div class="transform hover:scale-105 transition-transform duration-300">
                             <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-                            <input type="email" id="email" name="email" class="input-field w-full p-3 focus:outline-none" placeholder="Your email address">
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="email" id="email" name="email" class="input-field w-full p-3 pl-10 focus:outline-none" placeholder="Your email address">
+                            </div>
                         </div>
-                        <div>
+                        <div class="transform hover:scale-105 transition-transform duration-300">
                             <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-                            <input type="tel" id="phone" name="phone" class="input-field w-full p-3 focus:outline-none" placeholder="Your phone number">
+                            <div class="relative">
+                                <i class="fas fa-phone absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="tel" id="phone" name="phone" class="input-field w-full p-3 pl-10 focus:outline-none" placeholder="Your phone number">
+                            </div>
                         </div>
-                        <div>
+                        <div class="transform hover:scale-105 transition-transform duration-300">
                             <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Address</label>
-                            <input type="text" id="address" name="address" class="input-field w-full p-3 focus:outline-none" placeholder="Your address">
+                            <div class="relative">
+                                <i class="fas fa-map-marker-alt absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                                <input type="text" id="address" name="address" class="input-field w-full p-3 pl-10 focus:outline-none" placeholder="Your address">
+                            </div>
                         </div>
                     </div>
                     
                     <div class="border-t border-gray-200 pt-6 flex justify-between">
-                        <a href="/customer-dashboard.html" class="btn-secondary px-8 py-3 rounded-lg font-medium flex items-center">
+                        <a href="/customer-dashboard.html" class="btn-secondary px-8 py-3 rounded-lg font-medium flex items-center transform hover:scale-105 transition-all duration-300">
                             <i class="fas fa-arrow-left mr-2"></i> 
                             Back to Dashboard
                         </a>
-                        <button type="submit" class="btn-primary px-8 py-3 rounded-lg font-medium flex items-center">
+                        <button type="submit" class="btn-primary px-8 py-3 rounded-lg font-medium flex items-center transform hover:scale-105 transition-all duration-300">
                             <i class="fas fa-save mr-2"></i> 
                             Save Changes
                         </button>
@@ -246,6 +370,70 @@
             </div>
         </div>
     </footer>
+
+    <!-- Contact Modal -->
+    <div id="contactModal" class="fixed inset-0 z-50 hidden">
+        <div class="modal-backdrop fixed inset-0 bg-black bg-opacity-50"></div>
+        <div class="min-h-screen px-4 text-center">
+            <span class="inline-block h-screen align-middle" aria-hidden="true">&#8203;</span>
+            <div class="modal-content inline-block w-full max-w-md p-6 my-8 overflow-hidden text-left align-middle transition-all transform bg-white shadow-xl rounded-2xl">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-2xl font-bold text-gray-900">Contact Us</h3>
+                    <button onclick="closeContactModal()" class="text-gray-400 hover:text-gray-500">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+                <div class="space-y-6">
+                    <div class="flex items-center space-x-4 p-4 bg-indigo-50 rounded-lg">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-phone-alt text-indigo-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Phone Support</h4>
+                            <p class="text-sm text-gray-600">0913513395</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 p-4 bg-indigo-50 rounded-lg">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-envelope text-indigo-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Email Support</h4>
+                            <p class="text-sm text-gray-600">2121050110@gmail.com</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 p-4 bg-indigo-50 rounded-lg">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-map-marker-alt text-indigo-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Location</h4>
+                            <p class="text-sm text-gray-600">Hoai Duc, Hanoi, Vietnam</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center space-x-4 p-4 bg-indigo-50 rounded-lg">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-clock text-indigo-600 text-xl"></i>
+                        </div>
+                        <div>
+                            <h4 class="text-sm font-medium text-gray-900">Working Hours</h4>
+                            <p class="text-sm text-gray-600">24/7 Support Available</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-center space-x-4">
+                    <a href="tel:0913513395" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-phone-alt mr-2"></i>
+                        Call Now
+                    </a>
+                    <a href="mailto:2121050110@gmail.com" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-envelope mr-2"></i>
+                        Send Email
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <script>
         // Initialize AOS
@@ -414,6 +602,96 @@
             localStorage.removeItem('userId');
             window.location.href = '/login.html';
         }
+
+        // Generate initials from name
+        function generateInitials(name) {
+            if (!name) return 'U';
+            return name
+                .split(' ')
+                .map(word => word[0])
+                .join('')
+                .toUpperCase()
+                .substring(0, 3);
+        }
+
+        // Avatar Selection Functions
+        function openAvatarModal() {
+            const modal = document.getElementById('avatarModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // Update initials in the default avatar option
+            const name = document.getElementById('usernameDisplay').textContent;
+            document.getElementById('initialsAvatar').textContent = generateInitials(name);
+        }
+
+        function closeAvatarModal() {
+            const modal = document.getElementById('avatarModal');
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        }
+
+        function selectAvatar(avatarUrl) {
+            const profileAvatar = document.getElementById('profileAvatar');
+            const userAvatar = document.getElementById('userAvatar');
+            
+            if (avatarUrl === 'default') {
+                const name = document.getElementById('usernameDisplay').textContent;
+                const initials = generateInitials(name);
+                const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=4F46E5&color=fff&size=128`;
+                profileAvatar.src = defaultAvatarUrl;
+                userAvatar.src = defaultAvatarUrl;
+                localStorage.setItem('userAvatar', 'default');
+            } else {
+                profileAvatar.src = avatarUrl;
+                userAvatar.src = avatarUrl;
+                localStorage.setItem('userAvatar', avatarUrl);
+            }
+            
+            closeAvatarModal();
+        }
+
+        // Contact Modal Functions with Improved Animation
+        function openContactModal() {
+            const modal = document.getElementById('contactModal');
+            const modalContent = modal.querySelector('.modal-content');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            
+            // Reset animation classes
+            modalContent.classList.remove('closing');
+            modalContent.classList.add('modal-content');
+        }
+
+        function closeContactModal() {
+            const modal = document.getElementById('contactModal');
+            const modalContent = modal.querySelector('.modal-content');
+            
+            // Add closing animation
+            modalContent.classList.add('closing');
+            
+            // Wait for animation to complete
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                document.body.style.overflow = 'auto';
+            }, 300);
+        }
+
+        // Load saved avatar on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const savedAvatar = localStorage.getItem('userAvatar');
+            const name = document.getElementById('usernameDisplay').textContent;
+            
+            if (savedAvatar === 'default' || !savedAvatar) {
+                const initials = generateInitials(name);
+                const defaultAvatarUrl = `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=4F46E5&color=fff&size=128`;
+                document.getElementById('profileAvatar').src = defaultAvatarUrl;
+                document.getElementById('userAvatar').src = defaultAvatarUrl;
+            } else {
+                document.getElementById('profileAvatar').src = savedAvatar;
+                document.getElementById('userAvatar').src = savedAvatar;
+            }
+        });
     </script>
 </body>
 </html> 
