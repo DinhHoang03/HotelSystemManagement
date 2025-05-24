@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OTP Verification - DinhRise Hotel</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            color: #1f2937;
+            margin: 0;
+            padding: 0;
+            background-color: #f3f4f6;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .header {
+            background-color: #4f46e5;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            border-radius: 8px 8px 0 0;
+        }
+        .content {
+            background-color: white;
+            padding: 30px;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .logo {
+            width: 120px;
+            height: auto;
+            margin-bottom: 15px;
+        }
+        .otp-container {
+            background-color: #f3f4f6;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 25px 0;
+        }
+        .otp-code {
+            font-size: 32px;
+            font-weight: bold;
+            color: #4f46e5;
+            letter-spacing: 4px;
+            margin: 15px 0;
+        }
+        .warning {
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #6b7280;
+            font-size: 14px;
+        }
+        .button {
+            display: inline-block;
+            background-color: #4f46e5;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .divider {
+            border-top: 1px solid #e5e7eb;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111320.png" alt="DinhRise Hotel Logo" class="logo">
+        <h1>Mã Xác Thực OTP</h1>
+    </div>
+    <div class="content">
+        <p>Kính gửi Quý khách,</p>
+
+        <p>Chúng tôi nhận được yêu cầu đặt lại mật khẩu cho tài khoản của bạn tại DinhRise Hotel. Để đảm bảo an toàn cho tài khoản của bạn, vui lòng sử dụng mã OTP dưới đây:</p>
+
+        <div class="otp-container">
+            <p>Mã OTP của bạn là:</p>
+            <div class="otp-code" th:text="${otp}">123456</div>
+            <p>Mã này có hiệu lực trong 5 phút</p>
+        </div>
+
+        <div class="warning">
+            <strong>Lưu ý quan trọng:</strong>
+            <ul style="margin: 10px 0; padding-left: 20px;">
+                <li>Không chia sẻ mã này với bất kỳ ai</li>
+                <li>Mã OTP sẽ hết hạn sau 5 phút</li>
+                <li>Nếu bạn không yêu cầu đặt lại mật khẩu, vui lòng bỏ qua email này</li>
+            </ul>
+        </div>
+
+        <div class="divider"></div>
+
+        <p>Nếu bạn cần hỗ trợ thêm, vui lòng liên hệ với chúng tôi:</p>
+        <p>
+            <strong>Email:</strong> support@dinhrisehotel.com<br>
+            <strong>Hotline:</strong> +84 123 456 789
+        </p>
+
+        <p>Trân trọng,<br>
+            <strong>Đội ngũ DinhRise Hotel</strong></p>
+    </div>
+    <div class="footer">
+        <p>© 2024 DinhRise Hotel. Tất cả các quyền được bảo lưu.</p>
+        <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+    </div>
+</div>
+</body>
+</html>

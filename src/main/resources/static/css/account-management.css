@@ -1,0 +1,134 @@
+.sidebar {
+    transition: all 0.3s ease;
+}
+
+.sidebar.collapsed {
+    width: 80px;
+}
+
+.sidebar.collapsed .sidebar-text {
+    display: none;
+}
+
+.main-content {
+    transition: all 0.3s ease;
+}
+
+.main-content.expanded {
+    margin-left: 80px;
+}
+
+.card {
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-pending {
+    background-color: #FEF3C7;
+    color: #92400E;
+}
+
+.status-approved {
+    background-color: #D1FAE5;
+    color: #065F46;
+}
+
+.status-rejected {
+    background-color: #FEE2E2;
+    color: #991B1B;
+}
+
+.chart-container {
+    position: relative;
+    height: 300px;
+    width: 100%;
+}
+
+.tab-active {
+    border-bottom: 2px solid #4F46E5;
+    color: #4F46E5;
+}
+
+/* Additional styles for account management */
+.status-filter {
+    transition: all 0.2s ease;
+}
+
+.status-filter:hover {
+    transform: translateY(-1px);
+}
+
+.status-active {
+    background-color: #4F46E5 !important;
+    color: white !important;
+}
+
+.customer-status-filter {
+    transition: all 0.2s ease;
+}
+
+.customer-status-filter:hover {
+    transform: translateY(-1px);
+}
+
+.customer-status-active {
+    background-color: #4F46E5 !important;
+    color: white !important;
+}
+
+/* Table styles */
+.table-header th {
+    background-color: #F9FAFB;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.table-row {
+    transition: background-color 0.2s ease;
+}
+
+.table-row:hover {
+    background-color: #F3F4F6;
+}
+
+/* Pagination styles */
+.pagination-button {
+    transition: all 0.2s ease;
+}
+
+.pagination-button:hover:not(:disabled) {
+    background-color: #F3F4F6;
+}
+
+.pagination-button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Loading spinner */
+.loading-spinner {
+    border: 2px solid #E5E7EB;
+    border-top: 2px solid #4F46E5;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+} 

@@ -1,0 +1,332 @@
+package com.hotel.humg.HotelSystemManagement.service.SecurityService;
+
+import com.hotel.humg.HotelSystemManagement.configuration.security.SecurityConfig;
+import com.hotel.humg.HotelSystemManagement.dto.UserPrincipal;
+import com.hotel.humg.HotelSystemManagement.dto.request.email.otp.NewPasswordRequest;
+import com.hotel.humg.HotelSystemManagement.dto.request.security.jwt.AuthenticationRequest;
+import com.hotel.humg.HotelSystemManagement.dto.request.security.jwt.IntrospectRequest;
+import com.hotel.humg.HotelSystemManagement.dto.request.security.jwt.LogOutRequest;
+import com.hotel.humg.HotelSystemManagement.dto.request.security.jwt.RefreshRequest;
+import com.hotel.humg.HotelSystemManagement.dto.response.security.jwt.AuthenticationResponse;
+import com.hotel.humg.HotelSystemManagement.dto.response.security.jwt.IntrospectResponse;
+import com.hotel.humg.HotelSystemManagement.entity.User.Customer;
+import com.hotel.humg.HotelSystemManagement.entity.User.Employee;
+import com.hotel.humg.HotelSystemManagement.entity.enums.UserStatus;
+import com.hotel.humg.HotelSystemManagement.exception.enums.AppErrorCode;
+import com.hotel.humg.HotelSystemManagement.exception.exceptions.AppException;
+import com.hotel.humg.HotelSystemManagement.repository.User.CustomerRepository;
+import com.hotel.humg.HotelSystemManagement.repository.User.EmployeeRepository;
+import com.hotel.humg.HotelSystemManagement.service.redis.ExTokenHandleService;
+import com.nimbusds.jose.*;
+import com.nimbusds.jose.crypto.MACSigner;
+import com.nimbusds.jose.crypto.MACVerifier;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
+import lombok.AccessLevel;
+import lombok.RequiredArgsConstructor;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
+import java.text.ParseException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+
+// Đánh dấu lớp này là một Spring Service, sẽ được quản lý bởi Spring IoC container.
+@Slf4j
+@Service
+// Sử dụng Lombok để tự động tạo constructor với các dependency (final fields).
+@RequiredArgsConstructor
+// Đặt các field ở mức truy cập PRIVATE và mặc định là final (trừ khi có @NonFinal).
+@FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
+public class AuthenticationService {
+    // Các repository để truy vấn thông tin Customer và Employee từ database.
+    EmployeeRepository employeeRepository;
+    CustomerRepository customerRepository;
+    ExTokenHandleService exTokenHandleService;
+    // Config bảo mật chứa bcrypt encoder để mã hóa/matching mật khẩu.
+    SecurityConfig securityConfig;
+    @NonFinal
+    UserPrincipal userPrincipal;
+
+    // Khóa bí mật để ký JWT, lấy từ file cấu hình (application.properties/yaml).
+    @NonFinal // Cho phép thay đổi giá trị trong runtime (từ @Value).
+    @Value("${jwt.signerKey}") // Inject giá trị của "jwt.signerKey" từ cấu hình.
+    protected String SIGNER_KEY;
+
+    @NonFinal
+    @Value("${jwt.valid-duration}")
+    protected long VALID_DURATION;
+
+    @NonFinal
+    @Value("${jwt.refreshable-duration}")
+    protected long REFRESHABLE_DURATION;
+
+    public void changePassword(NewPasswordRequest request) {
+        if (request == null) {
+            throw new AppException(AppErrorCode.REQUEST_IS_NULL);
+        }
+
+        String email = request.getEmail();
+        String username = request.getUsername();
+        String newPassword = request.getNewPassword();
+
+        // Validate input
+        if (email == null || email.trim().isEmpty()) {
+            throw new AppException(AppErrorCode.REQUEST_IS_NULL);
+        }
+        if (username == null || username.trim().isEmpty()) {
+            throw new AppException(AppErrorCode.REQUEST_IS_NULL);
+        }
+        if (newPassword == null || newPassword.trim().isEmpty()) {
+            throw new AppException(AppErrorCode.REQUEST_IS_NULL);
+        }
+
+        String encodedPassword = securityConfig.bcryptPasswordEncoder().encode(newPassword);
+        log.info("Changing password for email: {} and username: {}", email, username);
+
+        boolean passwordChanged = false;
+
+        // Tìm và cập nhật customer
+        Optional<Customer> customerOpt = customerRepository.findByEmail(email);
+        if (customerOpt.isPresent()) {
+            Customer customer = customerOpt.get();
+            if (username.equals(customer.getUsername())) {
+                customer.setPassword(encodedPassword);
+                customerRepository.save(customer);
+                passwordChanged = true;
+                log.info("Password updated successfully for customer: {}", username);
+            }
+        }
+
+        // Nếu chưa tìm thấy customer, tìm employee
+        if (!passwordChanged) {
+            Optional<Employee> employeeOpt = employeeRepository.findByEmail(email);
+            if (employeeOpt.isPresent()) {
+                Employee employee = employeeOpt.get();
+                if (username.equals(employee.getUsername())) {
+                    employee.setPassword(encodedPassword);
+                    employeeRepository.save(employee);
+                    passwordChanged = true;
+                    log.info("Password updated successfully for employee: {}", username);
+                }
+            }
+        }
+
+        if (!passwordChanged) {
+            log.error("User not found or email/username mismatch. Email: {}, Username: {}", email, username);
+            throw new AppException(AppErrorCode.USER_NOT_EXISTED);
+        }
+    }
+
+    // Hàm kiểm tra tính hợp lệ của token JWT (introspection).
+    public IntrospectResponse introspect(IntrospectRequest request) throws JOSEException, ParseException {
+        var token = request.getToken();
+        boolean isValid = true;
+
+        //Kiểm tra hợp lệ nếu đăng nhập vào hệ thống
+        try {
+            verifyToken(token, false);
+        }catch (AppException e){
+            isValid = false;
+        }
+
+        // Trả về response với trạng thái hợp lệ của token.
+        return IntrospectResponse.builder()
+                .valid(isValid)
+                .build();
+    }
+
+    public void logout(LogOutRequest request) throws ParseException, JOSEException {
+        try{
+            var signedToken = verifyToken(request.getToken(), true);
+
+            String jwtId = signedToken.getJWTClaimsSet().getJWTID();
+            Date expriredTime = signedToken.getJWTClaimsSet().getExpirationTime();
+
+            long remainingSeconds = (expriredTime.getTime() - System.currentTimeMillis()) / 1000;
+            exTokenHandleService.blackListToken(jwtId, remainingSeconds);
+
+//            InvalidatedToken invalidatedToken = InvalidatedToken
+//                    .builder()
+//                    .id(jwtId)
+//                    .expiredTime(expriredTime.toInstant())
+//                    .build();
+//
+//            invalidatedTokenRepository.save(invalidatedToken);
+        }catch (AppException e){
+            log.info("Token is not valid!");
+        }
+    }
+
+    public AuthenticationResponse refreshToken(RefreshRequest request) throws ParseException, JOSEException {
+        var signedToken = verifyToken(request.getToken(), true);
+        var jwtId = signedToken.getJWTClaimsSet().getJWTID();
+        var expirationTime = signedToken.getJWTClaimsSet().getExpirationTime();
+
+        long renmainingSeconds = (expirationTime.getTime() - System.currentTimeMillis()) / 1000;
+        exTokenHandleService.blackListToken(jwtId, renmainingSeconds);
+
+//        InvalidatedToken invalidatedToken = InvalidatedToken.builder()
+//                .id(jwtId)
+//                .expiredTime(expirationTime.toInstant())
+//                .build();
+//
+//        invalidatedTokenRepository.save(invalidatedToken);
+
+        var username = signedToken.getJWTClaimsSet().getSubject();
+        var userPrincipal = findUser(username);
+
+        var token = generateToken(userPrincipal);
+
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
+    }
+
+    private UserPrincipal findUser(String username) {
+        var customer = customerRepository.findByUsername(username);
+        var employee = employeeRepository.findByUsername(username);
+
+        if (customer.isEmpty() && employee.isEmpty()) {
+            throw new AppException(AppErrorCode.USER_NOT_EXISTED);
+        }
+
+        if(customer.isPresent()){
+            var user = customer.get();
+            var role = customer.get().getRoles();
+            var password = customer.get().getPassword();
+
+            userPrincipal = new UserPrincipal(
+                    username,
+                    password,
+                    role.stream().toList()
+            );
+        } else if (employee.isPresent()) {
+            var user = employee.get();
+            var role = employee.get().getRoles();
+            var password = employee.get().getPassword();
+
+            if(employee.get().getUserStatus().equals(UserStatus.PENDING) || employee.get().getUserStatus().equals(UserStatus.REJECTED))
+                throw new AppException(AppErrorCode.USER_NOT_APPROVE);
+
+            userPrincipal = new UserPrincipal(
+                    username,
+                    password,
+                    role.stream().toList()
+            );
+        }
+
+        return userPrincipal;
+    }
+
+    private SignedJWT verifyToken(String token, boolean isRefresh) throws JOSEException, ParseException {
+        // Tạo verifier để kiểm tra chữ ký của token bằng khóa SIGNER_KEY.
+        JWSVerifier verifier = new MACVerifier(SIGNER_KEY.getBytes());
+
+        // Parse token thành đối tượng SignedJWT để truy cập các thành phần (header, payload, signature).
+        SignedJWT signedJWT = SignedJWT.parse(token);
+
+        // Lấy thời gian hết hạn từ claims trong token.
+        Date expriredTime = (isRefresh) ?
+                new Date(
+                        signedJWT
+                                .getJWTClaimsSet()
+                                .getIssueTime()
+                                .toInstant()
+                                .plus(REFRESHABLE_DURATION, ChronoUnit.DAYS)
+                                .toEpochMilli()
+                )
+                : signedJWT.getJWTClaimsSet().getExpirationTime();
+        // Kiểm tra chữ ký của token có hợp lệ không (dùng SIGNER_KEY và HS512).
+        var verified = signedJWT.verify(verifier);
+
+        // Token hợp lệ nếu chữ ký đúng và chưa hết hạn.
+        if(!verified && expriredTime.after(new Date()))
+            throw new AppException(AppErrorCode.UNAUTHENTICATED);
+
+
+        //Nếu Token đã log out thì sẽ bị disable vào hệ thống
+        if(exTokenHandleService.isTokenBlackListed(signedJWT.getJWTClaimsSet().getJWTID()))
+            throw new AppException(AppErrorCode.UNAUTHENTICATED);
+
+        return signedJWT;
+    }
+
+    // Hàm tạo token JWT với username và role, ký bằng HS512.
+    public AuthenticationResponse authenticate(AuthenticationRequest request) {
+        String username = request.getUsername();
+        String password = request.getPassword();
+
+        var user = findUser(username);
+        var passwordToCheck = user.getPassword();
+
+        // So khớp mật khẩu
+        boolean authenticated = securityConfig.bcryptPasswordEncoder()
+                .matches(password, passwordToCheck);
+
+        log.info("Password match: {}", authenticated);
+        // Nếu mật khẩu không khớp, ném ngoại lệ UNAUTHENTICATED.
+        if (!authenticated) throw new AppException(AppErrorCode.UNAUTHENTICATED);
+
+        // Tạo token JWT với đối tượng user đã có
+        var token = generateToken(userPrincipal);
+
+        // Trả về response chứa token và trạng thái xác thực.
+        return AuthenticationResponse.builder()
+                .token(token)
+                .authenticated(true)
+                .build();
+    }
+
+    // Thay đổi generateToken để chấp nhận đối tượng
+    private String generateToken(UserPrincipal user) {
+        // Header và các thông tin chung như cũ
+        JWSHeader header = new JWSHeader(JWSAlgorithm.HS512);
+
+        JWTClaimsSet jwtClaimsSet = new JWTClaimsSet.Builder()
+                .subject(user.getUsername())
+                .issuer("hotel.com")
+                .issueTime(new Date())
+                .expirationTime(new Date(Instant.now()
+                    .plus(VALID_DURATION, ChronoUnit.HOURS).toEpochMilli()))
+                .jwtID(UUID.randomUUID().toString())
+                .claim("scope", buildScope(user))  // Truyền đối tượng user vào buildScope
+                .build();
+
+        Payload payload = new Payload(jwtClaimsSet.toJSONObject());
+        JWSObject jwsObject = new JWSObject(header, payload);
+        try {
+            jwsObject.sign(new MACSigner(SIGNER_KEY.getBytes()));
+            return jwsObject.serialize();
+        } catch (JOSEException e) {
+            throw new AppException(AppErrorCode.SIGN_TOKEN_ERROR);
+        }
+    }
+    
+    // Thay đổi buildScope để chấp nhận đối tượng user
+    private String buildScope(UserPrincipal user) {
+        StringJoiner stringJoiner = new StringJoiner(" ");
+
+        if(!CollectionUtils.isEmpty(user.getRoles())){
+            user.getRoles().forEach(
+                    role -> {
+                        stringJoiner.add("ROLE_" + role.getName());
+                        if (!CollectionUtils.isEmpty(role.getPermissions())){
+                            role.getPermissions().forEach(permission -> {
+                                stringJoiner.add(permission.getName());
+                            });
+                        }
+                    }
+            );
+        }else {
+            throw new AppException(AppErrorCode.NO_ROLES_ASSIGNED);
+        }
+        return stringJoiner.toString();
+    }
+}
