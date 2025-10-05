@@ -14,7 +14,7 @@ server:
 spring:
   ai:
     openai:
-      api-key: "AIzaSyC3xRkpzqX2DmjynQ7B79elgUngHDL0Ak4"
+      api-key:
       chat:
         base-url: "https://generativelanguage.googleapis.com"
         completions-path: "/v1beta/openai/chat/completions"
@@ -84,13 +84,3 @@ jwt:
   signerKey:
   valid-duration: 1 #in hour
   refreshable-duration: 7 #in days
-
-
-
-
-
-
-
-
-
-
