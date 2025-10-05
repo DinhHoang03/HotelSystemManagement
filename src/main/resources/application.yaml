@@ -12,6 +12,14 @@ server:
     key-password:
 
 spring:
+  ai:
+    openai:
+      api-key: "AIzaSyC3xRkpzqX2DmjynQ7B79elgUngHDL0Ak4"
+      chat:
+        base-url: "https://generativelanguage.googleapis.com"
+        completions-path: "/v1beta/openai/chat/completions"
+        options:
+          model: gemini-2.0-flash
   config:
     import: optional:application-secret.yaml
   mail:
@@ -70,178 +78,12 @@ zalo-pay:
   create-order-url: "https://sb-openapi.zalopay.vn/v2/create"
   order-status-url: "https://sb-openapi.zalopay.vn/v2/query"
   redirect-url: "https://localhost:8443/payment-success.html"
-  callback-url: https://bb3d-42-117-78-41.ngrok-free.app/zalopay/callback
+  callback-url: https://2c6d13f5c971.ngrok-free.app/zalopay/callback
 
 jwt:
   signerKey:
   valid-duration: 1 #in hour
   refreshable-duration: 7 #in days
-
-gemini:
-  api-key:
-  url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-04-17:generateContent"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 

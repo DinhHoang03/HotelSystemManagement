@@ -1,0 +1,108 @@
+.paymentBill-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+.paymentBill-card {
+    background: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+.paymentBill-method {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border: 2px solid #E5E7EB;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.paymentBill-method:hover {
+    border-color: #4F46E5;
+    background: #F5F3FF;
+}
+.paymentBill-method.selected {
+    border-color: #4F46E5;
+    background: #F5F3FF;
+}
+.paymentBill-method img {
+    width: 40px;
+    height: 40px;
+    margin-right: 1rem;
+}
+.paymentBill-details {
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid #E5E7EB;
+}
+.paymentBill-summary {
+    background: #F9FAFB;
+    padding: 1.5rem;
+    border-radius: 0.5rem;
+    margin-top: 1rem;
+}
+.paymentBill-summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+.paymentBill-summary-item.total {
+    font-weight: 600;
+    font-size: 1.125rem;
+    color: #1F2937;
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #E5E7EB;
+}
+.btn-pay {
+    background: linear-gradient(to right, #4F46E5, #7C3AED);
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.3s ease;
+    width: 100%;
+    margin-top: 1.5rem;
+}
+.btn-pay:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(79, 70, 229, 0.3);
+}
+.btn-pay:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+}
+.loading {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+.loading.active {
+    display: flex;
+}
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #F3F4F6;
+    border-top: 4px solid #4F46E5;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}

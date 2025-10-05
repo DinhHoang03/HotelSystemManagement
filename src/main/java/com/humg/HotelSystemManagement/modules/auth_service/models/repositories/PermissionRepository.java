@@ -1,0 +1,10 @@
+package com.humg.HotelSystemManagement.modules.auth_service.models.repositories;
+
+import com.humg.HotelSystemManagement.modules.auth_service.models.entities.Permission;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+@Repository
+public interface PermissionRepository extends JpaRepository<Permission, String> {
+
+}
