@@ -1,4 +1,4 @@
-application:
+﻿application:
   name: hotel-system-management
 
 server:
@@ -84,3 +84,6 @@ jwt:
   signerKey:
   valid-duration: 1 #in hour
   refreshable-duration: 7 #in days
+
+
+
