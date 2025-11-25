@@ -1,7 +1,10 @@
 package com.humg.HotelSystemManagement.modules.auth_service.resources.responses;
 
+import com.humg.HotelSystemManagement.modules.auth_service.models.entities.Role;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
+
+import java.util.Set;
 
 @Data
 @AllArgsConstructor
@@ -9,6 +12,8 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class AuthenticationResponse {
-    String token;
+    String accessToken;
+    String refreshToken;
     boolean authenticated;
+    Set<Role> roles;
 }

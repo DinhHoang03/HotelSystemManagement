@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +19,7 @@ public class RoomTypeController {
     RoomTypeService roomTypeService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('ROOM_CREATE')")
     APIResponse<RoomTypeResponse> create(@RequestBody RoomTypeRequest request){
         return APIResponse.<RoomTypeResponse>builder()
                 .result(roomTypeService.create(request))
@@ -26,6 +28,7 @@ public class RoomTypeController {
     }
 
     @GetMapping("/get-all/list")
+    @PreAuthorize("hasAuthority('ROOM_VIEW')")
     APIResponse<Page<RoomTypeResponse>> getAllCustomers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -37,6 +40,7 @@ public class RoomTypeController {
     }
 
     @DeleteMapping("/del/{serviceName}")
+    @PreAuthorize("hasAuthority('ROOM_DELETE')")
     APIResponse<String> delete(@PathVariable("serviceName") Long id){
         roomTypeService.delete(id);
 

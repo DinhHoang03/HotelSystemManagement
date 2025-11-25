@@ -2,7 +2,7 @@ package com.humg.HotelSystemManagement.modules.booking_service.models.entities;
 
 import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
 import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
-import com.humg.HotelSystemManagement.modules.customer_service.models.entities.Customer;
+import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -48,8 +48,8 @@ public class Booking {
     String paymentOrderId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    Customer customer;
+    @JoinColumn(name = "user_id", nullable = false)
+    User user;
 
     @OneToOne(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     BookingBill bookingBill;

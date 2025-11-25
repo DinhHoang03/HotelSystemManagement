@@ -87,7 +87,7 @@ public class BookingBillService {
     public Page<BookingBillResponse> getAllBookingBills(String customerId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<BookingBill> result = bookingBillRepository.findCustomerIdByBookingBillId(customerId, pageable);
+        Page<BookingBill> result = bookingBillRepository.findAllByUserId(customerId, pageable);
         if(result.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
 
         Page<BookingBillResponse> response = result.map(
@@ -118,7 +118,7 @@ public class BookingBillService {
         bookingRepository.save(booking);
 
         // Kiểm tra quyền truy cập
-        if (!bookingBill.getBooking().getCustomer().getUsername().equals(username)) {
+        if (!bookingBill.getBooking().getUser().getUsername().equals(username)) {
             throw new AppException(AppErrorCode.UNAUTHORIZED);
         }
 

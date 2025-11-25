@@ -16,7 +16,7 @@ import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingItemsRepository;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRepository;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRoomRepository;
-import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.CustomerRepository;
+import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.UserRepository;
 import com.humg.HotelSystemManagement.modules.room_service.models.repositories.RoomRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +37,7 @@ import java.util.stream.Collectors;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BookingService{
     BookingRepository bookingRepository;
-    BookingItemsService bookingItemsService;
-    BookingRoomService bookingRoomService;
-    CustomerRepository customerRepository;
+    UserRepository userRepository;
     BookingRoomRepository bookingRoomRepository;
     BookingItemsRepository bookingItemsRepository;
     RoomRepository roomRepository;
@@ -54,14 +52,14 @@ public class BookingService{
         var bookingRoomIds = request.getBookingRoomIds();
         var bookingItemIds = request.getBookingItemIds();
 
-        var customer = customerRepository.findById(customerId)
+        var customer = userRepository.findById(customerId)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         Booking booking = Booking.builder()
                 .bookingDate(LocalDate.now())
                 .bookingStatus(BookingStatus.PENDING)
                 .paymentStatus(PaymentStatus.PENDING)
-                .customer(customer)
+                .user(customer)
                 .totalRoomPrice(0L)
                 .totalBookingServicePrice(0L)
                 .grandTotal(0L)
@@ -143,7 +141,7 @@ public class BookingService{
                 .totalRoomPrice(finalBooking.getTotalRoomPrice())
                 .totalBookingServicePrice(finalBooking.getTotalBookingServicePrice())
                 .grandTotal(finalBooking.getGrandTotal())
-                .customerName(finalBooking.getCustomer().getName())
+                .customerName(finalBooking.getUser().getName())
                 .bookingItems(bookingItemResponses)
                 .bookingRooms(bookingRoomResponses)
                 .build();
@@ -152,7 +150,7 @@ public class BookingService{
     public Page<BookingResponse> getAllBookingByUserId(String customerId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
 
-        Page<Booking> result = bookingRepository.findByCustomer_Id(customerId, pageable);
+        Page<Booking> result = bookingRepository.findByUser_Id(customerId, pageable);
         if (result.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
 
         Page<BookingResponse> response = result.map(booking -> {
@@ -164,7 +162,7 @@ public class BookingService{
                    .totalBookingServicePrice(booking.getTotalBookingServicePrice())
                    .totalRoomPrice(booking.getTotalRoomPrice())
                    .grandTotal(booking.getGrandTotal())
-                   .customerName(booking.getCustomer().getName())
+                   .customerName(booking.getUser().getName())
                    .build();
         });
 
@@ -206,7 +204,7 @@ public class BookingService{
                 .totalRoomPrice(booking.getTotalRoomPrice())
                 .totalBookingServicePrice(booking.getTotalBookingServicePrice())
                 .grandTotal(booking.getGrandTotal())
-                .customerName(booking.getCustomer().getName())
+                .customerName(booking.getUser().getName())
                 .bookingRooms(bookingRoomResponses)
                 .bookingItems(bookingItemResponses)
                 .build();

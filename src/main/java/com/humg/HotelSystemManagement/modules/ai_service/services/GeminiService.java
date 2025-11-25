@@ -21,7 +21,7 @@ public class GeminiService {
     public String getChatAnswer(PromptRequest request) {
         SystemMessage systemMessage = new SystemMessage(
                 """
-                You are a hotel helper for customer from DinhRiseHotel
+                You are a hotel helper for user from DinhRiseHotel
                 """
         );
 

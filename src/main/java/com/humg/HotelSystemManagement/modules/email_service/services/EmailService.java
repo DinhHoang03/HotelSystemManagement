@@ -38,13 +38,13 @@ public class EmailService {
             MimeMessage mimeMessage = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
 
-            helper.setTo(booking.getCustomer().getEmail());
+            helper.setTo(booking.getUser().getEmail());
             helper.setSubject("Xác nhận đặt phòng thành công - DinhRiseHotel");
             helper.setFrom(fromEmail);
 
             // Chuẩn bị dữ liệu cho Thymeleaf
             Context context = new Context();
-            context.setVariable("customerName", booking.getCustomer().getName());
+            context.setVariable("customerName", booking.getUser().getName());
             context.setVariable("bookingId", booking.getBookingId());
             context.setVariable("bookingDate", booking.getBookingDate().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
             context.setVariable("grandTotal", booking.getGrandTotal());
@@ -55,10 +55,10 @@ public class EmailService {
             helper.setText(htmlContent, true);
 
             mailSender.send(mimeMessage);
-            log.info("Email xác nhận đặt phòng đã được gửi đến: {}", booking.getCustomer().getEmail());
+            log.info("Email xác nhận đặt phòng đã được gửi đến: {}", booking.getUser().getEmail());
 
         } catch (MessagingException e) {
-            log.error("Lỗi khi gửi email xác nhận đặt phòng cho {}: {}", booking.getCustomer().getEmail(), e.getMessage());
+            log.error("Lỗi khi gửi email xác nhận đặt phòng cho {}: {}", booking.getUser().getEmail(), e.getMessage());
             throw new RuntimeException("Không thể gửi email xác nhận đặt phòng", e);
         }
     }

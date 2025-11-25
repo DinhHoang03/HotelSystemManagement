@@ -1,8 +1,8 @@
 package com.humg.HotelSystemManagement.modules.payment_service.models.entities;
 
+import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
 import com.humg.HotelSystemManagement.utils.enums.PaymentMethod;
 import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
-import com.humg.HotelSystemManagement.modules.customer_service.models.entities.Customer;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
@@ -41,6 +41,6 @@ public class PaymentBill {
     LocalDate createAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "customer_id", nullable = false)
-    Customer customer;
+    @JoinColumn(name = "user_id", nullable = false)
+    User user;
 }

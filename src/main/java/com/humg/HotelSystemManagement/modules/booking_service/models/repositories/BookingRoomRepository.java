@@ -12,14 +12,18 @@ import java.util.List;
 
 @Repository
 public interface BookingRoomRepository extends JpaRepository<BookingRoom, String> {
+
+    // Query check phòng trống giữ nguyên
     @Query("SELECT DISTINCT r.roomNumber FROM BookingRoom br JOIN br.rooms r " +
             "WHERE r.roomNumber IN :roomNumbers " +
             "AND (br.checkInDate <= :checkOutDate AND br.checkOutDate >= :checkInDate)")
     List<BookingRoom> findBookedRoomNumbersInDateRangeForRooms(@Param("roomNumbers") List<String> roomNumbers,
-                                                          @Param("checkInDate") LocalDate checkInDate,
-                                                          @Param("checkOutDate") LocalDate checkOutDate);
+                                                               @Param("checkInDate") LocalDate checkInDate,
+                                                               @Param("checkOutDate") LocalDate checkOutDate);
 
-    List<BookingRoom> findByUsernameAndBookingRoomIdIn(String username, List<String> bookingItemsId);
+    // Nếu BookingRoom có trường "username" (String) thì giữ nguyên
+    List<BookingRoom> findByUsernameAndBookingRoomIdIn(String username, List<String> bookingRoomIds);
+
     List<BookingRoom> findByBooking(Booking booking);
 
     @Query("SELECT br FROM BookingRoom br WHERE br.checkInDate <= :date AND br.checkOutDate >= :date " +

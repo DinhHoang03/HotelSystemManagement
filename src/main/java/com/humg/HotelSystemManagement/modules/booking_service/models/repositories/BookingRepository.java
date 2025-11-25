@@ -12,14 +12,17 @@ import java.util.List;
 
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, String> {
-    Page<Booking> findByCustomer_Id(String customerId, Pageable pageable);
 
+    // SỬA: Đổi Customer thành User
+    Page<Booking> findByUser_Id(String userId, Pageable pageable);
+
+    // Query thống kê này không dính đến Customer nên giữ nguyên
     @Query("SELECT MONTH(b.bookingDate) as month, SUM(b.grandTotal) as total " +
             "FROM Booking b " +
             "WHERE YEAR(b.bookingDate) =:year " +
             "AND MONTH(b.bookingDate) BETWEEN :startMonth AND :endMonth " +
             "AND b.bookingStatus = 'CONFIRMED' " +
-            "AND b.paymentStatus = 'COMPLETED' " +
+            "AND b.paymentStatus = 'PAID' " + // Lưu ý: Tôi sửa COMPLETED thành PAID cho khớp logic thanh toán
             "GROUP BY MONTH(b.bookingDate)")
     List<Object[]> findMonthlyRevenue(int year, int startMonth, int endMonth);
 

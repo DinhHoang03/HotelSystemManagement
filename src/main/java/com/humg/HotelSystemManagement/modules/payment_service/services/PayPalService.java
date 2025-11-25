@@ -117,7 +117,7 @@ public class PayPalService {
         var bookingBill = bookingBillRepository.findById(bookingBillId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
-        var customer = bookingBill.getBooking().getCustomer();
+        var customer = bookingBill.getBooking().getUser();
 
         //Lấy thông tin giao dịch
         RelatedResources resources = transaction.getRelatedResources().get(0);
@@ -141,7 +141,7 @@ public class PayPalService {
                 .paidAmount(paidAmount)
                 .status(PaymentStatus.COMPLETED)
                 .createAt(LocalDate.now())
-                .customer(customer)
+                .user(customer)
                 .build();
 
         var result = paymentBillRepository.save(paymentBill);

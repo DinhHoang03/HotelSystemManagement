@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface BookingBillRepository extends JpaRepository<BookingBill, String> {
-    @Query("SELECT b FROM BookingBill b WHERE b.booking.customer.id = :customerId")
-    Page<BookingBill> findCustomerIdByBookingBillId(@Param("customerId") String customerId, Pageable pageable);
+
+    // SỬA: customer -> user
+    @Query("SELECT b FROM BookingBill b WHERE b.booking.user.id = :userId")
+    Page<BookingBill> findAllByUserId(@Param("userId") String userId, Pageable pageable);
 }

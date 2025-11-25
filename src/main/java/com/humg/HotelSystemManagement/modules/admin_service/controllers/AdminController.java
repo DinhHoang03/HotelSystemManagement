@@ -1,14 +1,9 @@
 package com.humg.HotelSystemManagement.modules.admin_service.controllers;
 
+import com.humg.HotelSystemManagement.modules.customer_service.resources.responses.UserResponse;
 import com.humg.HotelSystemManagement.utils.APIResponse;
-import com.humg.HotelSystemManagement.modules.customer_service.resources.responses.CustomerResponse;
-import com.humg.HotelSystemManagement.modules.employee_service.resources.responses.AttendanceResponse;
-import com.humg.HotelSystemManagement.modules.employee_service.resources.responses.EmployeeResponse;
-import com.humg.HotelSystemManagement.utils.enums.UserStatus;
-import com.humg.HotelSystemManagement.modules.employee_service.services.AttendanceService;
 import com.humg.HotelSystemManagement.modules.admin_service.services.AdminService;
-import com.humg.HotelSystemManagement.modules.customer_service.services.CustomerService;
-import com.humg.HotelSystemManagement.modules.employee_service.services.EmployeeService;
+import com.humg.HotelSystemManagement.modules.customer_service.services.UserService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -23,96 +18,42 @@ import java.util.Map;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminController {
-
-    CustomerService customerService;
-    EmployeeService employeeService;
+    UserService userService;
     AdminService adminService;
-    AttendanceService attendanceService;
+
+    @PostMapping("/approve/{empId}")
+    APIResponse<String> approveEmp(@PathVariable("empId") String id) {
+        return APIResponse.<String>builder()
+                .result(adminService.enableUser(id))
+                .build();
+    }
+
+    @PostMapping("/reject/{empId}")
+    APIResponse<String> reject(@PathVariable("empId") String id) {
+        return APIResponse.<String>builder()
+                .result(adminService.disableUser(id))
+                .build();
+    }
 
     @GetMapping("/get-customer/{customerId}")
-    APIResponse<CustomerResponse> getCustomerById(@PathVariable("customerId") String customerId){
-        return APIResponse.<CustomerResponse>builder()
-                .result(customerService.getById(customerId))
+    APIResponse<UserResponse> getCustomerById(@PathVariable("customerId") String customerId){
+        return APIResponse.<UserResponse>builder()
+                .result(userService.getById(customerId))
                 .message("Successfully get user by follow id!")
                 .build();
     }
 
     //Get all sort by pages
     @GetMapping("/get-customers/list")
-    APIResponse<Page<CustomerResponse>> getAllCustomers(
+    APIResponse<Page<UserResponse>> getAllCustomers(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ){
         return APIResponse.<
-                        Page<CustomerResponse>
+                        Page<UserResponse>
                         >builder()
-                .result(customerService.getAll(page, size))
+                .result(userService.getAll(page, size))
                 .message("Successfully get all customers!")
-                .build();
-    }
-
-    //Get all sort by pages
-    @GetMapping("/get-employees/list")
-    APIResponse<Page<EmployeeResponse>> getAllEmployees(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ){
-        return APIResponse.<Page<EmployeeResponse>>builder()
-                .result(employeeService.getAll(page, size))
-                .message("Successfully get all employees!")
-                .build();
-    }
-
-    @GetMapping("/get-employee/{employeeId}")
-    APIResponse<EmployeeResponse> getEmployeeById(@PathVariable("employeeId") String employeeId){
-        return APIResponse.<EmployeeResponse>builder()
-                .result(employeeService.getById(employeeId))
-                .message("Successfully get user by follow id!")
-                .build();
-    }
-
-    @GetMapping("/get-attendances/list")
-    APIResponse<Page<AttendanceResponse>> getAllAttendances(
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
-        return APIResponse.<Page<AttendanceResponse>>builder()
-                .result(attendanceService.getAllAttendances(page, size))
-                .message("Get all attendances")
-                .build();
-    }
-
-    @PostMapping("/approve/{empId}")
-    APIResponse<EmployeeResponse> approveEmp(@PathVariable("empId") String id) {
-        return APIResponse.<EmployeeResponse>builder()
-                .result(adminService.approveEmployee(id))
-                .message("Approve emp " + id + " successfully")
-                .build();
-    }
-
-    @PostMapping("/reject/{empId}")
-    APIResponse<EmployeeResponse> reject(@PathVariable("empId") String id) {
-        return APIResponse.<EmployeeResponse>builder()
-                .result(adminService.rejectEmployee(id))
-                .message("Reject emp " + id + " successfully")
-                .build();
-    }
-
-    @GetMapping("/get-status/{status}")
-    APIResponse<Page<EmployeeResponse>> findAllByStatusEmp(@PathVariable("status")UserStatus userStatus,
-                                                           @RequestParam(defaultValue = "0") int page,
-                                                           @RequestParam(defaultValue = "10") int size){
-        return APIResponse.<Page<EmployeeResponse>>builder()
-                .result(adminService.findAllByStatusEmployee(page, size, userStatus))
-                .message("Successfully get all employees by status!")
-                .build();
-    }
-
-    @GetMapping("/count-employees")
-    APIResponse<Long> countEmp() {
-        return APIResponse.<Long>builder()
-                .result(adminService.countEmployeeByList())
-                .message("Get count successfully")
                 .build();
     }
 

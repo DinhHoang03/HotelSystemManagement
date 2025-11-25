@@ -7,6 +7,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,6 +24,7 @@ public class ZaloPayController {
     ZaloPayService zaloPayService;
 
     @PostMapping("/order")
+    @PreAuthorize("hasAuthority('PAYMENT_EXECUTE')")
     APIResponse<String> createOrder(@RequestBody ZaloPayOrderRequest request) throws IOException {
         var result = zaloPayService.createPayment(request);
         return APIResponse.<String>builder()

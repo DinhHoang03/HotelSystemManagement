@@ -1,25 +1,20 @@
 package com.humg.HotelSystemManagement.modules.admin_service.services;
 
-import com.humg.HotelSystemManagement.modules.employee_service.resources.responses.EmployeeResponse;
-import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
-import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingRoom;
-import com.humg.HotelSystemManagement.utils.enums.UserStatus;
-import com.humg.HotelSystemManagement.modules.employee_service.models.entities.Employee;
 import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
-import com.humg.HotelSystemManagement.modules.employee_service.mappers.EmployeeMapper;
+import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
+import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingRoom;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRepository;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRoomRepository;
+import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
+import com.humg.HotelSystemManagement.modules.customer_service.resources.responses.UserResponse;
 import com.humg.HotelSystemManagement.modules.payment_service.models.repositories.PaymentBillRepository;
-import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.CustomerRepository;
-import com.humg.HotelSystemManagement.modules.employee_service.models.repositories.EmployeeRepository;
+import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.UserRepository;
 import com.humg.HotelSystemManagement.modules.room_service.models.repositories.RoomRepository;
+import com.humg.HotelSystemManagement.utils.enums.UserStatus;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 
@@ -31,107 +26,65 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('ADMIN')")
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class AdminService {
 
-    EmployeeRepository employeeRepository;
-    CustomerRepository customerRepository;
+    UserRepository userRepository;
     RoomRepository roomRepository;
     BookingRoomRepository bookingRoomRepository;
     PaymentBillRepository paymentBillRepository;
     BookingRepository bookingRepository;
-    EmployeeMapper employeeMapper;
 
-    @PreAuthorize("hasRole('ADMIN')")
-    public EmployeeResponse approveEmployee(String id){
-        Employee employee = employeeRepository.findById(id)
+    public String enableUser(String id){
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        if(employee.getUserStatus() == UserStatus.PENDING || employee.getUserStatus() == UserStatus.REJECTED){
-            employee.setUserStatus(UserStatus.APPROVED);
-            employeeRepository.save(employee);
+        if(user.getUserStatus() == UserStatus.DISABLED){
+            user.setUserStatus(UserStatus.ENABLED);
+            userRepository.save(user);
         }else{
             throw new AppException(AppErrorCode.INVALID_STATUS);
         }
 
-        return employeeMapper.toEmployeeResponse(employee);
+        return "User " + user.getName() + " has successfully " + user.getUserStatus().name();
     }
 
-    @PreAuthorize("hasRole('ADMIN')")
-    public EmployeeResponse rejectEmployee(String id){
-        Employee employee = employeeRepository.findById(id)
+    public String disableUser(String id){
+        User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        if(employee.getUserStatus() == UserStatus.PENDING || employee.getUserStatus() == UserStatus.APPROVED){
-            employee.setUserStatus(UserStatus.REJECTED);
-            employeeRepository.save(employee);
+        if(user.getUserStatus() == UserStatus.ENABLED){
+            user.setUserStatus(UserStatus.DISABLED);
+            userRepository.save(user);
         }else{
             throw new AppException(AppErrorCode.INVALID_STATUS);
         }
 
-        return employeeMapper.toEmployeeResponse(employee);
-    }
-
-    public Page<EmployeeResponse> findAllByStatusEmployee(int page, int size, UserStatus userStatus) {
-
-        Pageable pageable = PageRequest.of(page, size);
-
-        Page<Employee> employees = employeeRepository.findByUserStatus(userStatus, pageable);
-        if(employees.isEmpty()) {
-            throw new AppException(AppErrorCode.LIST_EMPTY);
-        }
-
-        Page<EmployeeResponse> response = employees.map(employee -> {
-            return EmployeeResponse.builder()
-                    .id(employee.getId())
-                    .username(employee.getUsername())
-                    .name(employee.getName())
-                    .gender(employee.getGender().toString())
-                    .dob(employee.getDob())
-                    .email(employee.getEmail())
-                    .phone(employee.getPhone())
-                    .address(employee.getAddress())
-                    .identityId(employee.getIdentityId())
-                    .userStatus(employee.getUserStatus().toString())
-                    .build();
-        });
-        return response;
-    }
-
-    public Long countEmployeeByList() {
-        var count = employeeRepository.count();
-        return count;
+        return "User " + user.getName() + " has successfully " + user.getUserStatus().name();
     }
 
     public Long countCustomerByList() {
-        var count = customerRepository.count();
-        return count;
+        return userRepository.count();
     }
 
     public Long countRoomByList() {
-        var count = roomRepository.count();
-        return count;
+        return roomRepository.count();
     }
 
     public Long countBookingTodayByList(LocalDate now) {
         List<Booking> bookingToday = bookingRepository.getBookingsToday(now);
 
-        long result = bookingToday.size();
-
-        return result;
+        return (long) bookingToday.size();
     }
 
     public Long getTodayRevenue(LocalDate now) {
-        var revenue = paymentBillRepository.getTodayRenevue(now);
-        return revenue;
+        return paymentBillRepository.getTodayRenevue(now);
     }
 
     public Long totalCountUser() {
-        var empC = employeeRepository.count();
-        var cusC = customerRepository.count();
-        var totalC = empC + cusC;
 
-        return totalC;
+        return userRepository.count();
     }
 
     //Tomorrow refactor

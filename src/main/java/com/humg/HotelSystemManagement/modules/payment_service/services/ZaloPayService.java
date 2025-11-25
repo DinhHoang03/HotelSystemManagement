@@ -72,7 +72,7 @@ public class ZaloPayService {
         zaloPayOrder.put("app_id", zaloPayConfig.getAppId());
         zaloPayOrder.put("app_trans_id", getCurrentTimeString("yyMMdd") + "_" + randomId);
         zaloPayOrder.put("app_time", System.currentTimeMillis());
-        zaloPayOrder.put("app_user", bookingBill.getBooking().getCustomer().getUsername());
+        zaloPayOrder.put("app_user", bookingBill.getBooking().getUser().getUsername());
         zaloPayOrder.put("amount", bookingBill.getGrandTotal());
         zaloPayOrder.put("description", "DinhRiseHotel - Payment for the order #" + request.getBookingBillId());
         zaloPayOrder.put("bankcode", "");
@@ -145,7 +145,7 @@ public class ZaloPayService {
                         .paidAmount(bookingBill.getGrandTotal())
                         .status(PaymentStatus.COMPLETED)
                         .createAt(LocalDate.now())
-                        .customer(bookingBill.getBooking().getCustomer())
+                        .user(bookingBill.getBooking().getUser())
                         .build();
 
                 var result = paymentBillRepository.save(paymentBill);
@@ -161,7 +161,7 @@ public class ZaloPayService {
                 bookingService.updatePaymentStatus(bookingId, paymentId);
 
                 sendBookingConfirmationEmail(bookingBill.getBooking(), result.getStatus());
-                log.info("Email send successfully to {}", bookingBill.getBooking().getCustomer().getEmail());
+                log.info("Email send successfully to {}", bookingBill.getBooking().getUser().getEmail());
 
                 return resultJsonString.toString();
             }

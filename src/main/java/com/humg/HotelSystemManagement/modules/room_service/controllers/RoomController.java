@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -18,6 +19,7 @@ class RoomController {
     RoomService roomService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('ROOM_CREATE')") // <--- Chỉ Quản lý/Admin
     APIResponse<RoomResponse> create(@RequestBody RoomRequest request) {
         return APIResponse.<RoomResponse>builder()
                 .result(roomService.create(request))
@@ -26,6 +28,7 @@ class RoomController {
     }
 
     @GetMapping("/list/")
+    @PreAuthorize("hasAuthority('ROOM_VIEW')") // <--- Ai cũng xem được (trừ người ngoài chưa login)
     APIResponse<Page<RoomResponse>> getAllRooms(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -36,22 +39,10 @@ class RoomController {
                 .build();
     }
 
-    /*
-    @GetMapping("/get-by-number/{roomNumber}")
-    APIResponse<RoomResponse> getByRoomNumber(
-            @PathVariable("roomNumber") String roomNumber
-    ) {
-        return APIResponse.<RoomResponse>builder()
-                .result(roomService.getByRoomNumber(roomNumber))
-                .message("Successfully get room by number!")
-                .build();
-    }
-    **/
-
     @DeleteMapping("/del/{roomId}")
-    APIResponse delete(@PathVariable("roomId") Long roomId) {
+    @PreAuthorize("hasAuthority('ROOM_DELETE')") // <--- Chỉ Admin
+    APIResponse<?> delete(@PathVariable("roomId") Long roomId) {
         roomService.delete(roomId);
-
         return APIResponse.builder()
                 .message("Delete room " + roomId + " successfully")
                 .build();

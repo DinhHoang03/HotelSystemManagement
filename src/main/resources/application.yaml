@@ -2,9 +2,9 @@
   name: hotel-system-management
 
 server:
-  port: 8443
+  port: 8080
   ssl:
-    enabled: true
+    enabled: false
     key-store: classpath:keystore.jks
     key-store-password:
     key-store-type: JKS
@@ -78,12 +78,14 @@ zalo-pay:
   create-order-url: "https://sb-openapi.zalopay.vn/v2/create"
   order-status-url: "https://sb-openapi.zalopay.vn/v2/query"
   redirect-url: "https://localhost:8443/payment-success.html"
-  callback-url: https://2c6d13f5c971.ngrok-free.app/zalopay/callback
+  callback-url: https://b79352293769.ngrok-free.app/zalopay/callback
 
 jwt:
   signerKey:
-  valid-duration: 1 #in hour
-  refreshable-duration: 7 #in days
+  valid-duration: 15 #in 15 minutes
+  refreshable-duration: 10080 #in 7 days
+
+
 
 
 

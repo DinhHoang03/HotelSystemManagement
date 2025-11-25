@@ -8,7 +8,8 @@ import java.util.List;
 
 @Repository
 public interface BookingItemsRepository extends JpaRepository<BookingItems, String> {
-    List<BookingItems> findByUsernameAndBookingItemIdIn(String username, List<String> bookingItemIds);
-    int deleteByBookingIsNull(); // Để xóa dữ liệu mồ côi
 
+    List<BookingItems> findByUsernameAndBookingItemIdIn(String username, List<String> bookingItemIds);
+
+    int deleteByBookingIsNull(); // Xóa dữ liệu rác
 }

@@ -8,6 +8,7 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -19,6 +20,7 @@ public class PayPalController {
     PayPalService payPalService;
 
     @PostMapping("/order")
+    @PreAuthorize("hasAuthority('PAYMENT_EXECUTE')")
     public APIResponse<String> createOrder(@RequestBody PayPalOrderRequest request) throws PayPalRESTException {
         return APIResponse.<String>builder()
                 .result(payPalService.createOrder(request))
