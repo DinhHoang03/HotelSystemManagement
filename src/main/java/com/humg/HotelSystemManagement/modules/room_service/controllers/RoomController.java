@@ -15,11 +15,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/room")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-class RoomController {
+public class RoomController {
     RoomService roomService;
 
+    // 1. TẠO PHÒNG
     @PostMapping("/create")
-    @PreAuthorize("hasAuthority('ROOM_CREATE')") // <--- Chỉ Quản lý/Admin
+    @PreAuthorize("hasAuthority('ROOM_CREATE')")
     APIResponse<RoomResponse> create(@RequestBody RoomRequest request) {
         return APIResponse.<RoomResponse>builder()
                 .result(roomService.create(request))
@@ -27,8 +28,30 @@ class RoomController {
                 .build();
     }
 
-    @GetMapping("/list/")
-    @PreAuthorize("hasAuthority('ROOM_VIEW')") // <--- Ai cũng xem được (trừ người ngoài chưa login)
+    // 2. CẬP NHẬT PHÒNG (API MỚI)
+    // Dùng để: Đổi loại phòng, Đổi tầng, hoặc Tạp vụ cập nhật đã dọn xong (isClean = true)
+    @PutMapping("/update/{roomId}")
+    @PreAuthorize("hasAuthority('ROOM_CREATE')") // Hoặc tạo quyền riêng 'ROOM_UPDATE' nếu muốn
+    APIResponse<RoomResponse> update(@PathVariable("roomId") Long roomId, @RequestBody RoomRequest request) {
+        return APIResponse.<RoomResponse>builder()
+                .result(roomService.update(roomId, request))
+                .message("Update room successfully")
+                .build();
+    }
+
+    // 3. XEM CHI TIẾT 1 PHÒNG (API MỚI)
+    @GetMapping("/info/{roomId}")
+    @PreAuthorize("hasAuthority('ROOM_VIEW')")
+    APIResponse<RoomResponse> getRoomById(@PathVariable("roomId") Long roomId) {
+        return APIResponse.<RoomResponse>builder()
+                .result(roomService.getById(roomId))
+                .message("Get room detail successfully")
+                .build();
+    }
+
+    // 4. DANH SÁCH PHÒNG (Phân trang)
+    @GetMapping("/list")
+    // Public hoặc ROOM_VIEW đều được
     APIResponse<Page<RoomResponse>> getAllRooms(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
@@ -39,8 +62,9 @@ class RoomController {
                 .build();
     }
 
+    // 5. XÓA PHÒNG
     @DeleteMapping("/del/{roomId}")
-    @PreAuthorize("hasAuthority('ROOM_DELETE')") // <--- Chỉ Admin
+    @PreAuthorize("hasAuthority('ROOM_DELETE')")
     APIResponse<?> delete(@PathVariable("roomId") Long roomId) {
         roomService.delete(roomId);
         return APIResponse.builder()

@@ -1,7 +1,7 @@
 package com.humg.HotelSystemManagement.modules.auth_service.configs;
 
-import com.humg.HotelSystemManagement.modules.auth_service.filters.JwtCookieFilter; // Import Filter của bạn
-import lombok.RequiredArgsConstructor; // Dùng cái này để tự Inject Filter
+import com.humg.HotelSystemManagement.modules.auth_service.filters.JwtCookieFilter;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
@@ -10,8 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
@@ -22,43 +21,53 @@ import java.util.List;
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@RequiredArgsConstructor // <--- Tự động Inject các field final (jwtCookieFilter)
+@RequiredArgsConstructor
 public class SecurityConfig {
 
-    // Inject Filter vào đây (Không cần @Autowired vì đã có @RequiredArgsConstructor)
     private final JwtCookieFilter jwtCookieFilter;
+    private final JwtAuthenticationConverter jwtAuthenticationConverter;
 
-    // Các endpoint public
+    // --- CẬP NHẬT DANH SÁCH PUBLIC ---
     private static final String[] PUBLIC_API_ENDPOINTS = {
+            // 1. Auth & User
             "/auth/**",
             "/customer/register",
-            "/employee/register",
-            "/email/**",
-            "/zalopay/**",
-            "/offer/list/**"
-    };
 
-    @Bean
-    public PasswordEncoder bcryptPasswordEncoder(){
-        return new BCryptPasswordEncoder(10);
-    }
+            // 2. Room Service (Cho khách xem phòng)
+            "/room/list/**",        // Xem danh sách phòng
+            "/room/info/**",        // Xem chi tiết 1 phòng (MỚI)
+
+            // 3. Room Type Service (Cho khách xem loại phòng)
+            "/type/list/**",        // Xem danh sách loại phòng (MỚI)
+            "/type/get-all/list",   // Path cũ (giữ lại nếu còn dùng)
+            "/type/info/**",        // Xem chi tiết loại phòng (MỚI)
+
+            // 4. Hotel Offers (Menu dịch vụ)
+            "/api/v1/offers/list",
+            "/api/v1/offers/category/**",
+
+            // 5. Payment Callback (ZaloPay gọi ngược lại)
+            "/zalopay/callback/**",
+
+            // 6. Upload file (Nếu muốn public ảnh thì mở, không thì thôi)
+            "/api/v1/upload/**"
+    };
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(Customizer.withDefaults())
                 .csrf(AbstractHttpConfigurer::disable)
-
-                // QUAN TRỌNG: Thêm Filter Cookie vào trước
                 .addFilterBefore(jwtCookieFilter, UsernamePasswordAuthenticationFilter.class)
-
                 .authorizeHttpRequests(authorize -> authorize
+                        // Cho phép các API trong danh sách Public truy cập thoải mái
                         .requestMatchers(PUBLIC_API_ENDPOINTS).permitAll()
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        // Các API còn lại bắt buộc phải có Token (Authenticated)
                         .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2
-                        .jwt(Customizer.withDefaults()) // Nó sẽ tự tìm Bean JwtDecoder bên JwtConfig
+                        .jwt(jwtConfigurer -> jwtConfigurer
+                                .jwtAuthenticationConverter(jwtAuthenticationConverter))
                         .authenticationEntryPoint(new JWTAuthenticationEntryPoint())
                 )
                 .sessionManagement(session -> session
@@ -71,17 +80,12 @@ public class SecurityConfig {
     @Bean
     public UrlBasedCorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-
-        // QUAN TRỌNG: Phải liệt kê chính xác, không được dùng "*"
-        // Bạn đang chạy frontend ở port nào? Kiểm tra thanh địa chỉ trình duyệt.
         configuration.setAllowedOrigins(List.of(
-                "http://localhost:5173"   // Port của VS Code Live Server
+                "http://127.0.0.1:5173",
+                "http://localhost:5173"
         ));
-
         configuration.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(List.of("Authorization", "Cache-Control", "Content-Type"));
-
-        // BẮT BUỘC PHẢI CÓ DÒNG NÀY ĐỂ NHẬN COOKIE
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

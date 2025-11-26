@@ -15,7 +15,7 @@ import java.util.List;
 @Component
 @Slf4j
 @RequiredArgsConstructor
-@Order(1) // QUAN TRỌNG: Chạy đầu tiên
+@Order(1) // Chạy trước RoleSeeder
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class PermissionSeeder implements CommandLineRunner {
     PermissionRepository permissionRepository;
@@ -23,43 +23,42 @@ public class PermissionSeeder implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (permissionRepository.count() == 0) {
-            log.info("Seeding Permissions...");
+            log.info("Seeding Permissions for ADMIN & CUSTOMER model...");
 
             List<Permission> permissions = List.of(
-                    // 1. Room Management
-                    build("ROOM_CREATE", "Create new rooms, types, statuses"),
-                    build("ROOM_VIEW", "View room lists and details"),
-                    build("ROOM_DELETE", "Delete rooms"),
-                    build("OFFER_CREATE", "Create hotel offers"),
-                    build("OFFER_DELETE", "Delete hotel offers"),
+                    // === 1. QUẢN LÝ PHÒNG (Room) ===
+                    build("ROOM_CREATE", "Tạo phòng và loại phòng mới (Admin)"),
+                    build("ROOM_VIEW", "Xem danh sách và chi tiết phòng (Public)"),
+                    build("ROOM_DELETE", "Xóa phòng (Admin)"),
 
-                    // 2. Booking & Payment
-                    build("BOOKING_CREATE", "Create new bookings"),
-                    build("BOOKING_VIEW", "View booking details"),
-                    build("BOOKING_CANCEL", "Cancel bookings"),
-                    build("BOOKING_UPDATE", "Add items/services to booking"),
-                    build("PAYMENT_EXECUTE", "Execute payments (Zalo/PayPal)"),
+                    // === 2. DỊCH VỤ KHÁCH SẠN (Offer/Menu) ===
+                    build("OFFER_CREATE", "Tạo dịch vụ ăn uống/spa (Admin)"),
+                    build("OFFER_VIEW", "Xem menu dịch vụ (Public)"),
+                    build("OFFER_DELETE", "Xóa dịch vụ (Admin)"),
 
-                    // 3. Bill Management
-                    build("BILL_CREATE", "Create bills (Check-out)"),
-                    build("BILL_VIEW", "View bills"),
-                    build("BILL_DELETE", "Delete bills (Sensitive)"),
+                    // === 3. ĐẶT PHÒNG (Booking) ===
+                    build("BOOKING_CREATE", "Đặt phòng mới (Customer)"),
+                    build("BOOKING_VIEW", "Xem lịch sử/chi tiết đặt phòng"),
+                    build("BOOKING_CANCEL", "Hủy đặt phòng"),
+                    build("BOOKING_UPDATE", "Thêm dịch vụ vào đơn đặt phòng"),
 
-                    // 4. Customer Management
-                    build("CUSTOMER_UPDATE", "Update customer info"),
-                    build("CUSTOMER_DELETE", "Delete customer accounts"),
-                    build("CUSTOMER_PROFILE", "View own profile"),
-                    build("CUSTOMER_LIST_VIEW", "View list of customers"),
+                    // === 4. THANH TOÁN (Payment & Bill) ===
+                    build("PAYMENT_EXECUTE", "Thực hiện thanh toán Online (Zalo/PayPal)"),
+                    build("BILL_CREATE", "Tạo hóa đơn/Check-out (Admin)"),
+                    build("BILL_VIEW", "Xem hóa đơn"),
+                    build("BILL_DELETE", "Xóa hóa đơn (Admin)"),
 
-                    // 5. Admin & Employee Management
-                    build("EMPLOYEE_VIEW", "View employee list"),
-                    build("EMPLOYEE_APPROVE", "Approve/Reject employees"),
-                    build("ATTENDANCE_VIEW_ALL", "View all attendance records"),
-                    build("DASHBOARD_STATS", "View revenue and statistics"),
+                    // === 5. QUẢN LÝ TÀI KHOẢN (Customer & User) ===
+                    build("CUSTOMER_UPDATE", "Cập nhật thông tin cá nhân"),
+                    build("CUSTOMER_PROFILE", "Xem profile bản thân"),
+                    build("CUSTOMER_DELETE", "Xóa tài khoản khách hàng (Admin)"),
+                    build("CUSTOMER_LIST_VIEW", "Xem danh sách khách hàng (Admin)"),
 
-                    // 6. System
-                    build("SYSTEM_MANAGE", "Manage Roles and Permissions"),
-                    build("AI_CHAT", "Use Gemini AI Chatbot")
+                    // === 6. HỆ THỐNG & TIỆN ÍCH KHÁC ===
+                    build("SYSTEM_MANAGE", "Quản lý Role/Permission (Admin)"),
+                    build("DASHBOARD_STATS", "Xem thống kê doanh thu (Admin)"),
+                    build("AI_CHAT", "Chat với Gemini AI"),
+                    build("FILES_UPLOAD", "Upload ảnh lên hệ thống")
             );
 
             permissionRepository.saveAll(permissions);

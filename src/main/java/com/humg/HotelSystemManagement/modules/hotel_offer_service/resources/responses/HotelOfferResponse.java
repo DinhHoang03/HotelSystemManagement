@@ -11,6 +11,11 @@ import lombok.experimental.FieldDefaults;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class HotelOfferResponse {
-    String serviceType;
+    String id;
+    String category;
+    String name;
+    String description;
+    String imageUrl;
     Long price;
+    String unitInfo;
 }

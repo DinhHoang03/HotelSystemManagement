@@ -13,7 +13,16 @@ import lombok.experimental.FieldDefaults;
 public class RoomTypeResponse {
     Long roomTypeId;
     String roomTypes;
+
+    String imageUrl;
+    String description;
+
     Long halfDayPrice;
     Long fullDayPrice;
     Long fullWeekPrice;
+
+    Integer maxAdults;
+    Integer maxChildren;
+    Double area;
+    String amenities;
 }

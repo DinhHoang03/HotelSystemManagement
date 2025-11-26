@@ -3,7 +3,6 @@ package com.humg.HotelSystemManagement.modules.room_service.models.entities;
 import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,51 +22,42 @@ public class RoomType {
     Long roomTypeId;
 
     @Column(name = "room_types", nullable = false, unique = true)
-    //@Enumerated(EnumType.STRING)
-    String roomTypes;
+    String roomTypes; // Standard, Deluxe, VIP...
 
-    @Column(name = "half_day_price", nullable = false)
+    @Column(name = "image_url")
+    String imageUrl;
+
+    @Column(name = "description", columnDefinition = "TEXT")
+    String description;
+
+    // --- GIÁ TIỀN (Giữ nguyên) ---
+    @Column(name = "half_day_price")
     Long halfDayPrice;
 
-    @Column(name = "full_day_price", nullable = false)
+    @Column(name = "full_day_price")
     Long fullDayPrice;
 
-    @Column(name = "full_week_price", nullable = false)
+    @Column(name = "full_week_price")
     Long fullWeekPrice;
 
-    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
+    // --- MỞ RỘNG 1: SỨC CHỨA (Quan trọng để check logic đặt phòng) ---
+    @Column(name = "max_adults", nullable = false)
+    @Builder.Default
+    Integer maxAdults = 2; // Tối đa người lớn
+
+    @Column(name = "max_children", nullable = false)
+    @Builder.Default
+    Integer maxChildren = 1; // Tối đa trẻ em
+
+    @Column(name = "area_m2")
+    Double area; // Diện tích phòng (ví dụ: 30.5 m2)
+
+    // --- MỞ RỘNG 2: TIỆN ÍCH (Amenities) ---
+    // Lưu dạng chuỗi JSON hoặc CSV đơn giản: "Wifi, Tivi, Bồn tắm, Ban công"
+    // Để hiển thị icon lên web cho đẹp
+    @Column(name = "amenities", columnDefinition = "TEXT")
+    String amenities;
+
+    @OneToMany(mappedBy = "roomType", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     List<Room> rooms = new ArrayList<>();
-
-    @Override
-    public String toString() {
-        return roomTypes;
-    }
-
-    /**
-    //@PrePersist
-    public void setPrices(){
-        if(halfDayPrice == null){
-            this.halfDayPrice = switch (roomTypes){
-                case RoomTypes.STANDARD -> halfDayPrice = 500000L;
-                case RoomTypes.SUPERIOR -> halfDayPrice = 700000L;
-                case RoomTypes.DELUXE -> halfDayPrice = 1000000L;
-            };
-        }
-
-        if(fullDayPrice == null){
-            this.fullDayPrice = switch (roomTypes){
-                case RoomTypes.STANDARD -> fullDayPrice = 800000L;
-                case RoomTypes.SUPERIOR -> fullDayPrice = 1200000L;
-                case RoomTypes.DELUXE -> fullDayPrice = 1800000L;
-            };
-        }
-
-        if(fullWeekPrice == null){
-            this.fullWeekPrice = switch (roomTypes){
-                case RoomTypes.STANDARD -> fullWeekPrice = 5000000L;
-                case RoomTypes.SUPERIOR -> fullWeekPrice = 7500000L;
-                case RoomTypes.DELUXE -> fullWeekPrice = 12000000L;
-            };
-        }
-    }*/
 }

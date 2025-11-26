@@ -14,25 +14,14 @@ import java.util.Set;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@ToString(onlyExplicitlyIncluded = true) //Cho phép thêm các trường được đánh dấu vào toString
+@ToString(onlyExplicitlyIncluded = true)
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class Role {
     @Id
-    @ToString.Include //Thêm trường name vào toString
+    @ToString.Include
     String name;
     String description;
 
     @ManyToMany
     Set<Permission> permissions;
-
-    /**
-     *     ACCOUNTANT,
-     *     DEPARTMENT_HEAD,
-     *     RECEPTIONIST,
-     *     CLEANER,
-     *     WAITER,
-     *     ADMIN
-     */
-
-
 }

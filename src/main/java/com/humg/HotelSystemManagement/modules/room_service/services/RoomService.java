@@ -9,7 +9,6 @@ import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
 import com.humg.HotelSystemManagement.modules.room_service.models.repositories.RoomRepository;
 import com.humg.HotelSystemManagement.modules.room_service.models.repositories.RoomTypeRepository;
 import com.humg.HotelSystemManagement.utils.interfaces.ISimpleCRUDService;
-import com.humg.HotelSystemManagement.utils.NormalizeString;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -24,76 +23,44 @@ import org.springframework.stereotype.Service;
 public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest, Long> {
     RoomRepository roomRepository;
     RoomTypeRepository roomTypeRepository;
-    //RoomStatusRepository roomStatusRepository;
-    NormalizeString normalizeString;
 
     @Override
     public RoomResponse create(RoomRequest request) {
         if(request == null) throw new AppException(AppErrorCode.REQUEST_IS_NULL);
 
-        String roomTypeNormalized = normalizeString.normalizedString(request.getRoomType());
-        //String roomStatusNormalized = normalizeString.normalizedString(request.getRoomStatus());
-
-        var status = RoomStatus.AVAILABLE;
         if(roomRepository.existsByRoomNumber(request.getRoomNumber()))
             throw new AppException(AppErrorCode.OBJECT_EXISTED);
 
-        var roomType = roomTypeRepository.findByRoomTypes(request.getRoomType())
+        var roomType = roomTypeRepository.findById(request.getRoomTypeId())
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
-        //var roomStatus = roomStatusRepository.findByRoomStatus(roomStatusNormalized);
-
-        String roomTypeString = roomType.getRoomTypes();
 
         Room room = Room.builder()
                 .roomNumber(request.getRoomNumber())
                 .roomType(roomType)
-                .roomStatus(status)
+                .roomStatus(RoomStatus.AVAILABLE)
+                // --- NEW FIELDS ---
+                .floor(request.getFloor())
+                .viewType(request.getViewType())
+                .isClean(true) // Mặc định tạo mới là sạch
                 .build();
 
         var result = roomRepository.save(room);
-
-        return RoomResponse.builder()
-                .roomId(result.getRoomId())
-                .roomNumber(result.getRoomNumber())
-                .roomType(roomTypeString)
-                .roomStatus(result.getRoomStatus().toString())
-                .build();
+        return mapToResponse(result);
     }
 
     @Override
     public Page<RoomResponse> getAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-
         Page<Room> result = roomRepository.findAll(pageable);
-
         if(result.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
-
-        Page<RoomResponse> response = result.map(room -> {
-            return RoomResponse.builder()
-                    .roomId(room.getRoomId())  // Đảm bảo trả về roomId
-                    .roomNumber(room.getRoomNumber())
-                    .roomType(room.getRoomType().getRoomTypes())
-                    .roomStatus(room.getRoomStatus().toString())
-                    .build();
-        });
-
-        return response;
+        return result.map(this::mapToResponse);
     }
-
 
     public RoomResponse getById(Long id) {
         var room = roomRepository.findById(id).orElseThrow(
                 () -> new AppException(AppErrorCode.OBJECT_IS_NULL)
         );
-
-        RoomResponse result = RoomResponse.builder()
-                .roomId(room.getRoomId())
-                .roomNumber(room.getRoomNumber())
-                .roomType(room.getRoomType().getRoomTypes())
-                .roomStatus(room.getRoomStatus().toString())
-                .build();
-
-        return result;
+        return mapToResponse(room);
     }
 
     @Override
@@ -104,34 +71,45 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
                 () -> new AppException(AppErrorCode.OBJECT_IS_NULL)
         );
 
-        var roomTypeNormalized = normalizeString.normalizedString(request.getRoomType());
-        //var roomStatusNormalized = normalizeString.normalizedString(request.getRoomStatus());
+        if (request.getRoomTypeId() != null) {
+            var roomType = roomTypeRepository.findById(request.getRoomTypeId())
+                    .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+            room.setRoomType(roomType);
+        }
 
-        //var roomStatus = roomStatusRepository.findByRoomStatus(roomStatusNormalized);
-        var roomType = roomTypeRepository.findByRoomTypes(roomTypeNormalized)
-                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+        if (request.getRoomNumber() != null) room.setRoomNumber(request.getRoomNumber());
+        if (request.getFloor() != null) room.setFloor(request.getFloor());
+        if (request.getViewType() != null) room.setViewType(request.getViewType());
 
-        //room.setRoomStatus(roomStatus.get());
-        room.setRoomType(roomType);
+        // Update trạng thái vệ sinh (cho tạp vụ)
+        if (request.getIsClean() != null) room.setClean(request.getIsClean());
 
         var update = roomRepository.save(room);
-
-        RoomResponse result = RoomResponse.builder()
-                .roomId(update.getRoomId())
-                .roomNumber(update.getRoomNumber())
-                .roomStatus(update.getRoomStatus().toString())
-                .roomType(update.getRoomType().getRoomTypes())
-                .build();
-
-        return result;
+        return mapToResponse(update);
     }
 
     @Override
     public void delete(Long id) {
-        var roomType = roomRepository.findById(id).orElseThrow(
-                () -> new AppException(AppErrorCode.OBJECT_IS_NULL)
-        );
-
+        if (!roomRepository.existsById(id)) {
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
+        }
         roomRepository.deleteById(id);
+    }
+
+    private RoomResponse mapToResponse(Room room) {
+        return RoomResponse.builder()
+                .roomId(room.getRoomId())
+                .roomNumber(room.getRoomNumber())
+                .roomStatus(room.getRoomStatus().toString())
+                .floor(room.getFloor())
+                .viewType(room.getViewType())
+                .isClean(room.isClean())
+
+                // Flatten RoomType info
+                .roomTypeId(room.getRoomType().getRoomTypeId())
+                .roomTypeName(room.getRoomType().getRoomTypes())
+                .priceByDay(room.getRoomType().getFullDayPrice())
+                .maxAdults(room.getRoomType().getMaxAdults())
+                .build();
     }
 }

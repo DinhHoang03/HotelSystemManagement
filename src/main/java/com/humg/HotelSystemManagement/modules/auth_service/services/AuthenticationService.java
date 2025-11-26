@@ -2,7 +2,6 @@ package com.humg.HotelSystemManagement.modules.auth_service.services;
 
 import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
-import com.humg.HotelSystemManagement.modules.auth_service.configs.SecurityConfig;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.*;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.responses.AuthenticationResponse;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.responses.IntrospectResponse;
@@ -40,7 +39,7 @@ public class AuthenticationService {
 
     UserRepository userRepository; // Chỉ dùng 1 Repo duy nhất
     ExTokenHandleService exTokenHandleService;
-    SecurityConfig securityConfig;
+    PasswordEncoder passwordEncoder;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -61,7 +60,6 @@ public class AuthenticationService {
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         // 2. Check Pass
-        PasswordEncoder passwordEncoder = securityConfig.bcryptPasswordEncoder();
         boolean authenticated = passwordEncoder.matches(request.getPassword(), user.getPassword());
 
         if (!authenticated) throw new AppException(AppErrorCode.UNAUTHENTICATED);
@@ -201,7 +199,7 @@ public class AuthenticationService {
             throw new AppException(AppErrorCode.USER_NOT_EXISTED);
         }
 
-        user.setPassword(securityConfig.bcryptPasswordEncoder().encode(request.getNewPassword()));
+        user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
     }
 

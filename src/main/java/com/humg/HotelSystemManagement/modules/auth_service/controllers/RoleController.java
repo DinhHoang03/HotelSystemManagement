@@ -7,6 +7,7 @@ import com.humg.HotelSystemManagement.modules.auth_service.services.RoleService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -20,6 +21,7 @@ public class RoleController {
     RoleService roleService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('SYSTEM_MANAGE')")
     APIResponse<RoleResponse> createRole(@RequestBody RoleRequest request){
         return APIResponse.<RoleResponse>builder()
                 .result(roleService.createRole(request))
@@ -28,6 +30,7 @@ public class RoleController {
     }
 
     @GetMapping("/get-all")
+    @PreAuthorize("hasAuthority('SYSTEM_MANAGE')")
     APIResponse<List<RoleResponse>> getAllRole(){
         return APIResponse.<List<RoleResponse>>builder()
                 .result(roleService.getAllRole())
@@ -36,6 +39,7 @@ public class RoleController {
     }
 
     @DeleteMapping("/del/{roleName}")
+    @PreAuthorize("hasAuthority('SYSTEM_MANAGE')")
     APIResponse deleteRole(@PathVariable("roleName") String roleName){
         roleService.deleteRole(roleName);
         return APIResponse.builder()

@@ -10,6 +10,4 @@ import java.util.List;
 public interface BookingItemsRepository extends JpaRepository<BookingItems, String> {
 
     List<BookingItems> findByUsernameAndBookingItemIdIn(String username, List<String> bookingItemIds);
-
-    int deleteByBookingIsNull(); // Xóa dữ liệu rác
 }

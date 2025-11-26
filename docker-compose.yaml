@@ -1,0 +1,61 @@
+version: '3.8'
+
+services:
+  # --- DB & Redis (Giữ nguyên) ---
+  mysql_db:
+    image: mysql:8.0
+    container_name: hotel_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: dinh1012
+      MYSQL_DATABASE: hotel_database_management
+    ports: ["3306:3306"]
+
+  redis_cache:
+    image: redis:alpine
+    container_name: hotel_redis
+    ports: ["6379:6379"]
+
+  minio:
+    image: minio/minio
+    container_name: hotel_minio
+    command: server /data --console-address ":9001"
+    environment:
+      - MINIO_ROOT_USER=minioadmin
+      - MINIO_ROOT_PASSWORD=minioadmin
+    ports: ["9000:9000", "9001:9001"]
+
+  # --- Dịch vụ NGROK (Mới thêm) ---
+  ngrok:
+    image: ngrok/ngrok:latest
+    container_name: hotel_ngrok
+    ports:
+      - "4040:4040" # Cổng API để Java gọi lấy link
+    environment:
+      # Thay token của bạn vào đây (Bắt buộc để chạy docker ổn định)
+      NGROK_AUTHTOKEN: "35HLHDnh5YqrSLi20dpjNAn5ZJQ_6otWYCC76vqtkUkVu5ZJj"
+    command:
+      # Trỏ tunnel vào service backend cổng 8080
+      - "http"
+      - "hotel-backend:8080"
+    depends_on:
+      - hotel-backend # Ngrok chạy phụ thuộc backend, nhưng backend lại đợi ngrok (qua script)
+
+  # --- Backend Spring Boot ---
+  hotel-backend:
+    build: .
+    container_name: hotel_backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mysql_db
+      - redis_cache
+    environment:
+      # Config DB
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql_db:3306/hotel_database_management?allowPublicKeyRetrieval=true&useSSL=false
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: dinh1012
+      SPRING_DATA_REDIS_HOST: redis_cache
+
+      # Biến này sẽ được script entrypoint.sh tự điền đè lên, cứ khai báo cho vui
+      ZALO_CALLBACK_URL: "placeholder"

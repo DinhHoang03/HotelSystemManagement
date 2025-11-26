@@ -20,7 +20,23 @@ public class Room {
     private Long roomId;
 
     @Column(name = "room_number", nullable = false, unique = true)
-    String roomNumber;
+    String roomNumber; // P101, P202
+
+    // --- MỞ RỘNG 1: VỊ TRÍ ---
+    @Column(name = "floor")
+    Integer floor; // Tầng mấy (1, 2, 3...) -> Để khách chọn tầng cao/thấp
+
+    // --- MỞ RỘNG 2: ĐẶC ĐIỂM RIÊNG ---
+    @Column(name = "view_type")
+    String viewType; // "Sea View" (Hướng biển), "City View", "Garden View"
+    // Cái này quan trọng vì cùng là loại VIP nhưng view biển giá có thể khác hoặc khách thích hơn.
+
+    // --- MỞ RỘNG 3: TRẠNG THÁI VỆ SINH ---
+    // RoomStatus (AVAILABLE/BOOKED) chỉ nói về việc đặt phòng.
+    // Cần thêm biến này để bộ phận buồng phòng (Housekeeping) biết.
+    @Column(name = "is_clean")
+    @Builder.Default
+    boolean isClean = true; // true: Sạch, false: Chưa dọn (Sau khi khách checkout)
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_type_id", nullable = false)

@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.modules.payment_service.models.entities;
 
+import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
 import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
 import com.humg.HotelSystemManagement.utils.enums.PaymentMethod;
 import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
@@ -7,7 +8,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -38,8 +39,14 @@ public class PaymentBill {
     PaymentMethod paymentMethod;
 
     @Column(name = "create_at", nullable = false)
-    LocalDate createAt;
+    LocalDateTime createAt;
 
+    // Link Payment với Booking để biết trả tiền cho đơn nào
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booking_id", nullable = false)
+    Booking booking;
+
+    // Giữ lại User để thống kê nhanh
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     User user;

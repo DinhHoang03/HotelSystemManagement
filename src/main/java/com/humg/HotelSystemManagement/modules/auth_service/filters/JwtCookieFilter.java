@@ -1,6 +1,5 @@
 package com.humg.HotelSystemManagement.modules.auth_service.filters;
 
-import com.humg.HotelSystemManagement.modules.redis_service.services.ExTokenHandleService;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -12,9 +11,8 @@ import org.springframework.lang.NonNull;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtException;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
@@ -27,7 +25,6 @@ public class JwtCookieFilter extends OncePerRequestFilter {
 
     private final JwtDecoder jwtDecoder;
     private final JwtAuthenticationConverter jwtAuthenticationConverter;
-    private final ExTokenHandleService exTokenHandleService;
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
@@ -37,41 +34,49 @@ public class JwtCookieFilter extends OncePerRequestFilter {
 
         String token = null;
 
-        // 1. Tìm Token trong Cookie (Lưu ý: Tìm "access_token" cho khớp với Controller)
+        // 1. Tìm Token trong Cookie
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
                 if ("access_token".equals(cookie.getName())) {
                     token = cookie.getValue();
-                    break; // Tìm thấy rồi thì dừng loop
+                    break;
                 }
             }
         }
 
-        // 2. Nếu có Token và chưa xác thực trong SecurityContext
+        // 2. Nếu không thấy trong Cookie, thử tìm trong Header (Authorization: Bearer ...)
+        // (Để support cả Postman khi test bằng Header)
+        if (token == null) {
+            String authHeader = request.getHeader("Authorization");
+            if (authHeader != null && authHeader.startsWith("Bearer ")) {
+                token = authHeader.substring(7);
+            }
+        }
+
+        // 3. Nếu có token và chưa được xác thực trong Context
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                // Giải mã Token (Validate chữ ký và thời gian hết hạn)
+                // Giải mã Token (Verify chữ ký, hết hạn...)
                 Jwt jwt = jwtDecoder.decode(token);
 
-                // [QUAN TRỌNG] Kiểm tra xem Token có nằm trong Blacklist (đã Logout) không?
-                if (!exTokenHandleService.isTokenBlackListed(jwt.getId())) {
+                // Chuyển đổi JWT thành Authentication object (Gồm cả Role/Permission)
+                // Bước này cực quan trọng để @PreAuthorize hoạt động
+                var authentication = (JwtAuthenticationToken) jwtAuthenticationConverter.convert(jwt);
 
-                    // Token sạch -> Convert sang Authentication và set vào Context
-                    JwtAuthenticationToken authentication = (JwtAuthenticationToken) jwtAuthenticationConverter.convert(jwt);
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                // Nạp vào Security Context
+                SecurityContextHolder.getContext().setAuthentication(authentication);
 
-                } else {
-                    // Token hợp lệ về mặt chữ ký nhưng đã bị người dùng Logout
-                    log.warn("Token đã bị từ chối do nằm trong Blacklist (JTI: {})", jwt.getId());
-                }
+                log.debug("Authenticated user: {}", authentication.getName());
+                log.debug("Authorities: {}", authentication.getAuthorities());
 
-            } catch (JwtException e) {
-                // Token lỗi, hết hạn hoặc giả mạo -> Bỏ qua, coi như người dùng chưa đăng nhập
-                // Spring Security sẽ tự chặn ở các Filter phía sau nếu API yêu cầu quyền
+            } catch (Exception e) {
+                // Nếu Token lỗi (hết hạn, sai chữ ký), ta chỉ log và bỏ qua.
+                // Request sẽ đi tiếp dưới dạng "Anonymous" (Vô danh) -> Gặp Controller sẽ bị 401
+                log.error("Failed to authenticate JWT from Cookie: {}", e.getMessage());
+                SecurityContextHolder.clearContext();
             }
         }
 
-        // 3. Cho request đi tiếp
         filterChain.doFilter(request, response);
     }
 }

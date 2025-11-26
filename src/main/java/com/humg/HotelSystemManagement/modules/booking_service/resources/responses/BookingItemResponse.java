@@ -10,7 +10,9 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingItemResponse {
     String bookingItemId;
-    String hotelOffer;
+    String hotelOfferName; // Trả về tên món: "Phở Bò", "Coca Cola"
+    String imageUrl;       // Kèm ảnh cho đẹp
     int quantity;
-    Long totalItemsPrice;
+    Long unitPrice;        // Giá đơn vị
+    Long totalItemsPrice;  // Tổng tiền (Giá x Số lượng)
 }

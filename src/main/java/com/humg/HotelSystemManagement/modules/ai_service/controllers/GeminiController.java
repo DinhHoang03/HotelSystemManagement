@@ -6,6 +6,7 @@ import com.humg.HotelSystemManagement.modules.ai_service.services.GeminiService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -19,6 +20,7 @@ public class GeminiController {
     GeminiService genemiService;
 
     @PostMapping("/ask")
+    @PreAuthorize("hasAuthority('AI_CHAT')")
     APIResponse<String> askQuestion(@RequestBody PromptRequest request) {
         String answer = genemiService.getChatAnswer(request);
         return APIResponse.<String>builder()

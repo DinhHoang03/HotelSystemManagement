@@ -9,8 +9,20 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoomTypeRequest {
-    String roomTypes;
+    String roomTypes; // Tên loại phòng: VIP, Standard...
+
+    // --- NEW FIELDS ---
+    String imageUrl;
+    String description;
+
+    // Giá
     Long halfDayPrice;
     Long fullDayPrice;
     Long fullWeekPrice;
+
+    // Sức chứa & Tiện ích
+    Integer maxAdults;
+    Integer maxChildren;
+    Double area;
+    String amenities; // "Wifi, Tivi, AC"
 }

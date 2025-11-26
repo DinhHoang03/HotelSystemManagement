@@ -38,9 +38,11 @@ public class BookingRoom {
     BookingStatus bookingStatus;
 
     @Column(nullable = true)
-    String username;
+    String username; // Người đặt phòng này (có thể khác người book chính)
 
-    @OneToMany(mappedBy = "bookingRoom", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY, orphanRemoval = false)
+    // Logic cũ của bạn: 1 BookingRoom chứa nhiều Room thực tế
+    // Lưu ý: Cascade MERGE/PERSIST để khi lưu BookingRoom thì cập nhật trạng thái Room
+    @OneToMany(mappedBy = "bookingRoom", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
     List<Room> rooms = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)

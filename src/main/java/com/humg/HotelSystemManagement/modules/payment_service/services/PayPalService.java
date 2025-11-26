@@ -1,17 +1,13 @@
 package com.humg.HotelSystemManagement.modules.payment_service.services;
 
+import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
+import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRepository;
+import com.humg.HotelSystemManagement.modules.booking_service.services.BookingService;
 import com.humg.HotelSystemManagement.modules.payment_service.configs.PayPalConfig;
 import com.humg.HotelSystemManagement.modules.payment_service.resources.requests.PayPalOrderRequest;
-import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
-import com.humg.HotelSystemManagement.modules.payment_service.models.entities.PaymentBill;
 import com.humg.HotelSystemManagement.utils.enums.PaymentMethod;
-import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
 import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
-import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingBillRepository;
-import com.humg.HotelSystemManagement.modules.payment_service.models.repositories.PaymentBillRepository;
-import com.humg.HotelSystemManagement.modules.booking_service.services.BookingService;
-import com.humg.HotelSystemManagement.modules.email_service.services.EmailService;
 import com.paypal.api.payments.*;
 import com.paypal.base.rest.APIContext;
 import com.paypal.base.rest.PayPalRESTException;
@@ -23,7 +19,6 @@ import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,38 +29,35 @@ import java.util.List;
 public class PayPalService {
     APIContext apiContext;
     PayPalConfig payPalConfig;
-    PaymentBillRepository paymentBillRepository;
-    BookingBillRepository bookingBillRepository;
-    EmailService emailService;
+    BookingRepository bookingRepository; // Dùng Booking thay vì BookingBill
     BookingService bookingService;
 
     public String createOrder(PayPalOrderRequest request) throws PayPalRESTException {
         if (request == null) throw new AppException(AppErrorCode.REQUEST_IS_NULL);
 
-        var bookingBill = bookingBillRepository.findById(request.getBookingBillId())
+        // Lấy Booking trực tiếp từ request (request nên gửi bookingId)
+        String bookingId = request.getBookingBillId(); // Mapping field này thành bookingId
+        Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
-        //Tiền VND
-        var grandTotal = bookingBill.getGrandTotal();
+        // Đổi tiền VND -> USD
+        double exchangeToDolar = booking.getGrandTotal() / 26000.0;
+        BigDecimal usdTotal = new BigDecimal(exchangeToDolar).setScale(2, RoundingMode.HALF_UP);
 
-        //Đổi sang tiền đô
-        double exchangeToDolar = grandTotal / 26000;
-        BigDecimal usdTotal = new BigDecimal(exchangeToDolar).setScale(2, RoundingMode.HALF_UP); //Làm tròn lên 2 số thập phân
-
-        //Tạo đối tượng lưu trữ số tiền cho giao dịch
+        // Cấu hình giao dịch PayPal
         Amount amount = new Amount();
         amount.setCurrency("USD");
         amount.setTotal(usdTotal.toPlainString());
 
         Transaction transaction = new Transaction();
-        transaction.setDescription("DinhRiseHotel - Payment for the order #" + request.getBookingBillId());
+        transaction.setDescription("Payment for Booking #" + booking.getBookingId());
         transaction.setAmount(amount);
 
         List<Transaction> transactions = new ArrayList<>();
         transactions.add(transaction);
 
         Payer payer = new Payer();
-        payer.setPaymentMethod("PayPal");
+        payer.setPaymentMethod("paypal");
 
         Payment payment = new Payment();
         payment.setIntent("sale");
@@ -77,89 +69,41 @@ public class PayPalService {
         redirectUrls.setReturnUrl(payPalConfig.getSuccessUrl());
         payment.setRedirectUrls(redirectUrls);
 
-        //Tạo order Paypal
         Payment createPayment = payment.create(apiContext);
 
-        //Lấy approval_url
-        String approvalUrl = createPayment.getLinks().stream()
+        return createPayment.getLinks().stream()
                 .filter(links -> "approval_url".equals(links.getRel()))
                 .findFirst()
                 .map(Links::getHref)
                 .orElseThrow(() -> new AppException(AppErrorCode.ORDER_CREATE_FAILED));
-
-        log.info("Created PayPal order with approval URL: {}", approvalUrl);
-
-        return approvalUrl;
     }
 
     public Payment executeOrder(String paymentId, String payerId) throws PayPalRESTException {
-
-        //Tạo đối tượng Payment với ID từ paypal
         Payment payment = new Payment();
         payment.setId(paymentId);
-
-        //Tạo đối tượng thực thi để thanh toán
         PaymentExecution paymentExecution = new PaymentExecution();
         paymentExecution.setPayerId(payerId);
 
-        //Gọi API PayPal để thực thi thanh toán
-        Payment executedPayment =  payment.execute(apiContext, paymentExecution);
+        // Thực thi thanh toán
+        Payment executedPayment = payment.execute(apiContext, paymentExecution);
 
-        //Lấy thông tin giao dịch
+        // Lấy thông tin từ kết quả trả về
         Transaction transaction = executedPayment.getTransactions().get(0);
-        String description = transaction.getDescription();
+        String description = transaction.getDescription(); // "Payment for Booking #UUID..."
+        String bookingId = description.replace("Payment for Booking #", "").trim();
 
-        //Lấy bookingBillId
-        String bookingBillId = description.replace("DinhRiseHotel - Payment for the order #", "");
-        if (bookingBillId.isEmpty()) throw new AppException(AppErrorCode.STRING_NULL);
+        // Lấy số tiền thực trả
+        String totalAmountUSD = transaction.getRelatedResources().get(0).getSale().getAmount().getTotal();
+        BigDecimal totalAmountVND = new BigDecimal(totalAmountUSD).multiply(new BigDecimal(26000));
 
-        //Lấy thông tin BookingBill và Customer
-        var bookingBill = bookingBillRepository.findById(bookingBillId)
-                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+        // Gọi BookingService để chốt đơn (Cập nhật trạng thái và lưu PaymentBill)
+        bookingService.processSuccessfulPayment(
+                bookingId,
+                executedPayment.getId(),
+                totalAmountVND.longValue(),
+                PaymentMethod.PAYPAL
+        );
 
-        var customer = bookingBill.getBooking().getUser();
-
-        //Lấy thông tin giao dịch
-        RelatedResources resources = transaction.getRelatedResources().get(0);
-        Sale sale = resources.getSale();
-
-        String transactionId = sale.getId();
-        String currency = sale.getAmount().getCurrency();
-        String totalAmount = sale.getAmount().getTotal();
-
-        //Chuyển đổi tiền tệ từ $ sang VND
-        BigDecimal dollarToVND = new BigDecimal(26000);
-        BigDecimal totalAmountVND = new BigDecimal(totalAmount)
-                .multiply(dollarToVND)
-                .setScale(0, RoundingMode.HALF_UP);
-        Long paidAmount = totalAmountVND.longValue();
-
-        //Lưu payment xuống database
-        PaymentBill paymentBill = PaymentBill.builder()
-                .transactionId(transactionId)
-                .paymentMethod(PaymentMethod.PAYPAL)
-                .paidAmount(paidAmount)
-                .status(PaymentStatus.COMPLETED)
-                .createAt(LocalDate.now())
-                .user(customer)
-                .build();
-
-        var result = paymentBillRepository.save(paymentBill);
-
-        var bookingId = bookingBill.getBooking().getBookingId();
-        var paymentResultId = result.getPaymentId();
-        bookingService.updatePaymentStatus(bookingId, paymentResultId);
-
-        var booking = bookingBill.getBooking();
-        var status = result.getStatus();
-        sendBookingConfirmationEmail(booking, status);
-
-        return payment.execute(apiContext, paymentExecution);
+        return executedPayment;
     }
-
-    private void sendBookingConfirmationEmail(Booking booking, PaymentStatus status) {
-        if(status == PaymentStatus.COMPLETED)
-            emailService.sendBookingConfirmationEmail(booking);
-    }
-
 }

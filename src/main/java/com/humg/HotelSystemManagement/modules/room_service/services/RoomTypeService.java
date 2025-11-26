@@ -29,63 +29,40 @@ public class RoomTypeService implements ISimpleCRUDService<RoomTypeResponse, Roo
 
         String roomTypeNormalized = normalizeString.normalizedString(request.getRoomTypes());
 
-        if(roomTypeRepository.existsByRoomTypes(request.getRoomTypes()))
+        if(roomTypeRepository.existsByRoomTypes(roomTypeNormalized))
             throw new AppException(AppErrorCode.OBJECT_EXISTED);
 
         RoomType roomType = RoomType.builder()
                 .roomTypes(roomTypeNormalized)
+                // Map fields mới
+                .imageUrl(request.getImageUrl())
+                .description(request.getDescription())
                 .halfDayPrice(request.getHalfDayPrice())
                 .fullDayPrice(request.getFullDayPrice())
                 .fullWeekPrice(request.getFullWeekPrice())
+                .maxAdults(request.getMaxAdults() != null ? request.getMaxAdults() : 2) // Default 2
+                .maxChildren(request.getMaxChildren() != null ? request.getMaxChildren() : 1) // Default 1
+                .area(request.getArea())
+                .amenities(request.getAmenities())
                 .build();
 
         var result = roomTypeRepository.save(roomType);
-
-        return RoomTypeResponse.builder()
-                .roomTypeId(result.getRoomTypeId())
-                .roomTypes(result.getRoomTypes())
-                .halfDayPrice(result.getHalfDayPrice())
-                .fullDayPrice(result.getFullDayPrice())
-                .fullWeekPrice(result.getFullWeekPrice())
-                .build();
+        return mapToResponse(result);
     }
 
     @Override
     public Page<RoomTypeResponse> getAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-
         Page<RoomType> result = roomTypeRepository.findAll(pageable);
-
         if(result.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
-
-        Page<RoomTypeResponse> response = result.map(roomType -> {
-            return RoomTypeResponse.builder()
-                    .roomTypeId(roomType.getRoomTypeId())
-                    .roomTypes(roomType.getRoomTypes())
-                    .halfDayPrice(roomType.getHalfDayPrice())
-                    .fullDayPrice(roomType.getFullDayPrice())
-                    .fullWeekPrice(roomType.getFullWeekPrice())
-                    .build();
-        });
-
-        return response;
+        return result.map(this::mapToResponse);
     }
-
 
     public RoomTypeResponse getById(Long id) {
         var roomType = roomTypeRepository.findById(id).orElseThrow(
                 () -> new AppException(AppErrorCode.OBJECT_IS_NULL)
         );
-
-        RoomTypeResponse result = RoomTypeResponse.builder()
-                .roomTypeId(roomType.getRoomTypeId())
-                .roomTypes(roomType.getRoomTypes())
-                .halfDayPrice(roomType.getHalfDayPrice())
-                .fullDayPrice(roomType.getFullDayPrice())
-                .fullWeekPrice(roomType.getFullWeekPrice())
-                .build();
-
-        return result;
+        return mapToResponse(roomType);
     }
 
     @Override
@@ -96,29 +73,43 @@ public class RoomTypeService implements ISimpleCRUDService<RoomTypeResponse, Roo
                 () -> new AppException(AppErrorCode.OBJECT_IS_NULL)
         );
 
-        roomType.setHalfDayPrice(request.getHalfDayPrice());
-        roomType.setFullDayPrice(request.getFullDayPrice());
-        roomType.setFullWeekPrice(request.getFullWeekPrice());
+        // Update nếu có dữ liệu gửi lên
+        if (request.getRoomTypes() != null) roomType.setRoomTypes(normalizeString.normalizedString(request.getRoomTypes()));
+        if (request.getImageUrl() != null) roomType.setImageUrl(request.getImageUrl());
+        if (request.getDescription() != null) roomType.setDescription(request.getDescription());
+
+        if (request.getHalfDayPrice() != null) roomType.setHalfDayPrice(request.getHalfDayPrice());
+        if (request.getFullDayPrice() != null) roomType.setFullDayPrice(request.getFullDayPrice());
+        if (request.getFullWeekPrice() != null) roomType.setFullWeekPrice(request.getFullWeekPrice());
+
+        if (request.getMaxAdults() != null) roomType.setMaxAdults(request.getMaxAdults());
+        if (request.getMaxChildren() != null) roomType.setMaxChildren(request.getMaxChildren());
+        if (request.getArea() != null) roomType.setArea(request.getArea());
+        if (request.getAmenities() != null) roomType.setAmenities(request.getAmenities());
 
         var update = roomTypeRepository.save(roomType);
-
-        RoomTypeResponse result = RoomTypeResponse.builder()
-                .roomTypeId(update.getRoomTypeId())
-                .roomTypes(update.getRoomTypes())
-                .halfDayPrice(update.getHalfDayPrice())
-                .fullDayPrice(update.getFullDayPrice())
-                .fullWeekPrice(update.getFullWeekPrice())
-                .build();
-
-        return result;
+        return mapToResponse(update);
     }
 
     @Override
     public void delete(Long id) {
-        var roomType = roomTypeRepository.findById(id).orElseThrow(
-                () -> new AppException(AppErrorCode.OBJECT_IS_NULL)
-        );
-
+        if(!roomTypeRepository.existsById(id)) throw new AppException(AppErrorCode.OBJECT_IS_NULL);
         roomTypeRepository.deleteById(id);
+    }
+
+    private RoomTypeResponse mapToResponse(RoomType entity) {
+        return RoomTypeResponse.builder()
+                .roomTypeId(entity.getRoomTypeId())
+                .roomTypes(entity.getRoomTypes())
+                .imageUrl(entity.getImageUrl())
+                .description(entity.getDescription())
+                .halfDayPrice(entity.getHalfDayPrice())
+                .fullDayPrice(entity.getFullDayPrice())
+                .fullWeekPrice(entity.getFullWeekPrice())
+                .maxAdults(entity.getMaxAdults())
+                .maxChildren(entity.getMaxChildren())
+                .area(entity.getArea())
+                .amenities(entity.getAmenities())
+                .build();
     }
 }

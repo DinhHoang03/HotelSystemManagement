@@ -11,6 +11,16 @@ import lombok.experimental.FieldDefaults;
 public class RoomResponse {
     Long roomId;
     String roomNumber;
-    String roomStatus;
-    String roomType;
+    String roomStatus; // AVAILABLE, OCCUPIED
+
+    // --- NEW FIELDS ---
+    Integer floor;
+    String viewType;
+    boolean isClean;   // Trạng thái vệ sinh
+
+    // Thông tin loại phòng (Flatten ra cho dễ dùng)
+    Long roomTypeId;
+    String roomTypeName;
+    Long priceByDay;
+    Integer maxAdults; // Để biết phòng này chứa đc bao nhiêu người
 }

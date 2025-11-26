@@ -10,5 +10,11 @@ import lombok.experimental.FieldDefaults;
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class RoomRequest {
     String roomNumber;
-    String roomType;
+    Long roomTypeId;
+
+    // --- NEW FIELDS ---
+    Integer floor;
+    String viewType; // Sea View, City View
+
+    Boolean isClean; // Dùng khi tạp vụ update trạng thái (True/False)
 }

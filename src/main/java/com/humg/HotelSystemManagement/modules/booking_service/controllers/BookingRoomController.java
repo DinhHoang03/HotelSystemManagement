@@ -7,6 +7,7 @@ import com.humg.HotelSystemManagement.modules.booking_service.services.BookingRo
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
@@ -19,6 +20,7 @@ public class BookingRoomController {
     BookingRoomService bookingRoomService;
 
     @PostMapping("/create")
+    @PreAuthorize("hasAuthority('BOOKING_CREATE')")
      APIResponse<BookingRoomResponse> createBooking(
              @RequestBody BookingRoomRequest request,
              @AuthenticationPrincipal Jwt principal
@@ -31,6 +33,7 @@ public class BookingRoomController {
     }
 
     @DeleteMapping("/del/{id}")
+    @PreAuthorize("hasAuthority('BOOKING_UPDATE')")
     APIResponse<String> cancelBooking(@PathVariable("id") String id) {
         bookingRoomService.delete(id);
         return APIResponse.<String>builder()

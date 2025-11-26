@@ -26,7 +26,7 @@ public class BookingItems {
     Long totalItemsPrice;
 
     @Column(nullable = true)
-    String username;
+    String username; // Người gọi dịch vụ
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id")

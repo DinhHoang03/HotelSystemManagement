@@ -1,5 +1,7 @@
 package com.humg.HotelSystemManagement.modules.auth_service.controllers;
 
+import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
+import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.AuthenticationRequest;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.IntrospectRequest;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.LogOutRequest;
@@ -9,6 +11,7 @@ import com.humg.HotelSystemManagement.modules.auth_service.resources.responses.A
 import com.humg.HotelSystemManagement.modules.auth_service.resources.responses.IntrospectResponse;
 import com.humg.HotelSystemManagement.modules.auth_service.services.AuthenticationService;
 import com.nimbusds.jose.JOSEException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.AccessLevel;
@@ -72,25 +75,47 @@ public class AuthenticationController {
 
     // --- 2. LÀM MỚI TOKEN (Nới lỏng) ---
     @PostMapping("/refresh")
-    APIResponse<AuthenticationResponse> refreshToken(@RequestBody RefreshRequest request, HttpServletResponse response)
+    APIResponse<AuthenticationResponse> refreshToken(HttpServletRequest request, HttpServletResponse response)
             throws ParseException, JOSEException {
-        var result = authenticationService.refreshToken(request);
 
+        // B1: Lấy refresh_token từ Cookie
+        String refreshToken = null;
+        if (request.getCookies() != null) {
+            for (Cookie cookie : request.getCookies()) {
+                if ("refresh_token".equals(cookie.getName())) {
+                    refreshToken = cookie.getValue();
+                    break;
+                }
+            }
+        }
+
+        // B2: Nếu không có Cookie -> Lỗi 401
+        if (refreshToken == null) {
+            throw new AppException(AppErrorCode.UNAUTHENTICATED);
+        }
+
+        // B3: Gọi Service (Bọc lại vào RefreshRequest vì Service đang yêu cầu Object này)
+        var result = authenticationService.refreshToken(
+                RefreshRequest.builder().token(refreshToken).build()
+        );
+
+        // B4: Set lại Cookie mới (Access Token mới)
         ResponseCookie accessCookie = ResponseCookie.from("access_token", result.getAccessToken())
                 .httpOnly(true)
-                .secure(false)       // <--- SỬA
+                .secure(false)
                 .path("/")
                 .maxAge(15 * 60)
-                .sameSite("Lax")     // <--- SỬA
+                .sameSite("Lax")
                 .build();
 
+        // Nếu Service trả về cả Refresh Token mới (Rotating Refresh Token) thì set luôn
         if (result.getRefreshToken() != null) {
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", result.getRefreshToken())
                     .httpOnly(true)
-                    .secure(false)   // <--- SỬA
+                    .secure(false)
                     .path("/")
                     .maxAge(7 * 24 * 60 * 60)
-                    .sameSite("Lax") // <--- SỬA
+                    .sameSite("Lax")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
         }
@@ -99,6 +124,7 @@ public class AuthenticationController {
 
         return APIResponse.<AuthenticationResponse>builder()
                 .result(result)
+                .message("Refresh token successful")
                 .build();
     }
 

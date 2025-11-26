@@ -1,23 +1,28 @@
 package com.humg.HotelSystemManagement.modules.booking_service.services;
 
-import com.humg.HotelSystemManagement.modules.booking_service.resources.requests.BookingRequest;
-import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingResponse;
-import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingItemResponse;
-import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingRoomResponse;
+import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
+import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingItems;
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingRoom;
-import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
-import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
-import com.humg.HotelSystemManagement.utils.enums.RoomStatus;
-import com.humg.HotelSystemManagement.modules.room_service.models.entities.Room;
-import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
-import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingItemsRepository;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRepository;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRoomRepository;
+import com.humg.HotelSystemManagement.modules.booking_service.resources.requests.BookingRequest;
+import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingItemResponse;
+import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingResponse;
+import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingRoomResponse;
 import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.UserRepository;
+import com.humg.HotelSystemManagement.modules.hotel_offer_service.models.entities.HotelOffers;
+import com.humg.HotelSystemManagement.modules.hotel_offer_service.models.repositories.HotelOffersRepository;
+import com.humg.HotelSystemManagement.modules.payment_service.models.entities.PaymentBill;
+import com.humg.HotelSystemManagement.modules.payment_service.models.repositories.PaymentBillRepository;
+import com.humg.HotelSystemManagement.modules.room_service.models.entities.Room;
 import com.humg.HotelSystemManagement.modules.room_service.models.repositories.RoomRepository;
+import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
+import com.humg.HotelSystemManagement.utils.enums.PaymentMethod;
+import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
+import com.humg.HotelSystemManagement.utils.enums.RoomStatus;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -28,6 +33,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -35,210 +41,176 @@ import java.util.stream.Collectors;
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-public class BookingService{
+public class BookingService {
     BookingRepository bookingRepository;
     UserRepository userRepository;
     BookingRoomRepository bookingRoomRepository;
     BookingItemsRepository bookingItemsRepository;
     RoomRepository roomRepository;
+    PaymentBillRepository paymentBillRepository;
+    HotelOffersRepository hotelOffersRepository;
 
     @Transactional
     public BookingResponse createBooking(BookingRequest request, String username) {
-        if (request == null) {
-            throw new AppException(AppErrorCode.REQUEST_IS_NULL);
-        }
+        if (request == null) throw new AppException(AppErrorCode.REQUEST_IS_NULL);
 
-        var customerId = request.getCustomerId();
-        var bookingRoomIds = request.getBookingRoomIds();
-        var bookingItemIds = request.getBookingItemIds();
-
-        var customer = userRepository.findById(customerId)
+        var user = userRepository.findById(request.getCustomerId())
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
         Booking booking = Booking.builder()
                 .bookingDate(LocalDate.now())
                 .bookingStatus(BookingStatus.PENDING)
                 .paymentStatus(PaymentStatus.PENDING)
-                .user(customer)
-                .totalRoomPrice(0L)
-                .totalBookingServicePrice(0L)
-                .grandTotal(0L)
+                .user(user)
                 .bookingRooms(new ArrayList<>())
                 .bookingItems(new ArrayList<>())
+                .totalRoomPrice(0L)
+                .totalServicePrice(0L)
+                .grandTotal(0L)
                 .build();
 
-        var savedBooking = bookingRepository.save(booking);
-
-        // Xử lý BookingRoom
-        List<BookingRoom> bookingRoomList = new ArrayList<>();
-        List<BookingRoomResponse> bookingRoomResponses = new ArrayList<>();
-        Long totalBookingRoomPrice = 0L;
-
-        if (bookingRoomIds != null && !bookingRoomIds.isEmpty()) {
-            bookingRoomList = bookingRoomRepository.findByUsernameAndBookingRoomIdIn(username, bookingRoomIds);
-
-            bookingRoomList.forEach(br -> System.out.println("BookingRoom ID: " + br.getBookingRoomId() + ", Rooms: " + br.getRooms()));
-
-            for (BookingRoom bookingRoom : bookingRoomList) {
-                bookingRoom.setBooking(savedBooking);
-                bookingRoom.setBookingStatus(BookingStatus.IN_PROGRESS);
-                totalBookingRoomPrice += bookingRoom.getTotalRoomAmount();
-
-                bookingRoomResponses.add(BookingRoomResponse.builder()
-                        .bookingRoomId(bookingRoom.getBookingRoomId())
-                        .checkInDate(bookingRoom.getCheckInDate())
-                        .checkOutDate(bookingRoom.getCheckOutDate())
-                        .totalRoomAmount(bookingRoom.getTotalRoomAmount())
-                        .rooms(bookingRoom.getRooms()
-                                .stream()
-                                .map(Room::getRoomNumber)
-                                .collect(Collectors.toList()))
-                        .build());
+        if (request.getBookingRoomIds() != null && !request.getBookingRoomIds().isEmpty()) {
+            List<BookingRoom> rooms = bookingRoomRepository.findByUsernameAndBookingRoomIdIn(username, request.getBookingRoomIds());
+            for (BookingRoom br : rooms) {
+                br.setBooking(booking);
+                br.setBookingStatus(BookingStatus.IN_PROGRESS);
+                booking.getBookingRooms().add(br);
             }
-            bookingRoomRepository.saveAll(bookingRoomList);
         }
 
-        // Xử lý BookingItem (tách ra ngoài if của BookingRoom)
-        List<BookingItems> bookingItemList = new ArrayList<>();
-        List<BookingItemResponse> bookingItemResponses = new ArrayList<>();
-        Long totalBookingServicePrice = 0L;
-
-        if (bookingItemIds != null && !bookingItemIds.isEmpty()) {
-            bookingItemList = bookingItemsRepository.findByUsernameAndBookingItemIdIn(username, bookingItemIds);
-
-            for (BookingItems bookingItem : bookingItemList) {
-                bookingItem.setBooking(savedBooking);
-                totalBookingServicePrice += bookingItem.getTotalItemsPrice();
-
-                bookingItemResponses.add(BookingItemResponse.builder()
-                        .bookingItemId(bookingItem.getBookingItemId())
-                        .hotelOffer(bookingItem.getHotelOffers().getServiceTypes())
-                        .quantity(bookingItem.getQuantity())
-                        .totalItemsPrice(bookingItem.getTotalItemsPrice())
-                        .build());
+        if (request.getBookingItemIds() != null && !request.getBookingItemIds().isEmpty()) {
+            List<BookingItems> items = bookingItemsRepository.findByUsernameAndBookingItemIdIn(username, request.getBookingItemIds());
+            for (BookingItems item : items) {
+                item.setBooking(booking);
+                booking.getBookingItems().add(item);
             }
-            bookingItemsRepository.saveAll(bookingItemList); // Sửa repository
         }
 
-        // Tính tổng và cập nhật Booking (đưa ra ngoài if)
-        var grandTotal = totalBookingRoomPrice + totalBookingServicePrice;
+        booking.calculateTotals();
+        Booking savedBooking = bookingRepository.save(booking);
 
-        savedBooking.getBookingRooms().clear();
-        savedBooking.getBookingRooms().addAll(bookingRoomList);
-        savedBooking.getBookingItems().clear();
-        savedBooking.getBookingItems().addAll(bookingItemList);
-        savedBooking.setTotalRoomPrice(totalBookingRoomPrice);
-        savedBooking.setTotalBookingServicePrice(totalBookingServicePrice);
-        savedBooking.setGrandTotal(grandTotal);
+        return mapToBookingResponse(savedBooking);
+    }
 
-        var finalBooking = bookingRepository.save(savedBooking);
+    @Transactional
+    public void processSuccessfulPayment(String bookingId, String transactionId, Long amount, PaymentMethod method) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
-        return BookingResponse.builder()
-                .bookingId(finalBooking.getBookingId())
-                .bookingDate(finalBooking.getBookingDate())
-                .bookingStatus(finalBooking.getBookingStatus().toString())
-                .paymentStatus(finalBooking.getPaymentStatus().toString())
-                .totalRoomPrice(finalBooking.getTotalRoomPrice())
-                .totalBookingServicePrice(finalBooking.getTotalBookingServicePrice())
-                .grandTotal(finalBooking.getGrandTotal())
-                .customerName(finalBooking.getUser().getName())
-                .bookingItems(bookingItemResponses)
-                .bookingRooms(bookingRoomResponses)
+        booking.setPaymentStatus(PaymentStatus.COMPLETED);
+        booking.setBookingStatus(BookingStatus.CONFIRMED);
+        booking.setPaymentDate(LocalDateTime.now());
+        booking.setPaymentTransactionId(transactionId);
+
+        if (booking.getBookingRooms() != null) {
+            booking.getBookingRooms().forEach(br -> br.setBookingStatus(BookingStatus.CONFIRMED));
+        }
+
+        bookingRepository.save(booking);
+
+        PaymentBill paymentLog = PaymentBill.builder()
+                .transactionId(transactionId)
+                .booking(booking)
+                .user(booking.getUser())
+                .paidAmount(amount)
+                .paymentMethod(method)
+                .status(PaymentStatus.COMPLETED)
+                .createAt(LocalDateTime.now())
                 .build();
+
+        paymentBillRepository.save(paymentLog);
+    }
+
+    @Transactional
+    public BookingResponse addServiceToBooking(String bookingId, String offerId, int quantity) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        HotelOffers offer = hotelOffersRepository.findById(offerId)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        BookingItems item = BookingItems.builder()
+                .hotelOffers(offer)
+                .quantity(quantity)
+                .totalItemsPrice(offer.getPrice() * quantity)
+                .username(booking.getUser().getUsername())
+                .booking(booking)
+                .build();
+
+        booking.addBookingItem(item);
+        booking.calculateTotals();
+
+        Booking savedBooking = bookingRepository.save(booking);
+        return mapToBookingResponse(savedBooking);
     }
 
     public Page<BookingResponse> getAllBookingByUserId(String customerId, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-
         Page<Booking> result = bookingRepository.findByUser_Id(customerId, pageable);
         if (result.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
-
-        Page<BookingResponse> response = result.map(booking -> {
-           return BookingResponse.builder()
-                   .bookingId(booking.getBookingId())
-                   .bookingDate(booking.getBookingDate())
-                   .bookingStatus(booking.getBookingStatus().toString())
-                   .paymentStatus(booking.getPaymentStatus().toString())
-                   .totalBookingServicePrice(booking.getTotalBookingServicePrice())
-                   .totalRoomPrice(booking.getTotalRoomPrice())
-                   .grandTotal(booking.getGrandTotal())
-                   .customerName(booking.getUser().getName())
-                   .build();
-        });
-
-        return response;
+        return result.map(this::mapToBookingResponse);
     }
 
     public BookingResponse getBookingById(String bookingId) {
-        var booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
-
-        List<BookingRoomResponse> bookingRoomResponses = booking.getBookingRooms()
-                .stream()
-                .map(bookingRoom -> BookingRoomResponse.builder()
-                        .checkInDate(bookingRoom.getCheckInDate())
-                        .checkOutDate(bookingRoom.getCheckOutDate())
-                        .totalRoomAmount(bookingRoom.getTotalRoomAmount())
-                        .rooms(bookingRoom.getRooms()
-                                .stream()
-                                .map(Room::getRoomNumber)
-                                .collect(Collectors.toList())
-                        ).build()
-                )
-                .collect(Collectors.toList());
-
-        List<BookingItemResponse> bookingItemResponses = booking.getBookingItems()
-                .stream()
-                .map(bookingItems -> BookingItemResponse.builder()
-                        .hotelOffer(bookingItems.getHotelOffers().getServiceTypes())
-                        .quantity(bookingItems.getQuantity())
-                        .totalItemsPrice(bookingItems.getTotalItemsPrice())
-                        .build()
-                ).collect(Collectors.toList());
-
-        var response = BookingResponse.builder()
-                .bookingId(booking.getBookingId())
-                .bookingDate(booking.getBookingDate())
-                .bookingStatus(BookingStatus.CONFIRMED.toString())
-                .paymentStatus(PaymentStatus.COMPLETED.toString())
-                .totalRoomPrice(booking.getTotalRoomPrice())
-                .totalBookingServicePrice(booking.getTotalBookingServicePrice())
-                .grandTotal(booking.getGrandTotal())
-                .customerName(booking.getUser().getName())
-                .bookingRooms(bookingRoomResponses)
-                .bookingItems(bookingItemResponses)
-                .build();
-
-        return response;
-    }
-
-    public void updatePaymentStatus(String bookingId, String paymentOrderId) {
-        var booking = bookingRepository.findById(bookingId)
-                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
-
-        booking.setPaymentStatus(PaymentStatus.COMPLETED);
-        booking.setPaymentOrderId(paymentOrderId);
-
-        bookingRepository.save(booking);
+        return mapToBookingResponse(booking);
     }
 
     @Transactional
     public void deleteBooking(String bookingId) {
-        var booking = bookingRepository.findById(bookingId)
+        Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
-        // Duyệt qua tất cả BookingRoom
-        for (BookingRoom bookingRoom : booking.getBookingRooms()) {
-            // Xóa liên kết từ Room đến BookingRoom
-            List<Room> rooms = bookingRoom.getRooms();
-            rooms.forEach(room -> {
-                room.setRoomStatus(RoomStatus.AVAILABLE);
-                room.setBookingRoom(null); // Đặt booking_room_id về NULL
-            });
-            roomRepository.saveAll(rooms);
+        if (booking.getBookingRooms() != null) {
+            for (BookingRoom bookingRoom : booking.getBookingRooms()) {
+                List<Room> rooms = bookingRoom.getRooms();
+                if (rooms != null) {
+                    rooms.forEach(room -> {
+                        room.setRoomStatus(RoomStatus.AVAILABLE);
+                        room.setBookingRoom(null);
+                    });
+                    roomRepository.saveAll(rooms);
+                }
+            }
         }
-
-        // Xóa Booking (sẽ xóa cả BookingRoom do cascade)
         bookingRepository.delete(booking);
+    }
+
+    private BookingResponse mapToBookingResponse(Booking booking) {
+        List<BookingRoomResponse> roomRes = booking.getBookingRooms().stream()
+                .map(br -> BookingRoomResponse.builder()
+                        .bookingRoomId(br.getBookingRoomId())
+                        .checkInDate(br.getCheckInDate())
+                        .checkOutDate(br.getCheckOutDate())
+                        .totalRoomAmount(br.getTotalRoomAmount())
+                        .rooms(br.getRooms().stream().map(Room::getRoomNumber).collect(Collectors.toList()))
+                        .build())
+                .collect(Collectors.toList());
+
+        List<BookingItemResponse> itemRes = booking.getBookingItems().stream()
+                .map(bi -> BookingItemResponse.builder()
+                        .bookingItemId(bi.getBookingItemId())
+                        // FIX TẠI ĐÂY: Đổi hotelOffer -> hotelOfferName và thêm map data
+                        .hotelOfferName(bi.getHotelOffers().getName())
+                        .imageUrl(bi.getHotelOffers().getImageUrl())
+                        .unitPrice(bi.getHotelOffers().getPrice())
+                        .quantity(bi.getQuantity())
+                        .totalItemsPrice(bi.getTotalItemsPrice())
+                        .build())
+                .collect(Collectors.toList());
+
+        return BookingResponse.builder()
+                .bookingId(booking.getBookingId())
+                .bookingDate(booking.getBookingDate())
+                .bookingStatus(booking.getBookingStatus().toString())
+                .paymentStatus(booking.getPaymentStatus() != null ? booking.getPaymentStatus().toString() : "N/A")
+                .totalRoomPrice(booking.getTotalRoomPrice())
+                .totalBookingServicePrice(booking.getTotalServicePrice())
+                .grandTotal(booking.getGrandTotal())
+                .customerName(booking.getUser().getName())
+                .bookingRooms(roomRes)
+                .bookingItems(itemRes)
+                .build();
     }
 }
