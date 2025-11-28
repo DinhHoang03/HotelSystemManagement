@@ -37,6 +37,9 @@ public enum AppErrorCode {
     STRING_NULL(1020, "String is null!", HttpStatus.BAD_REQUEST),
     UNVALID_CHECK_DATE(1021, "Check in date is invalid!", HttpStatus.BAD_REQUEST),
     QUESTION_NOT_VALID(1022, "Question is not valid!", HttpStatus.BAD_REQUEST),
+    OTP_SPAM_DETECTED(1023, "Bạn gửi quá nhanh, vui lòng chờ 60 giây!", HttpStatus.BAD_REQUEST),
+    SESSION_EXPIRED(1024, "Session expired", HttpStatus.BAD_REQUEST),
+
     ;
 
     int code;

@@ -7,8 +7,14 @@ import com.humg.HotelSystemManagement.modules.auth_service.resources.responses.A
 import com.humg.HotelSystemManagement.modules.auth_service.resources.responses.IntrospectResponse;
 import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
 import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.UserRepository;
+import com.humg.HotelSystemManagement.modules.customer_service.resources.requests.UserCreationRequest;
+import com.humg.HotelSystemManagement.modules.customer_service.services.UserService;
+import com.humg.HotelSystemManagement.modules.email_service.resources.requests.EmailRequest;
 import com.humg.HotelSystemManagement.modules.email_service.resources.requests.NewPasswordRequest;
+import com.humg.HotelSystemManagement.modules.email_service.resources.requests.OTPRequest;
+import com.humg.HotelSystemManagement.modules.email_service.services.EmailService;
 import com.humg.HotelSystemManagement.modules.redis_service.services.ExTokenHandleService;
+import com.humg.HotelSystemManagement.modules.redis_service.services.OTPService;
 import com.humg.HotelSystemManagement.utils.enums.UserStatus;
 import com.nimbusds.jose.*;
 import com.nimbusds.jose.crypto.MACSigner;
@@ -20,6 +26,7 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.NonFinal;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
@@ -40,6 +47,12 @@ public class AuthenticationService {
     UserRepository userRepository; // Chỉ dùng 1 Repo duy nhất
     ExTokenHandleService exTokenHandleService;
     PasswordEncoder passwordEncoder;
+    OTPService otpService;
+    EmailService emailService; // Inject EmailService
+    UserService userService;   // Inject UserService để gọi hàm tạo user cuối cùng
+
+    // Inject Redis để lưu Object (UserCreationRequest)
+    RedisTemplate<String, Object> redisTemplateObject;
 
     @NonFinal
     @Value("${jwt.signerKey}")
@@ -52,6 +65,57 @@ public class AuthenticationService {
     @NonFinal
     @Value("${jwt.refreshable-duration}")
     protected long REFRESHABLE_DURATION;
+
+    public void registerStep1(UserCreationRequest request) {
+        // 1. Validate sơ bộ (Check xem DB có chưa đã, đỡ tốn OTP)
+        if (userRepository.existsByEmail(request.getEmail()) || userRepository.existsByUsername(request.getUsername())) {
+            throw new AppException(AppErrorCode.USER_EXISTED);
+        }
+
+        // 2. Lưu thông tin đăng ký vào Redis (Sống 10 phút)
+        String key = "temp_reg:" + request.getEmail();
+        redisTemplateObject.opsForValue().set(key, request, 10, java.util.concurrent.TimeUnit.MINUTES);
+        log.info("Saved temp registration data for email: {}", request.getEmail());
+
+        // 3. Sinh OTP và gửi mail (Tận dụng hàm cũ)
+        EmailRequest emailReq = new EmailRequest();
+        emailReq.setEmail(request.getEmail());
+
+        String otp = otpService.generateOTP(emailReq);
+        emailService.sendOTPEmail(emailReq, otp);
+    }
+
+    // --- 2. ĐĂNG KÝ BƯỚC 2: VERIFY OTP + LƯU VÀO DB ---
+    public AuthenticationResponse registerStep2_Verify(OTPRequest otpRequest) {
+        String email = otpRequest.getEmail();
+
+        // 1. Check OTP
+        if (!otpService.verifyOTP(otpRequest)) {
+            throw new AppException(AppErrorCode.UNAUTHENTICATED); // Hoặc lỗi OTP sai
+        }
+
+        // 2. Lấy thông tin đăng ký từ Redis ra
+        String key = "temp_reg:" + email;
+        UserCreationRequest registrationData = (UserCreationRequest) redisTemplateObject.opsForValue().get(key);
+
+        if (registrationData == null) {
+            // Hết hạn hoặc chưa đăng ký
+            throw new AppException(AppErrorCode.SESSION_EXPIRED); // Tạo lỗi: Hết thời gian đăng ký
+        }
+
+        // 3. Gọi UserService để lưu vào DB chính thức
+        // Lưu ý: Hàm create của bạn đang trả về UserResponse, ở đây ta chỉ cần nó chạy không lỗi là được
+        // Hoặc bạn có thể tự map và save tại đây nếu muốn độc lập
+        userService.create(registrationData);
+
+        // 4. Dọn dẹp Redis (Xóa OTP và Xóa Temp Data)
+        redisTemplateObject.delete(key);
+        otpService.deleteOTP(new EmailRequest(email));
+
+        // 5. (Optional) Tự động login luôn cho user sướng
+        // Hoặc trả về thông báo bắt user đăng nhập lại
+        return authenticate(new AuthenticationRequest(registrationData.getUsername(), registrationData.getPassword()));
+    }
 
     // --- XỬ LÝ ĐĂNG NHẬP & TẠO TOKEN ---
     public AuthenticationResponse authenticate(AuthenticationRequest request) {
@@ -191,16 +255,28 @@ public class AuthenticationService {
 
     // --- ĐỔI MẬT KHẨU ---
     public void changePassword(NewPasswordRequest request) {
+        // 1. Validate OTP ngay tại đây (Atomic check)
+        // Gọi hàm verifyOTP nhưng không cần request phức tạp, truyền thẳng tham số
+        OTPRequest otpCheck = new OTPRequest(request.getEmail(), request.getOtp());
+        boolean isCorrectOTP = otpService.verifyOTP(otpCheck);
+
+        if (!isCorrectOTP) {
+            // Nếu OTP sai hoặc hết hạn -> Chặn luôn
+            throw new AppException(AppErrorCode.UNAUTHENTICATED); // Hoặc tạo lỗi OTP_INVALID
+        }
+
+        // 2. Tìm User theo Email (Không cần check username nữa)
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        // Check username khớp email (bảo mật thêm)
-        if (!user.getUsername().equals(request.getUsername())) {
-            throw new AppException(AppErrorCode.USER_NOT_EXISTED);
-        }
-
+        // 3. Đổi mật khẩu
         user.setPassword(passwordEncoder.encode(request.getNewPassword()));
         userRepository.save(user);
+
+        // 4. Quan trọng: Xóa OTP sau khi đổi thành công để không dùng lại được
+        EmailRequest emailReq = new EmailRequest();
+        emailReq.setEmail(request.getEmail());
+        otpService.deleteOTP(emailReq);
     }
 
     // --- VERIFY TOKEN ---

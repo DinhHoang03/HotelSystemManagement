@@ -6,6 +6,8 @@ import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.Au
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.IntrospectRequest;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.LogOutRequest;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.RefreshRequest;
+import com.humg.HotelSystemManagement.modules.customer_service.resources.requests.UserCreationRequest;
+import com.humg.HotelSystemManagement.modules.email_service.resources.requests.OTPRequest;
 import com.humg.HotelSystemManagement.utils.APIResponse;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.responses.AuthenticationResponse;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.responses.IntrospectResponse;
@@ -14,6 +16,7 @@ import com.nimbusds.jose.JOSEException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -169,5 +172,22 @@ public class AuthenticationController {
         response.addHeader(HttpHeaders.SET_COOKIE, deleteRefresh.toString());
 
         return APIResponse.builder().message("Logout success").build();
+    }
+
+    @PostMapping("/register")
+    APIResponse<?> register(@Valid @RequestBody UserCreationRequest request) {
+        authenticationService.registerStep1(request);
+        return APIResponse.builder()
+                .message("Register initiated. Please check your email for OTP.")
+                .build();
+    }
+
+    @PostMapping("/verify-registration")
+    APIResponse<AuthenticationResponse> verifyRegistration(@Valid @RequestBody OTPRequest request) {
+        var authResponse = authenticationService.registerStep2_Verify(request);
+        return APIResponse.<AuthenticationResponse>builder()
+                .result(authResponse)
+                .message("Registration successful & Logged in!")
+                .build();
     }
 }

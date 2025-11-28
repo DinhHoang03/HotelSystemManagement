@@ -16,6 +16,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -49,6 +50,7 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Page<RoomResponse> getAll(int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         Page<Room> result = roomRepository.findAll(pageable);
@@ -56,6 +58,7 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
         return result.map(this::mapToResponse);
     }
 
+    @Transactional(readOnly = true)
     public RoomResponse getById(Long id) {
         var room = roomRepository.findById(id).orElseThrow(
                 () -> new AppException(AppErrorCode.OBJECT_IS_NULL)
@@ -108,6 +111,7 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
                 // Flatten RoomType info
                 .roomTypeId(room.getRoomType().getRoomTypeId())
                 .roomTypeName(room.getRoomType().getRoomTypes())
+                .imageUrl(room.getRoomType().getImageUrl())
                 .priceByDay(room.getRoomType().getFullDayPrice())
                 .maxAdults(room.getRoomType().getMaxAdults())
                 .build();

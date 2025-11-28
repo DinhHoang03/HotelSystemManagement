@@ -3,8 +3,8 @@ package com.humg.HotelSystemManagement.modules.booking_service.services;
 import com.humg.HotelSystemManagement.modules.booking_service.resources.requests.BookingRoomRequest;
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingRoomResponse;
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingRoom;
+import com.humg.HotelSystemManagement.modules.room_service.resources.responses.RoomResponse;
 import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
-import com.humg.HotelSystemManagement.utils.enums.RoomStatus;
 import com.humg.HotelSystemManagement.modules.room_service.models.entities.Room;
 import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
@@ -15,172 +15,160 @@ import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class BookingRoomService implements ISimpleCRUDService<BookingRoomResponse, BookingRoomRequest, String> {
+
     BookingRoomRepository bookingRoomRepository;
     RoomRepository roomRepository;
 
     @Transactional
     public BookingRoomResponse createOrder(BookingRoomRequest request, String username) {
-
-        if(request == null) {
+        if (request == null) {
             throw new AppException(AppErrorCode.REQUEST_IS_NULL);
         }
 
-        var listRoom = roomRepository.findAllByRoomNumberIn(request.getRoomNumbers());
+        LocalDate checkInDate = request.getCheckInDate();
+        LocalDate checkOutDate = request.getCheckOutDate();
 
-        if(listRoom.isEmpty() || listRoom.size() != request.getRoomNumbers().size()) {
-            throw new AppException(AppErrorCode.LIST_EMPTY);
-        }
-
-        List<String> unavailableRooms = listRoom.stream()
-                .filter(room -> room.getRoomStatus() != RoomStatus.AVAILABLE)
-                .map(Room::getRoomNumber)
-                .collect(Collectors.toList());
-
-        if(!unavailableRooms.isEmpty()) {
-            System.out.println("Room that not available: " + String.join(", ", unavailableRooms));
-            throw new AppException(AppErrorCode.ROOM_NOT_AVAILABLE);
-        }
-
-        var checkInDate = request.getCheckInDate();
-        var checkOutDate = request.getCheckOutDate();
-
-        if(checkInDate.isAfter(checkOutDate)) {
+        if (checkInDate == null || checkOutDate == null || !checkOutDate.isAfter(checkInDate)) {
             throw new AppException(AppErrorCode.INVALID_DATE);
         }
 
-        List<BookingRoom> conflictingBookings = bookingRoomRepository
-                .findBookedRoomNumbersInDateRangeForRooms
-                        (
-                                listRoom.stream()
-                                        .map(Room::getRoomNumber)
-                                        .toList(),
-                                checkInDate,
-                                checkOutDate
-                        );
+        Set<String> distinctRoomNumbers = new HashSet<>(request.getRoomNumbers());
+        List<Room> listRoom = roomRepository.findAllByRoomNumberIn(distinctRoomNumbers.stream().toList());
 
-        if(!conflictingBookings.isEmpty()) {
-            List<String> bookedRoomNumbers = conflictingBookings.stream()
-                    .flatMap(
-                            br -> br.getRooms()
-                                    .stream()
-                                    .map(Room::getRoomNumber))
-                    .distinct()
-                    .collect(Collectors.toList());
-            System.out.println("Room already booked: " + String.join(", ", bookedRoomNumbers));
+        if (listRoom.isEmpty() || listRoom.size() != distinctRoomNumbers.size()) {
+            throw new AppException(AppErrorCode.LIST_EMPTY);
+        }
+
+        // --- SỬA Ở ĐÂY: Đổi List<BookingRoom> thành List<String> ---
+        List<String> conflictingRoomNumbers = bookingRoomRepository
+                .findBookedRoomNumbersInDateRangeForRooms(
+                        listRoom.stream().map(Room::getRoomNumber).toList(),
+                        checkInDate,
+                        checkOutDate
+                );
+
+        if (!conflictingRoomNumbers.isEmpty()) {
+            // Có thể log ra số phòng bị trùng để debug dễ hơn: conflictingRoomNumbers.toString()
             throw new AppException(AppErrorCode.ROOM_ALREADY_BOOKED);
         }
 
-        var totalRoomAmount = totalRoomAmount(listRoom, checkInDate, checkOutDate);
+        long totalRoomAmount = calculateTotalAmount(listRoom, checkInDate, checkOutDate);
 
+        // Tạo Entity
         BookingRoom bookingRoom = BookingRoom.builder()
-                .booking(null)
                 .username(username)
                 .checkInDate(checkInDate)
                 .checkOutDate(checkOutDate)
                 .totalRoomAmount(totalRoomAmount)
                 .bookingStatus(BookingStatus.PENDING)
-                .rooms(listRoom)
+                .rooms(listRoom) // Hibernate tự động lưu vào bảng trung gian booking_room_detail
                 .build();
 
-        // Đồng bộ mối quan hệ hai chiều
-        for (Room room : listRoom) {
-            room.setBookingRoom(bookingRoom);
-            room.setRoomStatus(RoomStatus.OCCUPIED); // Hoặc PENDING tùy nghiệp vụ
-        }
+        var savedBooking = bookingRoomRepository.save(bookingRoom);
 
-        var result = bookingRoomRepository.save(bookingRoom);
-
+        // --- ĐOẠN SỬA QUAN TRỌNG NHẤT ---
+        // Thay vì gọi mapToResponse(savedBooking) (có thể bị rỗng list rooms do Lazy Load sau khi save)
+        // Ta build response thủ công dùng ngay cái listRoom ta đang có trong tay.
         return BookingRoomResponse.builder()
-                .bookingRoomId(result.getBookingRoomId())
-                .checkInDate(result.getCheckInDate())
-                .checkOutDate(result.getCheckOutDate())
-                .totalRoomAmount(result.getTotalRoomAmount())
-                .rooms(
-                        listRoom.stream()
-                                .map(Room::getRoomNumber)
-                                .collect(Collectors.toList())
-                )
+                .bookingRoomId(savedBooking.getBookingRoomId())
+                .checkInDate(savedBooking.getCheckInDate())
+                .checkOutDate(savedBooking.getCheckOutDate())
+                .totalRoomAmount(savedBooking.getTotalRoomAmount())
+                .rooms(listRoom.stream().map(this::mapRoomToResponse).collect(Collectors.toList()))
                 .build();
     }
 
-    public Long totalRoomAmount(List<Room> rooms, LocalDate checkInDate, LocalDate checkOutDate){
-        if(rooms == null || rooms.isEmpty() || checkInDate == null || checkOutDate == null) {
-            return 0L;
-        }
+    private Long calculateTotalAmount(List<Room> rooms, LocalDate checkInDate, LocalDate checkOutDate) {
+        long numberOfNights = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
+        if (numberOfNights <= 0) numberOfNights = 1;
 
-        LocalDateTime start = checkInDate.atStartOfDay(); //00:00:00
-        LocalDateTime end = checkOutDate.atStartOfDay(); //00:00:00
-
-        long numberOfHours = ChronoUnit.HOURS.between(start, end);
-        if(numberOfHours <= 0) {
-            throw new AppException(AppErrorCode.INVALID_DATE);
-        }
-
-        double numberOfHalfDays = (double) numberOfHours / 12; //Chia nửa ngày
-        long roundedHalfDays = Math.round(numberOfHalfDays);
-
-        if(roundedHalfDays == 1) { //Nhỏ hơn 1 ngày
-            return rooms.stream()
-                    .map(room -> room.getRoomType().getHalfDayPrice())
-                    .reduce(0L, Long::sum);
-        } else if (roundedHalfDays <= 13) { //Nhỏ hơn 6.5 ngày
-            long numberOfFullDays = roundedHalfDays / 2;
-            return rooms.stream()
-                    .map(room -> room.getRoomType().getFullDayPrice() * numberOfFullDays)
-                    .reduce(0L, Long::sum);
-        }else {
-            long numberOfWeeks = (roundedHalfDays + 13) / 14;
-            return rooms.stream()
-                    .map(room -> room.getRoomType().getFullWeekPrice() * numberOfWeeks)
-                    .reduce(0L, Long::sum);
-        }
+        final long nights = numberOfNights;
+        return rooms.stream()
+                .map(room -> room.getRoomType().getFullDayPrice() * nights)
+                .reduce(0L, Long::sum);
     }
 
     @Override
-    public BookingRoomResponse create(BookingRoomRequest request) {
-        return null;
-    }
-
-    @Override
+    @Transactional(readOnly = true) // Đã thêm Transactional để fix lỗi Lazy Loading khi Get
     public Page<BookingRoomResponse> getAll(int page, int size) {
-        return null;
+        Pageable pageable = PageRequest.of(page, size);
+        return bookingRoomRepository.findAll(pageable).map(this::mapToResponse);
+    }
+
+    @Transactional(readOnly = true) // Đã thêm Transactional
+    public Page<BookingRoomResponse> getAllByUsername(String username, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return bookingRoomRepository.findByUsername(username, pageable).map(this::mapToResponse);
     }
 
     @Override
+    @Transactional(readOnly = true) // Đã thêm Transactional
     public BookingRoomResponse getById(String id) {
-        return null;
-    }
-
-    @Override
-    public BookingRoomResponse update(String id, BookingRoomRequest request) {
-        return null;
+        return bookingRoomRepository.findById(id)
+                .map(this::mapToResponse)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
     }
 
     @Override
     @Transactional
     public void delete(String id) {
-        var booking = bookingRoomRepository.findById(id)
-                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+        if (!bookingRoomRepository.existsById(id)) {
+            throw new AppException(AppErrorCode.OBJECT_IS_NULL);
+        }
+        bookingRoomRepository.deleteById(id);
+    }
 
-        booking.getRooms().forEach(room -> {
-            room.setBookingRoom(null);
-            room.setRoomStatus(RoomStatus.AVAILABLE);
-        });
-        roomRepository.saveAll(booking.getRooms());
+    @Override
+    public BookingRoomResponse create(BookingRoomRequest request) { return null; }
 
-        bookingRoomRepository.delete(booking);
+    @Override
+    public BookingRoomResponse update(String id, BookingRoomRequest request) { return null; }
+
+    // --- MAPPER ---
+
+    private BookingRoomResponse mapToResponse(BookingRoom entity) {
+        return BookingRoomResponse.builder()
+                .bookingRoomId(entity.getBookingRoomId())
+                .checkInDate(entity.getCheckInDate())
+                .checkOutDate(entity.getCheckOutDate())
+                .totalRoomAmount(entity.getTotalRoomAmount())
+                // Lưu ý: Nếu entity được lấy từ DB mà session đã đóng, dòng này có thể gây lỗi Lazy
+                // Nhưng nhờ @Transactional(readOnly=true) ở các hàm get, nó sẽ hoạt động tốt.
+                .rooms(entity.getRooms().stream()
+                        .map(this::mapRoomToResponse)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
+    private RoomResponse mapRoomToResponse(Room room) {
+        return RoomResponse.builder()
+                .roomId(room.getRoomId())
+                .roomNumber(room.getRoomNumber())
+                .roomStatus(room.getRoomStatus() != null ? room.getRoomStatus().name() : null)
+                .floor(room.getFloor())
+                .viewType(room.getViewType())
+                .isClean(room.isClean())
+                .imageUrl(room.getRoomType() != null ? room.getRoomType().getImageUrl() : null)
+                .roomTypeId(room.getRoomType() != null ? room.getRoomType().getRoomTypeId() : null)
+                .roomTypeName(room.getRoomType() != null ? room.getRoomType().getRoomTypes() : null)
+                .priceByDay(room.getRoomType() != null ? room.getRoomType().getFullDayPrice() : null)
+                .maxAdults(room.getRoomType() != null ? room.getRoomType().getMaxAdults() : null)
+                .build();
     }
 }

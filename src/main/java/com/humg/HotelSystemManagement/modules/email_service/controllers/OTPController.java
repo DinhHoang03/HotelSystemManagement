@@ -13,7 +13,7 @@ import lombok.experimental.FieldDefaults;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/email")
+@RequestMapping("/otp")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class OTPController {
@@ -39,16 +39,9 @@ public class OTPController {
                 .build();
     }
 
-    @PostMapping("/delete-otp")
-    APIResponse<?> deleteOtp(@RequestBody EmailRequest emailRequest) {
-        otpService.deleteOTP(emailRequest);
-        return APIResponse.builder()
-                .message("Delete otp for email " + emailRequest.getEmail() + " successfully")
-                .build();
-    }
-
     @PostMapping("/forgot-password/update-password")
     APIResponse<?> changePassword(@RequestBody NewPasswordRequest request) {
+        // Request bây giờ chỉ có: email, newPassword, otp
         authenticationService.changePassword(request);
         return APIResponse.builder()
                 .message("Update password successfully")

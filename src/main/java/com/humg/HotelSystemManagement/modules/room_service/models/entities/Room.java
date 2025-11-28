@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
+import java.util.List;
+
 @Entity
 @Getter
 @Setter
@@ -42,9 +44,9 @@ public class Room {
     @JoinColumn(name = "room_type_id", nullable = false)
     RoomType roomType;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "booking_room_id", nullable = true)
-    BookingRoom bookingRoom;
+    // Thay bằng (nếu muốn query ngược từ Room xem nó đang thuộc các booking nào):
+    @ManyToMany(mappedBy = "rooms", fetch = FetchType.LAZY)
+    List<BookingRoom> bookingRooms;
 
     @Enumerated(EnumType.STRING)
     RoomStatus roomStatus;

@@ -1,5 +1,7 @@
 package com.humg.HotelSystemManagement.modules.booking_service.resources.responses;
 
+import com.humg.HotelSystemManagement.modules.room_service.models.entities.Room;
+import com.humg.HotelSystemManagement.modules.room_service.resources.responses.RoomResponse;
 import lombok.*;
 import lombok.experimental.FieldDefaults;
 
@@ -16,5 +18,5 @@ public class BookingRoomResponse {
     LocalDate checkInDate;
     LocalDate checkOutDate;
     Long totalRoomAmount;
-    List<String> rooms;
+    List<RoomResponse> rooms;
 }

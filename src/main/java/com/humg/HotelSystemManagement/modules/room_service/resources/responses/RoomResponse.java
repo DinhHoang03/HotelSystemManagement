@@ -21,6 +21,7 @@ public class RoomResponse {
     // Thông tin loại phòng (Flatten ra cho dễ dùng)
     Long roomTypeId;
     String roomTypeName;
+    String imageUrl;
     Long priceByDay;
     Integer maxAdults; // Để biết phòng này chứa đc bao nhiêu người
 }

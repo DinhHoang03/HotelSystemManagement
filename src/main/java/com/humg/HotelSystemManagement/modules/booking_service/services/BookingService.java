@@ -12,6 +12,7 @@ import com.humg.HotelSystemManagement.modules.booking_service.resources.requests
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingItemResponse;
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingResponse;
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingRoomResponse;
+import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
 import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.UserRepository;
 import com.humg.HotelSystemManagement.modules.hotel_offer_service.models.entities.HotelOffers;
 import com.humg.HotelSystemManagement.modules.hotel_offer_service.models.repositories.HotelOffersRepository;
@@ -19,6 +20,7 @@ import com.humg.HotelSystemManagement.modules.payment_service.models.entities.Pa
 import com.humg.HotelSystemManagement.modules.payment_service.models.repositories.PaymentBillRepository;
 import com.humg.HotelSystemManagement.modules.room_service.models.entities.Room;
 import com.humg.HotelSystemManagement.modules.room_service.models.repositories.RoomRepository;
+import com.humg.HotelSystemManagement.modules.room_service.resources.responses.RoomResponse;
 import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
 import com.humg.HotelSystemManagement.utils.enums.PaymentMethod;
 import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
@@ -144,9 +146,10 @@ public class BookingService {
         return mapToBookingResponse(savedBooking);
     }
 
-    public Page<BookingResponse> getAllBookingByUserId(String customerId, int page, int size) {
+    public Page<BookingResponse> getAllBookingByUsername(String username, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<Booking> result = bookingRepository.findByUser_Id(customerId, pageable);
+        User user = userRepository.findByUsername(username).orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+        Page<Booking> result = bookingRepository.findByUser_Id(user.getId(), pageable);
         if (result.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
         return result.map(this::mapToBookingResponse);
     }
@@ -168,7 +171,8 @@ public class BookingService {
                 if (rooms != null) {
                     rooms.forEach(room -> {
                         room.setRoomStatus(RoomStatus.AVAILABLE);
-                        room.setBookingRoom(null);
+                        // ĐÃ XÓA DÒNG: room.setBookingRoom(null);
+                        // Vì Room giờ dùng ManyToMany, không cần set null quan hệ ở đây
                     });
                     roomRepository.saveAll(rooms);
                 }
@@ -177,6 +181,76 @@ public class BookingService {
         bookingRepository.delete(booking);
     }
 
+    @Transactional
+    public BookingResponse checkOut(String bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        if (booking.getBookingStatus() != BookingStatus.CHECKED_IN
+                && booking.getBookingStatus() != BookingStatus.CONFIRMED) {
+            throw new RuntimeException("Chỉ được checkout khi khách đang ở (Checked-in) hoặc đã Confirmed");
+        }
+
+        LocalDateTime now = LocalDateTime.now();
+        // Check null-safe for BookingRooms
+        LocalDateTime plannedCheckOut;
+        if (!booking.getBookingRooms().isEmpty()) {
+            plannedCheckOut = booking.getBookingRooms().get(0).getCheckOutDate().atTime(12, 0);
+        } else {
+            plannedCheckOut = now; // Fallback nếu data lỗi
+        }
+
+        long surcharge = 0;
+
+        if (now.isAfter(plannedCheckOut)) {
+            long hoursLate = java.time.Duration.between(plannedCheckOut, now).toHours();
+            if (hoursLate > 0) {
+                surcharge = hoursLate * 50000;
+            }
+        }
+
+        booking.setActualCheckOutDate(now);
+        booking.setSurcharge(surcharge);
+        booking.setGrandTotal(booking.getGrandTotal() + surcharge);
+        booking.setBookingStatus(BookingStatus.CHECKED_OUT);
+
+        if (surcharge > 0) {
+            booking.setPaymentStatus(PaymentStatus.PARTIALLY_PAID);
+        }
+
+        // 5. Giải phóng phòng & Đánh dấu là BẨN
+        if (booking.getBookingRooms() != null) {
+            for (BookingRoom br : booking.getBookingRooms()) {
+                if (br.getRooms() != null) {
+                    br.getRooms().forEach(room -> {
+                        room.setRoomStatus(RoomStatus.AVAILABLE);
+                        room.setClean(false);
+                        // ĐÃ XÓA DÒNG: room.setBookingRoom(null);
+                        // Không cần xóa quan hệ, giữ lịch sử là phòng này đã từng thuộc booking này
+                    });
+                    roomRepository.saveAll(br.getRooms());
+                }
+            }
+        }
+
+        return mapToBookingResponse(bookingRepository.save(booking));
+    }
+
+    @Transactional
+    public BookingResponse checkIn(String bookingId) {
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        if (booking.getBookingStatus() != BookingStatus.CONFIRMED) {
+            throw new RuntimeException("Booking phải được xác nhận trước khi Check-in");
+        }
+
+        booking.setBookingStatus(BookingStatus.CHECKED_IN);
+        return mapToBookingResponse(bookingRepository.save(booking));
+    }
+
+    // --- HELPER METHODS ---
+
     private BookingResponse mapToBookingResponse(Booking booking) {
         List<BookingRoomResponse> roomRes = booking.getBookingRooms().stream()
                 .map(br -> BookingRoomResponse.builder()
@@ -184,14 +258,15 @@ public class BookingService {
                         .checkInDate(br.getCheckInDate())
                         .checkOutDate(br.getCheckOutDate())
                         .totalRoomAmount(br.getTotalRoomAmount())
-                        .rooms(br.getRooms().stream().map(Room::getRoomNumber).collect(Collectors.toList()))
+                        .rooms(br.getRooms().stream()
+                                .map(this::mapRoomToResponse)
+                                .collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
 
         List<BookingItemResponse> itemRes = booking.getBookingItems().stream()
                 .map(bi -> BookingItemResponse.builder()
                         .bookingItemId(bi.getBookingItemId())
-                        // FIX TẠI ĐÂY: Đổi hotelOffer -> hotelOfferName và thêm map data
                         .hotelOfferName(bi.getHotelOffers().getName())
                         .imageUrl(bi.getHotelOffers().getImageUrl())
                         .unitPrice(bi.getHotelOffers().getPrice())
@@ -208,9 +283,24 @@ public class BookingService {
                 .totalRoomPrice(booking.getTotalRoomPrice())
                 .totalBookingServicePrice(booking.getTotalServicePrice())
                 .grandTotal(booking.getGrandTotal())
-                .customerName(booking.getUser().getName())
+                .customerName(booking.getUser() != null ? booking.getUser().getName() : "Unknown") // Null safe
                 .bookingRooms(roomRes)
                 .bookingItems(itemRes)
+                .build();
+    }
+
+    private RoomResponse mapRoomToResponse(Room room) {
+        return RoomResponse.builder()
+                .roomId(room.getRoomId())
+                .roomNumber(room.getRoomNumber())
+                .roomStatus(room.getRoomStatus() != null ? room.getRoomStatus().name() : null)
+                .floor(room.getFloor())
+                .viewType(room.getViewType())
+                .isClean(room.isClean())
+                .roomTypeId(room.getRoomType() != null ? room.getRoomType().getRoomTypeId() : null)
+                .roomTypeName(room.getRoomType() != null ? room.getRoomType().getRoomTypes() : null)
+                .priceByDay(room.getRoomType() != null ? room.getRoomType().getFullDayPrice() : null)
+                .maxAdults(room.getRoomType() != null ? room.getRoomType().getMaxAdults() : null)
                 .build();
     }
 }

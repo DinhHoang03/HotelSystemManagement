@@ -53,6 +53,7 @@ public class PermissionSeeder implements CommandLineRunner {
                     build("CUSTOMER_PROFILE", "Xem profile bản thân"),
                     build("CUSTOMER_DELETE", "Xóa tài khoản khách hàng (Admin)"),
                     build("CUSTOMER_LIST_VIEW", "Xem danh sách khách hàng (Admin)"),
+                    build("CUSTOMER_CREATE", "Tạo khách hàng (Admin)"),
 
                     // === 6. HỆ THỐNG & TIỆN ÍCH KHÁC ===
                     build("SYSTEM_MANAGE", "Quản lý Role/Permission (Admin)"),

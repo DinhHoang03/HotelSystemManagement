@@ -31,11 +31,19 @@ public class SecurityConfig {
     private static final String[] PUBLIC_API_ENDPOINTS = {
             // 1. Auth & User
             "/auth/**",
-            "/customer/register",
 
             // 2. Room Service (Cho khách xem phòng)
             "/room/list/**",        // Xem danh sách phòng
             "/room/info/**",        // Xem chi tiết 1 phòng (MỚI)
+
+            "/rooms/list/**",        // Xem danh sách đặt phòng
+            "/rooms/info/**",        // Xem chi tiết 1 phòng đã đặt (MỚI)
+
+            "/items/list/**",        // Xem danh sách các dịch vụ đã đặt
+            "/items/info/**",        // Xem chi tiết 1 dịch vụ đã đặt
+
+            "/booking/list/**",        // Xem danh sách phòng
+            "/booking/info/**",        // Xem chi tiết 1 lịch đặt
 
             // 3. Room Type Service (Cho khách xem loại phòng)
             "/type/list/**",        // Xem danh sách loại phòng (MỚI)
@@ -45,6 +53,8 @@ public class SecurityConfig {
             // 4. Hotel Offers (Menu dịch vụ)
             "/api/v1/offers/list",
             "/api/v1/offers/category/**",
+
+            "/otp/**",
 
             // 5. Payment Callback (ZaloPay gọi ngược lại)
             "/zalopay/callback/**",

@@ -19,7 +19,8 @@ import org.springframework.web.bind.annotation.*;
 public class UserController {
     UserService userService;
 
-    @PostMapping("/register")
+    @PostMapping("/create")
+    @PreAuthorize("hasAuthority('CUSTOMER_CREATE')")
     APIResponse<UserResponse> createCustomer(@Valid @RequestBody UserCreationRequest request){
         return APIResponse.<UserResponse>builder()
                 .result(userService.create(request))

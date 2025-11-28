@@ -34,7 +34,6 @@ public class BookingController {
     }
 
     @GetMapping("/info/{bookingId}")
-    @PreAuthorize("hasAuthority('BOOKING_VIEW')")
     APIResponse<BookingResponse> findBookingById(@PathVariable("bookingId") String bookingId) {
         return APIResponse.<BookingResponse>builder()
                 .result(bookingService.getBookingById(bookingId))
@@ -43,14 +42,14 @@ public class BookingController {
     }
 
     @GetMapping("/list/{customerId}")
-    @PreAuthorize("hasAuthority('BOOKING_VIEW')")
     APIResponse<Page<BookingResponse>> getAllBooking(
-            @PathVariable("customerId") String customerId,
+            @AuthenticationPrincipal Jwt principal,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size
     ) {
+        String username = principal.getSubject();
         return APIResponse.<Page<BookingResponse>>builder()
-                .result(bookingService.getAllBookingByUserId(customerId, page, size))
+                .result(bookingService.getAllBookingByUsername(username, page, size))
                 .message("Get all bookings successfully")
                 .build();
     }

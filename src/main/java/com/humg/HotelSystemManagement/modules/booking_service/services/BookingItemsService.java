@@ -11,6 +11,9 @@ import com.humg.HotelSystemManagement.modules.hotel_offer_service.models.reposit
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -47,6 +50,36 @@ public class BookingItemsService {
         var result = bookingItemsRepository.save(bookingItem);
 
         return mapToResponse(result);
+    }
+
+    // 1. GET ALL (GLOBAL - Dành cho Admin)
+    public Page<BookingItemResponse> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BookingItems> result = bookingItemsRepository.findAll(pageable);
+
+        if (result.isEmpty()) {
+            throw new AppException(AppErrorCode.LIST_EMPTY);
+        }
+        return result.map(this::mapToResponse);
+    }
+
+    // 2. GET ALL BY USERNAME (Dành cho User xem giỏ hàng/lịch sử của mình)
+    public Page<BookingItemResponse> getAllByUsername(String username, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<BookingItems> result = bookingItemsRepository.findByUsername(username, pageable);
+
+        if (result.isEmpty()) {
+            throw new AppException(AppErrorCode.LIST_EMPTY);
+        }
+        return result.map(this::mapToResponse);
+    }
+
+    // 3. GET BY ID (Xem chi tiết 1 item)
+    public BookingItemResponse getById(String id) {
+        BookingItems item = bookingItemsRepository.findById(id)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        return mapToResponse(item);
     }
 
     public void deleteBookingItems(String bookingItemId) {

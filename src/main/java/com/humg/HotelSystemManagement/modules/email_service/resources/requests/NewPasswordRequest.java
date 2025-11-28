@@ -10,9 +10,9 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class NewPasswordRequest {
-    String username;
+    String email;
     @Pattern(regexp = "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)(?=.*[@$!%*?&]).{8,16}$",
             message = "INVALID_PASSWORD")
     String newPassword;
-    String email;
+    String otp;
 }

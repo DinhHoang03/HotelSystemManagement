@@ -54,6 +54,13 @@ public class Booking {
     @Builder.Default
     Long totalServicePrice = 0L; // Tiền ăn uống, minibar
 
+    @Column(name = "actual_check_out_date")
+    LocalDateTime actualCheckOutDate; // Thời điểm khách thực sự trả phòng
+
+    @Column(name = "surcharge") // Phí phụ thu (quá giờ, làm hỏng đồ...)
+    @Builder.Default
+    Long surcharge = 0L;
+
     @Column(name = "grand_total")
     @Builder.Default
     Long grandTotal = 0L; // Tổng tiền phải trả

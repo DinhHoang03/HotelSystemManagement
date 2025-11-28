@@ -7,6 +7,7 @@ import com.humg.HotelSystemManagement.modules.booking_service.services.BookingIt
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import org.springframework.data.domain.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
@@ -30,6 +31,41 @@ public class BookingItemController {
         return APIResponse.<BookingItemResponse>builder()
                 .result(result)
                 .message("Create order successfully")
+                .build();
+    }
+
+    @GetMapping("/get-all")
+    @PreAuthorize("hasAuthority('BOOKING_VIEW')")
+    APIResponse<Page<BookingItemResponse>> getAllBookingItemsGlobal(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return APIResponse.<Page<BookingItemResponse>>builder()
+                .result(bookingItemsService.getAll(page, size))
+                .message("Get all booking items successfully")
+                .build();
+    }
+
+    // API 2: User xem danh sách món mình đã order (Dựa trên Token)
+    @GetMapping("/my-list")
+    APIResponse<Page<BookingItemResponse>> getMyBookingItems(
+            @AuthenticationPrincipal Jwt principal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        var username = principal.getSubject();
+        return APIResponse.<Page<BookingItemResponse>>builder()
+                .result(bookingItemsService.getAllByUsername(username, page, size))
+                .message("Get my booking items successfully")
+                .build();
+    }
+
+    // API 3: Xem chi tiết 1 item cụ thể
+    @GetMapping("/info/{id}")
+    APIResponse<BookingItemResponse> getBookingItemById(@PathVariable("id") String id) {
+        return APIResponse.<BookingItemResponse>builder()
+                .result(bookingItemsService.getById(id))
+                .message("Get booking item detail successfully")
                 .build();
     }
 

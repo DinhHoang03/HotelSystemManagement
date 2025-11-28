@@ -145,6 +145,14 @@ public class UserService implements IGeneralCRUDService<UserResponse, UserCreati
     public void delete(String id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
+
+        // --- BƯỚC QUAN TRỌNG: Gỡ bỏ Roles trước ---
+        // Hành động này sẽ khiến Hibernate tự động xóa các dòng liên quan trong bảng user_roles
+        user.getRoles().clear();
+        userRepository.save(user); // Lưu lại để Hibernate thực thi lệnh xóa trong user_roles
+        // ------------------------------------------
+
+        // Sau đó mới xóa User
         userRepository.delete(user);
     }
 
@@ -176,21 +184,6 @@ public class UserService implements IGeneralCRUDService<UserResponse, UserCreati
                 .role(roleName)
                 .build();
     }
-
-//    // Hàm chuyển String Gender sang Enum an toàn
-//    private Gender convertToGender(String genderStr) {
-//        if (genderStr == null) return null;
-//
-//        // Bước 1: Chuẩn hóa chuỗi (ví dụ: "Male" -> "MALE", "fe-male" -> "FE_MALE")
-//        String normalized = normalizeString.normalizedString(genderStr);
-//
-//        try {
-//            return Gender.valueOf(normalized);
-//        } catch (IllegalArgumentException e) {
-//            // Ném lỗi rõ ràng nếu convert thất bại
-//            throw new AppException(AppErrorCode.INVALID_STATUS);
-//        }
-//    }
 
     // (Optional) Nếu bạn cần convert UserStatus từ request
     private UserStatus convertToStatus(String statusStr) {

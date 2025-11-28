@@ -42,7 +42,12 @@ public class BookingRoom {
 
     // Logic cũ của bạn: 1 BookingRoom chứa nhiều Room thực tế
     // Lưu ý: Cascade MERGE/PERSIST để khi lưu BookingRoom thì cập nhật trạng thái Room
-    @OneToMany(mappedBy = "bookingRoom", cascade = {CascadeType.PERSIST, CascadeType.MERGE}, fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "booking_room_detail", // Tên bảng trung gian
+            joinColumns = @JoinColumn(name = "booking_room_id"),
+            inverseJoinColumns = @JoinColumn(name = "room_id")
+    )
     List<Room> rooms = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
