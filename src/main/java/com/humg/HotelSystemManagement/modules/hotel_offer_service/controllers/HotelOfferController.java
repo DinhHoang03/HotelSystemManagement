@@ -14,9 +14,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/v1/offers") // Đổi path thành /api/v1/offers cho chuẩn REST
+@RequestMapping("/offers") // Đổi path thành /api/v1/offers cho chuẩn REST
 @RequiredArgsConstructor
-@CrossOrigin(origins = "*")
 public class HotelOfferController {
     private final HotelOfferService hotelService;
 
@@ -63,6 +62,30 @@ public class HotelOfferController {
         hotelService.delete(id);
         return APIResponse.<String>builder()
                 .message("Xóa dịch vụ thành công")
+                .build();
+    }
+
+    // 5. LẤY CHI TIẾT THEO ID
+    @GetMapping("/{id}")
+    public APIResponse<HotelOfferResponse> getById(@PathVariable String id) {
+        return APIResponse.<HotelOfferResponse>builder()
+                .result(hotelService.getById(id))
+                .message("Lấy thông tin dịch vụ thành công")
+                .build();
+    }
+
+    // 6. CẬP NHẬT DỊCH VỤ
+    // Method PUT, Consumes Multipart để nhận file ảnh mới (nếu có)
+    @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasAuthority('OFFER_UPDATE')") // Nhớ thêm quyền này trong DB nếu chưa có
+    public APIResponse<HotelOfferResponse> update(
+            @PathVariable String id,
+            @RequestPart("data") HotelOfferRequest request, // Thông tin sửa đổi
+            @RequestPart(value = "image", required = false) MultipartFile image // Ảnh mới (không bắt buộc)
+    ) {
+        return APIResponse.<HotelOfferResponse>builder()
+                .result(hotelService.update(id, request, image))
+                .message("Cập nhật dịch vụ thành công")
                 .build();
     }
 }

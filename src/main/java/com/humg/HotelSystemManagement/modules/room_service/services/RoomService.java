@@ -58,6 +58,18 @@ public class RoomService implements ISimpleCRUDService<RoomResponse, RoomRequest
         return result.map(this::mapToResponse);
     }
 
+    // API MỚI: Tìm kiếm theo tên loại phòng
+    @Transactional(readOnly = true)
+    public Page<RoomResponse> searchByRoomTypeName(String roomTypeName, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Room> result = roomRepository.findByRoomTypeNameContaining(roomTypeName, pageable);
+
+        if(result.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
+
+        return result.map(this::mapToResponse);
+    }
+
     @Transactional(readOnly = true)
     public RoomResponse getById(Long id) {
         var room = roomRepository.findById(id).orElseThrow(

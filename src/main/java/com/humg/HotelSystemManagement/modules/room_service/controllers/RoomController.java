@@ -71,4 +71,16 @@ public class RoomController {
                 .message("Delete room " + roomId + " successfully")
                 .build();
     }
+
+    @GetMapping("/search")
+    APIResponse<Page<RoomResponse>> searchByRoomType(
+            @RequestParam String typeName,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        return APIResponse.<Page<RoomResponse>>builder()
+                .result(roomService.searchByRoomTypeName(typeName, page, size))
+                .message("Search rooms successfully with keyword: " + typeName)
+                .build();
+    }
 }

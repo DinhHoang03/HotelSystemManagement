@@ -11,7 +11,6 @@ import java.util.List;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class BookingRequest {
-    String customerId;
     List<String> bookingRoomIds;
     List<String> bookingItemIds;
 }

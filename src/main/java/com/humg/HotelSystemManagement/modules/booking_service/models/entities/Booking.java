@@ -27,9 +27,9 @@ public class Booking {
     String bookingId;
 
     @Column(name = "booking_date", nullable = false)
-    LocalDate bookingDate; // Ngày tạo đơn
+    LocalDate bookingDate;
 
-    // --- QUẢN LÝ TRẠNG THÁI ---
+    // --- TRẠNG THÁI ---
     @Enumerated(EnumType.STRING)
     @Column(name = "booking_status", nullable = false)
     BookingStatus bookingStatus;
@@ -38,67 +38,42 @@ public class Booking {
     @Column(name = "payment_status")
     PaymentStatus paymentStatus;
 
-    // --- THÔNG TIN THANH TOÁN (Thay thế BookingBill) ---
+    // --- THANH TOÁN ---
     @Column(name = "payment_date")
-    LocalDateTime paymentDate; // Thời điểm thanh toán xong
+    LocalDateTime paymentDate;
 
     @Column(name = "payment_transaction_id")
-    String paymentTransactionId; // Mã giao dịch từ cổng thanh toán (Zalo/Paypal)
+    String paymentTransactionId;
 
-    // --- QUẢN LÝ TÀI CHÍNH ---
+    // --- TÀI CHÍNH ---
     @Column(name = "total_room_price")
     @Builder.Default
     Long totalRoomPrice = 0L;
 
     @Column(name = "total_service_price")
     @Builder.Default
-    Long totalServicePrice = 0L; // Tiền ăn uống, minibar
+    Long totalServicePrice = 0L;
 
     @Column(name = "actual_check_out_date")
-    LocalDateTime actualCheckOutDate; // Thời điểm khách thực sự trả phòng
+    LocalDateTime actualCheckOutDate;
 
-    @Column(name = "surcharge") // Phí phụ thu (quá giờ, làm hỏng đồ...)
+    @Column(name = "surcharge")
     @Builder.Default
     Long surcharge = 0L;
 
     @Column(name = "grand_total")
     @Builder.Default
-    Long grandTotal = 0L; // Tổng tiền phải trả
+    Long grandTotal = 0L;
 
     // --- QUAN HỆ ---
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     User user;
 
-    // Cascade ALL: Khi lưu Booking, tự động lưu luôn Room và Items. OrphanRemoval: Xóa booking sẽ xóa luôn items con.
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<BookingRoom> bookingRooms = new ArrayList<>();
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<BookingItems> bookingItems = new ArrayList<>();
 
-    // --- BUSINESS METHODS (Logic tính toán nằm ngay trong Entity) ---
-    public void calculateTotals() {
-        this.totalRoomPrice = bookingRooms.stream()
-                .mapToLong(BookingRoom::getTotalRoomAmount)
-                .sum();
-
-        this.totalServicePrice = bookingItems.stream()
-                .mapToLong(BookingItems::getTotalItemsPrice)
-                .sum();
-
-        this.grandTotal = this.totalRoomPrice + this.totalServicePrice;
-    }
-
-    public void addBookingRoom(BookingRoom room) {
-        if (this.bookingRooms == null) this.bookingRooms = new ArrayList<>();
-        this.bookingRooms.add(room);
-        room.setBooking(this);
-    }
-
-    public void addBookingItem(BookingItems item) {
-        if (this.bookingItems == null) this.bookingItems = new ArrayList<>();
-        this.bookingItems.add(item);
-        item.setBooking(this);
-    }
 }

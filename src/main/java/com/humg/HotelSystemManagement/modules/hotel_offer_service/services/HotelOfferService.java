@@ -76,6 +76,44 @@ public class HotelOfferService {
         hotelOffersRepository.delete(offer);
     }
 
+    public HotelOfferResponse getById(String id) {
+        HotelOffers offer = hotelOffersRepository.findById(id)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+        return mapToResponse(offer);
+    }
+
+    // 6. UPDATE (Cập nhật thông tin & Thay đổi ảnh nếu có)
+    @Transactional
+    public HotelOfferResponse update(String id, HotelOfferRequest request, MultipartFile image) {
+        // 1. Tìm bản ghi cũ
+        HotelOffers offer = hotelOffersRepository.findById(id)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
+
+        if (request == null) {
+            throw new AppException(AppErrorCode.REQUEST_IS_NULL);
+        }
+
+        // 2. Cập nhật thông tin văn bản
+        offer.setServiceCategory(request.getServiceCategory());
+        offer.setName(request.getName());
+        offer.setDescription(request.getDescription());
+        offer.setPrice(request.getPrice());
+        offer.setUnitInfo(request.getUnitInfo());
+
+        // 3. Xử lý ảnh: Chỉ cập nhật nếu người dùng gửi file mới lên
+        if (image != null && !image.isEmpty()) {
+            // (Option) Nếu muốn tiết kiệm dung lượng, có thể xóa ảnh cũ trên MinIO ở đây trước khi up ảnh mới
+            // minioService.deleteFile(offer.getImageUrl());
+
+            String newImageUrl = minioService.uploadFile(image);
+            offer.setImageUrl(newImageUrl);
+        }
+
+        // 4. Lưu và trả về
+        var updatedOffer = hotelOffersRepository.save(offer);
+        return mapToResponse(updatedOffer);
+    }
+
     // Helper: Map Entity -> Response DTO
     private HotelOfferResponse mapToResponse(HotelOffers entity) {
         return HotelOfferResponse.builder()

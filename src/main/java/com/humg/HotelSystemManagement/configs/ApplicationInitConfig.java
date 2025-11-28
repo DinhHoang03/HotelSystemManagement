@@ -3,6 +3,7 @@ package com.humg.HotelSystemManagement.configs;
 import com.humg.HotelSystemManagement.modules.auth_service.models.entities.Role;
 import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
 import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.UserRepository;
+import com.humg.HotelSystemManagement.utils.enums.Gender;
 import com.humg.HotelSystemManagement.utils.enums.UserStatus;
 import com.humg.HotelSystemManagement.modules.auth_service.models.repositories.RoleRepository;
 import lombok.AccessLevel;
@@ -14,6 +15,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDate;
 import java.util.Set;
 
 @Configuration
@@ -43,6 +45,9 @@ public class ApplicationInitConfig {
                 User admin = User.builder()
                         .username("admin")
                         .password(passwordEncoder.encode("admin"))
+                        .name("Long")
+                        .dob(LocalDate.parse("2003-10-12"))
+                        .gender(Gender.MALE)
                         .roles(Set.of(roles))
                         .userStatus(UserStatus.ENABLED)
                         .build();

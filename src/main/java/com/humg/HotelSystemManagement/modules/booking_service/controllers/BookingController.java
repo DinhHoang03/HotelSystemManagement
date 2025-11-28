@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 public class BookingController {
     BookingService bookingService;
 
+    // 1. TẠO ĐƠN ĐẶT PHÒNG
     @PostMapping("/create")
     @PreAuthorize("hasAuthority('BOOKING_CREATE')")
     APIResponse<BookingResponse> createBooking(
@@ -33,15 +34,22 @@ public class BookingController {
                 .build();
     }
 
+    // 2. XEM CHI TIẾT ĐƠN (Đã thêm check quyền sở hữu)
     @GetMapping("/info/{bookingId}")
-    APIResponse<BookingResponse> findBookingById(@PathVariable("bookingId") String bookingId) {
+    APIResponse<BookingResponse> findBookingById(
+            @PathVariable("bookingId") String bookingId,
+            @AuthenticationPrincipal Jwt principal // Thêm lấy Token
+    ) {
+        String username = principal.getSubject(); // Lấy username từ Token
         return APIResponse.<BookingResponse>builder()
-                .result(bookingService.getBookingById(bookingId))
+                .result(bookingService.getBookingById(bookingId, username)) // Truyền username vào Service
                 .message("Get booking successfully")
                 .build();
     }
 
-    @GetMapping("/list/{customerId}")
+    // 3. DANH SÁCH ĐƠN CỦA TÔI
+    // Lưu ý: Đã đổi path thành /list để gọn hơn, không cần {customerId} trên URL nữa vì lấy từ Token rồi
+    @GetMapping("/list")
     APIResponse<Page<BookingResponse>> getAllBooking(
             @AuthenticationPrincipal Jwt principal,
             @RequestParam(defaultValue = "0") int page,
@@ -54,24 +62,32 @@ public class BookingController {
                 .build();
     }
 
+    // 4. HỦY ĐƠN (Đã thêm check quyền sở hữu)
     @DeleteMapping("/del/{id}")
     @PreAuthorize("hasAuthority('BOOKING_CANCEL')")
-    APIResponse<String> cancelBooking(@PathVariable("id") String id) {
-        bookingService.deleteBooking(id);
+    APIResponse<String> cancelBooking(
+            @PathVariable("id") String id,
+            @AuthenticationPrincipal Jwt principal // Thêm lấy Token
+    ) {
+        String username = principal.getSubject(); // Lấy username
+        bookingService.deleteBooking(id, username); // Truyền vào Service
         return APIResponse.<String>builder()
                 .message("Cancel order room successfully")
                 .build();
     }
 
+    // 5. THÊM DỊCH VỤ VÀO ĐƠN (Đã thêm check quyền sở hữu)
     @PostMapping("/{bookingId}/add-service")
     @PreAuthorize("hasAuthority('BOOKING_UPDATE')")
     public APIResponse<BookingResponse> addService(
             @PathVariable String bookingId,
             @RequestParam String offerId,
-            @RequestParam int quantity
+            @RequestParam int quantity,
+            @AuthenticationPrincipal Jwt principal // Thêm lấy Token
     ) {
+        String username = principal.getSubject(); // Lấy username
         return APIResponse.<BookingResponse>builder()
-                .result(bookingService.addServiceToBooking(bookingId, offerId, quantity))
+                .result(bookingService.addServiceToBooking(bookingId, offerId, quantity, username)) // Truyền vào Service
                 .message("Service added successfully")
                 .build();
     }

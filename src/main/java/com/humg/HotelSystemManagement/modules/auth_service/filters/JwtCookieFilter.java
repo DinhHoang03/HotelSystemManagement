@@ -32,6 +32,9 @@ public class JwtCookieFilter extends OncePerRequestFilter {
                                     @NonNull FilterChain filterChain)
             throws ServletException, IOException {
 
+        // Log URL đang được gọi để dễ theo dõi
+        log.info(">>> FILTER START: Processing request {} {}", request.getMethod(), request.getRequestURI());
+
         String token = null;
 
         // 1. Tìm Token trong Cookie
@@ -39,42 +42,53 @@ public class JwtCookieFilter extends OncePerRequestFilter {
             for (Cookie cookie : request.getCookies()) {
                 if ("access_token".equals(cookie.getName())) {
                     token = cookie.getValue();
+                    log.info(">>> Found 'access_token' in Cookie.");
                     break;
                 }
             }
+        } else {
+            log.info(">>> No cookies found in request.");
         }
 
-        // 2. Nếu không thấy trong Cookie, thử tìm trong Header (Authorization: Bearer ...)
-        // (Để support cả Postman khi test bằng Header)
+        // 2. Nếu không thấy trong Cookie, thử tìm trong Header
         if (token == null) {
             String authHeader = request.getHeader("Authorization");
             if (authHeader != null && authHeader.startsWith("Bearer ")) {
                 token = authHeader.substring(7);
+                log.info(">>> Found 'access_token' in Authorization Header.");
             }
+        }
+
+        if (token == null) {
+            log.warn(">>> Token is NULL. Request will proceed as Anonymous.");
         }
 
         // 3. Nếu có token và chưa được xác thực trong Context
         if (token != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             try {
-                // Giải mã Token (Verify chữ ký, hết hạn...)
+                // Giải mã Token
                 Jwt jwt = jwtDecoder.decode(token);
+                log.info(">>> JWT Decoded Successfully. Subject (User): {}", jwt.getSubject());
 
-                // Chuyển đổi JWT thành Authentication object (Gồm cả Role/Permission)
-                // Bước này cực quan trọng để @PreAuthorize hoạt động
+                // Chuyển đổi JWT thành Authentication object
                 var authentication = (JwtAuthenticationToken) jwtAuthenticationConverter.convert(jwt);
+
+                // --- LOG QUAN TRỌNG NHẤT: KIỂM TRA QUYỀN ---
+                log.info(">>> Authorities extracted from Token: {}", authentication.getAuthorities());
+                // Bạn hãy tìm xem trong danh sách in ra này có chữ 'BOOKING_CREATE' không?
+                // ---------------------------------------------
 
                 // Nạp vào Security Context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
-
-                log.debug("Authenticated user: {}", authentication.getName());
-                log.debug("Authorities: {}", authentication.getAuthorities());
+                log.info(">>> SecurityContext updated successfully.");
 
             } catch (Exception e) {
-                // Nếu Token lỗi (hết hạn, sai chữ ký), ta chỉ log và bỏ qua.
-                // Request sẽ đi tiếp dưới dạng "Anonymous" (Vô danh) -> Gặp Controller sẽ bị 401
-                log.error("Failed to authenticate JWT from Cookie: {}", e.getMessage());
+                log.error(">>> FAILED to authenticate JWT: {}", e.getMessage());
+                // Không throw exception ở đây để filter chain tiếp tục (Spring Security sẽ handle lỗi 401 sau)
                 SecurityContextHolder.clearContext();
             }
+        } else if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            log.info(">>> SecurityContext already contains authentication: {}", SecurityContextHolder.getContext().getAuthentication().getName());
         }
 
         filterChain.doFilter(request, response);

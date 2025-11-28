@@ -74,7 +74,7 @@ public class BookingItemController {
     APIResponse<String> cancelBooking(@PathVariable("id") String id) {
         bookingItemsService.deleteBookingItems(id);
         return APIResponse.<String>builder()
-                .message("Cancel order room successfully")
+                .message("Cancel order service successfully")
                 .build();
     }
 }
