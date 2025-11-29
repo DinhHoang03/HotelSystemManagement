@@ -9,5 +9,5 @@ import lombok.experimental.FieldDefaults;
 @Builder
 @FieldDefaults(level = AccessLevel.PRIVATE)
 public class ZaloPayOrderRequest {
-    String bookingBillId;
+    String bookingId;
 } 

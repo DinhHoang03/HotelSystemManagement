@@ -1,15 +1,20 @@
 package com.humg.HotelSystemManagement.modules.payment_service.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRepository;
+import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.SuccessfulPaymentResponse;
 import com.humg.HotelSystemManagement.modules.booking_service.services.BookingService;
+import com.humg.HotelSystemManagement.modules.email_service.services.EmailService;
 import com.humg.HotelSystemManagement.modules.payment_service.configs.ZaloPayConfig;
 import com.humg.HotelSystemManagement.modules.payment_service.crypto.HMACUtil;
+import com.humg.HotelSystemManagement.modules.payment_service.models.entities.PaymentBill;
+import com.humg.HotelSystemManagement.modules.payment_service.models.repositories.PaymentBillRepository;
 import com.humg.HotelSystemManagement.modules.payment_service.resources.requests.ZaloPayOrderRequest;
 import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
+import com.humg.HotelSystemManagement.utils.enums.PaymentMethod;
+import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
@@ -27,6 +32,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Service
@@ -37,12 +43,12 @@ public class ZaloPayService {
     ZaloPayConfig zaloPayConfig;
     BookingRepository bookingRepository;
     BookingService bookingService;
+    EmailService emailService;
 
-    private String getCurrentTimeString(String format){
-        Calendar cal = new GregorianCalendar(TimeZone.getTimeZone("GMT+7"));
-        SimpleDateFormat fmt = new SimpleDateFormat(format);
-        fmt.setCalendar(cal);
-        return fmt.format(cal.getTimeInMillis());
+    // Thay vì dùng SimpleDateFormat
+    private String getCurrentTimeString() {
+        return java.time.LocalDateTime.now(java.time.ZoneId.of("GMT+7"))
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyMMdd"));
     }
 
     public String createPayment(ZaloPayOrderRequest request) throws IOException {
@@ -50,13 +56,13 @@ public class ZaloPayService {
 
         // 1. Lấy Booking trực tiếp (Thay vì BookingBill)
         // Lưu ý: Request nên gửi bookingId. Nếu request vẫn dùng tên getBookingBillId(), hãy map nó thành bookingId
-        String bookingId = request.getBookingBillId(); // Giả sử field này chứa ID booking
+        String bookingId = request.getBookingId(); // Giả sử field này chứa ID booking
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
         Random random = new Random();
         int randomId = random.nextInt(1000000);
-        String appTransId = getCurrentTimeString("yyMMdd") + "_" + randomId;
+        String appTransId = getCurrentTimeString() + "_" + randomId;
 
         Map<String, Object> zaloPayOrder = new HashMap<>();
         zaloPayOrder.put("app_id", zaloPayConfig.getAppId());
@@ -112,14 +118,21 @@ public class ZaloPayService {
 
                 // Lưu ý: Ở môi trường thật, việc cập nhật trạng thái thanh toán (bookingService.processSuccessfulPayment)
                 // nên được thực hiện ở API Callback (khi ZaloPay gọi ngược lại server mình).
-                // Tuy nhiên, nếu bạn muốn cập nhật ngay để test (giả lập thành công):
-                // bookingService.processSuccessfulPayment(bookingId, appTransId, booking.getGrandTotal(), PaymentMethod.ZALO_PAY);
+                // Tuy nhiên, nếu bạn muốn cập nhật ngay để test (giả lập thành công)
+                SuccessfulPaymentResponse result = bookingService.processSuccessfulPayment(bookingId, appTransId, booking.getGrandTotal(), PaymentMethod.ZALO_PAY);
+
+                sendBookingConfirmationEmail(result.getBooking(), result.getStatus());
+                log.info("Email send successfully to {}", booking.getUser().getEmail());
 
                 return resultJsonString.toString();
             }
         } catch (Exception e) {
-            e.printStackTrace();
             return "{\"error\": \"Failed to create order: " + e.getMessage() + "\"}";
         }
+    }
+
+    private void sendBookingConfirmationEmail(Booking booking, PaymentStatus status) {
+        if(status == PaymentStatus.COMPLETED)
+            emailService.sendBookingConfirmationEmail(booking);
     }
 }

@@ -34,6 +34,22 @@ public class BookingItemController {
                 .build();
     }
 
+    // --- API MỚI: LẤY GIỎ HÀNG (IN_CART) ---
+    @GetMapping("/cart")
+    @PreAuthorize("hasAuthority('BOOKING_VIEW')")
+    APIResponse<Page<BookingItemResponse>> getMyCart(
+            @AuthenticationPrincipal Jwt principal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        var username = principal.getSubject();
+        return APIResponse.<Page<BookingItemResponse>>builder()
+                .result(bookingItemsService.getMyCart(username, page, size))
+                .message("Get cart items successfully")
+                .build();
+    }
+    // ----------------------------------------
+
     @GetMapping("/get-all")
     @PreAuthorize("hasAuthority('BOOKING_VIEW')")
     APIResponse<Page<BookingItemResponse>> getAllBookingItemsGlobal(
@@ -46,7 +62,7 @@ public class BookingItemController {
                 .build();
     }
 
-    // API 2: User xem danh sách món mình đã order (Dựa trên Token)
+    // API 2: User xem danh sách món mình đã order (LỊCH SỬ)
     @GetMapping("/my-list")
     APIResponse<Page<BookingItemResponse>> getMyBookingItems(
             @AuthenticationPrincipal Jwt principal,

@@ -1,7 +1,7 @@
 package com.humg.HotelSystemManagement.modules.booking_service.models.repositories;
 
-import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingRoom;
+import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,28 +11,37 @@ import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface BookingRoomRepository extends JpaRepository<BookingRoom, String> {
 
-    // Query check phòng trống giữ nguyên
-    @Query("SELECT DISTINCT r.roomNumber FROM BookingRoom br JOIN br.rooms r " +
-            "WHERE r.roomNumber IN :roomNumbers " +
-            "AND (br.checkInDate <= :checkOutDate AND br.checkOutDate >= :checkInDate) " +
-            "AND br.bookingStatus <> 'CANCELLED'") // Nên thêm điều kiện này để không check các đơn đã hủy
-    List<String> findBookedRoomNumbersInDateRangeForRooms(@Param("roomNumbers") List<String> roomNumbers,
-                                                          @Param("checkInDate") LocalDate checkInDate,
-                                                          @Param("checkOutDate") LocalDate checkOutDate);
+    // 1. API Mới: Lấy danh sách phòng ĐANG ĐI CHỢ (Cart)
+    Page<BookingRoom> findByUsernameAndBookingStatus(String username, BookingStatus status, Pageable pageable);
 
-    // Nếu BookingRoom có trường "username" (String) thì giữ nguyên
-    List<BookingRoom> findByUsernameAndBookingRoomIdIn(String username, List<String> bookingRoomIds);
-
+    // 2. API Cũ: Lấy tất cả của user
     Page<BookingRoom> findByUsername(String username, Pageable pageable);
 
-    List<BookingRoom> findByBooking(Booking booking);
+    // 3. Hỗ trợ Security check cho Booking Service (Tránh IDOR)
+    List<BookingRoom> findByUsernameAndBookingRoomIdIn(String username, List<String> ids);
 
-    @Query("SELECT br FROM BookingRoom br WHERE br.checkInDate <= :date AND br.checkOutDate >= :date " +
-            "AND br.bookingStatus = 'CONFIRMED'")
-    List<BookingRoom> findActiveBookingsOnDate(LocalDate date);
+    // 4. Hỗ trợ check trùng lịch (Prevent Double Booking)
+    @Query("SELECT br.bookingRoomId FROM BookingRoom br JOIN br.rooms r " +
+            "WHERE r.roomNumber IN :roomNumbers " +
+            "AND br.bookingStatus <> 'CANCELLED' " +
+            "AND br.bookingStatus <> 'IN_CART' " + // Không check trùng với hàng trong giỏ, chỉ check đơn đã đặt
+            "AND ((br.checkInDate < :checkOutDate) AND (br.checkOutDate > :checkInDate))")
+    List<String> findBookedRoomNumbersInDateRangeForRooms(
+            @Param("roomNumbers") List<String> roomNumbers,
+            @Param("checkInDate") LocalDate checkInDate,
+            @Param("checkOutDate") LocalDate checkOutDate
+    );
+
+    // 5. --- [FIX LỖI CỦA BẠN] ---: Hỗ trợ Dashboard thống kê (Occupancy Rate)
+    // Tìm các booking đang active trong ngày cụ thể (để tính xem ngày đó có bao nhiêu phòng có khách)
+    // Logic: Ngày đó nằm trong khoảng CheckIn và CheckOut, và trạng thái phải là CONFIRMED hoặc CHECKED_IN
+    @Query("SELECT br FROM BookingRoom br " +
+            "WHERE :date >= br.checkInDate " +
+            "AND :date < br.checkOutDate " +
+            "AND (br.bookingStatus = 'CONFIRMED' OR br.bookingStatus = 'CHECKED_IN' OR br.bookingStatus = 'PENDING')")
+    List<BookingRoom> findActiveBookingsOnDate(@Param("date") LocalDate date);
 }

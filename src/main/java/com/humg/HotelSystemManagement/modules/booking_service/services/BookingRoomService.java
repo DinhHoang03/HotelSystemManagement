@@ -1,15 +1,15 @@
 package com.humg.HotelSystemManagement.modules.booking_service.services;
 
-import com.humg.HotelSystemManagement.modules.booking_service.resources.requests.BookingRoomRequest;
-import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingRoomResponse;
-import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingRoom;
-import com.humg.HotelSystemManagement.modules.room_service.resources.responses.RoomResponse;
-import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
-import com.humg.HotelSystemManagement.modules.room_service.models.entities.Room;
 import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
+import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingRoom;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRoomRepository;
+import com.humg.HotelSystemManagement.modules.booking_service.resources.requests.BookingRoomRequest;
+import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingRoomResponse;
+import com.humg.HotelSystemManagement.modules.room_service.models.entities.Room;
 import com.humg.HotelSystemManagement.modules.room_service.models.repositories.RoomRepository;
+import com.humg.HotelSystemManagement.modules.room_service.resources.responses.RoomResponse;
+import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
 import com.humg.HotelSystemManagement.utils.interfaces.ISimpleCRUDService;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
@@ -37,9 +37,7 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
 
     @Transactional
     public BookingRoomResponse createOrder(BookingRoomRequest request, String username) {
-        if (request == null) {
-            throw new AppException(AppErrorCode.REQUEST_IS_NULL);
-        }
+        if (request == null) throw new AppException(AppErrorCode.REQUEST_IS_NULL);
 
         LocalDate checkInDate = request.getCheckInDate();
         LocalDate checkOutDate = request.getCheckOutDate();
@@ -55,7 +53,6 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
             throw new AppException(AppErrorCode.LIST_EMPTY);
         }
 
-        // --- SỬA Ở ĐÂY: Đổi List<BookingRoom> thành List<String> ---
         List<String> conflictingRoomNumbers = bookingRoomRepository
                 .findBookedRoomNumbersInDateRangeForRooms(
                         listRoom.stream().map(Room::getRoomNumber).toList(),
@@ -64,27 +61,23 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
                 );
 
         if (!conflictingRoomNumbers.isEmpty()) {
-            // Có thể log ra số phòng bị trùng để debug dễ hơn: conflictingRoomNumbers.toString()
             throw new AppException(AppErrorCode.ROOM_ALREADY_BOOKED);
         }
 
         long totalRoomAmount = calculateTotalAmount(listRoom, checkInDate, checkOutDate);
 
-        // Tạo Entity
+        // Tạo BookingRoom với trạng thái IN_CART (Đang đi chợ)
         BookingRoom bookingRoom = BookingRoom.builder()
                 .username(username)
                 .checkInDate(checkInDate)
                 .checkOutDate(checkOutDate)
                 .totalRoomAmount(totalRoomAmount)
-                .bookingStatus(BookingStatus.PENDING)
-                .rooms(listRoom) // Hibernate tự động lưu vào bảng trung gian booking_room_detail
+                .bookingStatus(BookingStatus.IN_CART) // <--- QUAN TRỌNG: Đang đi chợ
+                .rooms(listRoom)
                 .build();
 
         var savedBooking = bookingRoomRepository.save(bookingRoom);
 
-        // --- ĐOẠN SỬA QUAN TRỌNG NHẤT ---
-        // Thay vì gọi mapToResponse(savedBooking) (có thể bị rỗng list rooms do Lazy Load sau khi save)
-        // Ta build response thủ công dùng ngay cái listRoom ta đang có trong tay.
         return BookingRoomResponse.builder()
                 .bookingRoomId(savedBooking.getBookingRoomId())
                 .checkInDate(savedBooking.getCheckInDate())
@@ -97,28 +90,36 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
     private Long calculateTotalAmount(List<Room> rooms, LocalDate checkInDate, LocalDate checkOutDate) {
         long numberOfNights = ChronoUnit.DAYS.between(checkInDate, checkOutDate);
         if (numberOfNights <= 0) numberOfNights = 1;
-
         final long nights = numberOfNights;
         return rooms.stream()
                 .map(room -> room.getRoomType().getFullDayPrice() * nights)
                 .reduce(0L, Long::sum);
     }
 
-    @Override
-    @Transactional(readOnly = true) // Đã thêm Transactional để fix lỗi Lazy Loading khi Get
-    public Page<BookingRoomResponse> getAll(int page, int size) {
+    // API MỚI: Lấy danh sách TRONG GIỎ HÀNG (IN_CART)
+    @Transactional(readOnly = true)
+    public Page<BookingRoomResponse> getMyCart(String username, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
-        return bookingRoomRepository.findAll(pageable).map(this::mapToResponse);
+        return bookingRoomRepository.findByUsernameAndBookingStatus(username, BookingStatus.IN_CART, pageable)
+                .map(this::mapToResponse);
     }
 
-    @Transactional(readOnly = true) // Đã thêm Transactional
+    // Lấy TẤT CẢ (Lịch sử)
+    @Transactional(readOnly = true)
     public Page<BookingRoomResponse> getAllByUsername(String username, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         return bookingRoomRepository.findByUsername(username, pageable).map(this::mapToResponse);
     }
 
     @Override
-    @Transactional(readOnly = true) // Đã thêm Transactional
+    @Transactional(readOnly = true)
+    public Page<BookingRoomResponse> getAll(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        return bookingRoomRepository.findAll(pageable).map(this::mapToResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
     public BookingRoomResponse getById(String id) {
         return bookingRoomRepository.findById(id)
                 .map(this::mapToResponse)
@@ -134,13 +135,8 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
         bookingRoomRepository.deleteById(id);
     }
 
-    @Override
-    public BookingRoomResponse create(BookingRoomRequest request) { return null; }
-
-    @Override
-    public BookingRoomResponse update(String id, BookingRoomRequest request) { return null; }
-
-    // --- MAPPER ---
+    @Override public BookingRoomResponse create(BookingRoomRequest request) { return null; }
+    @Override public BookingRoomResponse update(String id, BookingRoomRequest request) { return null; }
 
     private BookingRoomResponse mapToResponse(BookingRoom entity) {
         return BookingRoomResponse.builder()
@@ -148,11 +144,7 @@ public class BookingRoomService implements ISimpleCRUDService<BookingRoomRespons
                 .checkInDate(entity.getCheckInDate())
                 .checkOutDate(entity.getCheckOutDate())
                 .totalRoomAmount(entity.getTotalRoomAmount())
-                // Lưu ý: Nếu entity được lấy từ DB mà session đã đóng, dòng này có thể gây lỗi Lazy
-                // Nhưng nhờ @Transactional(readOnly=true) ở các hàm get, nó sẽ hoạt động tốt.
-                .rooms(entity.getRooms().stream()
-                        .map(this::mapRoomToResponse)
-                        .collect(Collectors.toList()))
+                .rooms(entity.getRooms().stream().map(this::mapRoomToResponse).collect(Collectors.toList()))
                 .build();
     }
 

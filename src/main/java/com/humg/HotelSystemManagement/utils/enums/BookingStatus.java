@@ -1,13 +1,12 @@
 package com.humg.HotelSystemManagement.utils.enums;
 
 public enum BookingStatus {
-    PENDING,
-    CONFIRMED,
-    CHECKED_IN,
-    CHECKED_OUT,
-    WAITING_PAYMENT,
-    CANCELLED,
-    FAILED,
+    IN_CART,      // Mới thêm vào, chưa tạo đơn (Đang đi chợ)
+    PENDING,      // Đã tạo đơn, chờ thanh toán
+    CONFIRMED,    // Đã thanh toán/xác nhận
+    CHECKED_IN,   // Đã nhận phòng
+    CHECKED_OUT,  // Đã trả phòng
+    CANCELLED,    // Đã hủy
     IN_PROGRESS
 }
 

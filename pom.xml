@@ -34,6 +34,8 @@
 	</dependencyManagement>
 
 	<dependencies>
+
+
 		<!-- Spring AI - ĐÃ SỬA: Artifact ID chuẩn -->
 		<dependency>
 			<groupId>org.springframework.ai</groupId>

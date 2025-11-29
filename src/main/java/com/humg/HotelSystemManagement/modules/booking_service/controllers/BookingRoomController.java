@@ -33,6 +33,22 @@ public class BookingRoomController {
                 .build();
     }
 
+    // --- API MỚI: LẤY GIỎ HÀNG (IN_CART) ---
+    @GetMapping("/cart")
+    @PreAuthorize("hasAuthority('BOOKING_VIEW')")
+    APIResponse<Page<BookingRoomResponse>> getMyCart(
+            @AuthenticationPrincipal Jwt principal,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size
+    ) {
+        var username = principal.getSubject();
+        return APIResponse.<Page<BookingRoomResponse>>builder()
+                .result(bookingRoomService.getMyCart(username, page, size))
+                .message("Get cart rooms successfully")
+                .build();
+    }
+    // ----------------------------------------
+
     @GetMapping("/get-all")//Phần admin
     @PreAuthorize("hasAuthority('BOOKING_VIEW')")
     APIResponse<Page<BookingRoomResponse>> getAllBookingRooms(
@@ -45,7 +61,7 @@ public class BookingRoomController {
                 .build();
     }
 
-    @GetMapping("/list") //Phần của khách hàng
+    @GetMapping("/list") //Phần của khách hàng (LỊCH SỬ)
     APIResponse<Page<BookingRoomResponse>> getAllByUsername(
             @AuthenticationPrincipal Jwt principal,
             @RequestParam(defaultValue = "0") int page,
