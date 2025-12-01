@@ -8,12 +8,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/zalopay")
@@ -31,5 +29,17 @@ public class ZaloPayController {
                 .result(result)
                 .message("Create order success")
                 .build();
+    }
+
+    // API này để ZaloPay gọi (Callback)
+    @PostMapping("/callback")
+    public Map<String, Object> callback(@RequestBody String jsonStr) {
+        return zaloPayService.doCallback(jsonStr).toMap();
+    }
+
+    // API này để Frontend (React) gọi khi khách quay về web
+    @PostMapping("/check-status/{appTransId}")
+    public Map<String, Object> checkStatus(@PathVariable String appTransId) {
+        return zaloPayService.checkOrderStatus(appTransId);
     }
 }

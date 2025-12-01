@@ -1,6 +1,7 @@
 package com.humg.HotelSystemManagement.modules.booking_service.models.entities;
 
 import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
+import com.humg.HotelSystemManagement.modules.payment_service.models.entities.PaymentBill;
 import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
 import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
 import jakarta.persistence.*;
@@ -69,6 +70,9 @@ public class Booking {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     User user;
+
+    @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, orphanRemoval = true)
+    List<PaymentBill> paymentBills = new ArrayList<>();
 
     @OneToMany(mappedBy = "booking", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     List<BookingRoom> bookingRooms = new ArrayList<>();

@@ -4,7 +4,6 @@ import com.humg.HotelSystemManagement.exceptions.enums.AppErrorCode;
 import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.AuthenticationRequest;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.IntrospectRequest;
-import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.LogOutRequest;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.RefreshRequest;
 import com.humg.HotelSystemManagement.modules.customer_service.resources.requests.UserCreationRequest;
 import com.humg.HotelSystemManagement.modules.email_service.resources.requests.OTPRequest;
@@ -20,6 +19,8 @@ import jakarta.validation.Valid;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.NonFinal;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -36,27 +37,43 @@ import java.text.ParseException;
 public class AuthenticationController {
     AuthenticationService authenticationService;
 
-    // --- 1. ĐĂNG NHẬP (Nới lỏng) ---
+    // Inject giá trị từ YAML (Đơn vị: PHÚT)
+    @NonFinal @Value("${jwt.valid-duration}")
+    protected long VALID_DURATION_MINUTES;
+
+    @NonFinal @Value("${jwt.refreshable-duration}")
+    protected long REFRESH_STANDARD_MINUTES;
+
+    @NonFinal @Value("${jwt.remember-me-duration}")
+    protected long REMEMBER_ME_MINUTES;
+
     @PostMapping("/login")
     APIResponse<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request, HttpServletResponse response) {
         var authResult = authenticationService.authenticate(request);
 
-        // Access Token
+        // 1. Access Cookie (Đổi phút -> giây)
         ResponseCookie accessCookie = ResponseCookie.from("access_token", authResult.getAccessToken())
                 .httpOnly(true)
-                .secure(false)       // <--- SỬA: False để chạy HTTP
+                .secure(false) // Localhost: false
                 .path("/")
-                .maxAge(15 * 60)
-                .sameSite("Lax")     // <--- SỬA: Lax cho dễ thở
+                .maxAge(VALID_DURATION_MINUTES * 60)
+                .sameSite("Lax")
                 .build();
 
-        // Refresh Token
+        // 2. Refresh Cookie (Đổi phút -> giây)
+        long refreshMaxAgeSeconds;
+        if (request.isRememberMe()) {
+            refreshMaxAgeSeconds = REMEMBER_ME_MINUTES * 60;
+        } else {
+            refreshMaxAgeSeconds = REFRESH_STANDARD_MINUTES * 60;
+        }
+
         ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", authResult.getRefreshToken())
                 .httpOnly(true)
-                .secure(false)       // <--- SỬA
+                .secure(false)
                 .path("/")
-                .maxAge(7 * 24 * 60 * 60)
-                .sameSite("Lax")     // <--- SỬA
+                .maxAge(refreshMaxAgeSeconds)
+                .sameSite("Lax")
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, accessCookie.toString());
@@ -68,20 +85,10 @@ public class AuthenticationController {
                 .build();
     }
 
-    @PostMapping("/introspect")
-    APIResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
-        var result = authenticationService.introspect(request);
-        return APIResponse.<IntrospectResponse>builder()
-                .result(result)
-                .build();
-    }
-
-    // --- 2. LÀM MỚI TOKEN (Nới lỏng) ---
     @PostMapping("/refresh")
     APIResponse<AuthenticationResponse> refreshToken(HttpServletRequest request, HttpServletResponse response)
             throws ParseException, JOSEException {
 
-        // B1: Lấy refresh_token từ Cookie
         String refreshToken = null;
         if (request.getCookies() != null) {
             for (Cookie cookie : request.getCookies()) {
@@ -92,32 +99,28 @@ public class AuthenticationController {
             }
         }
 
-        // B2: Nếu không có Cookie -> Lỗi 401
-        if (refreshToken == null) {
-            throw new AppException(AppErrorCode.UNAUTHENTICATED);
-        }
+        if (refreshToken == null) throw new AppException(AppErrorCode.UNAUTHENTICATED);
 
-        // B3: Gọi Service (Bọc lại vào RefreshRequest vì Service đang yêu cầu Object này)
         var result = authenticationService.refreshToken(
                 RefreshRequest.builder().token(refreshToken).build()
         );
 
-        // B4: Set lại Cookie mới (Access Token mới)
+        // Cấp lại Access Cookie
         ResponseCookie accessCookie = ResponseCookie.from("access_token", result.getAccessToken())
                 .httpOnly(true)
                 .secure(false)
                 .path("/")
-                .maxAge(15 * 60)
+                .maxAge(VALID_DURATION_MINUTES * 60)
                 .sameSite("Lax")
                 .build();
 
-        // Nếu Service trả về cả Refresh Token mới (Rotating Refresh Token) thì set luôn
+        // Cấp lại Refresh Cookie (Reset về Standard)
         if (result.getRefreshToken() != null) {
             ResponseCookie refreshCookie = ResponseCookie.from("refresh_token", result.getRefreshToken())
                     .httpOnly(true)
                     .secure(false)
                     .path("/")
-                    .maxAge(7 * 24 * 60 * 60)
+                    .maxAge(REFRESH_STANDARD_MINUTES * 60)
                     .sameSite("Lax")
                     .build();
             response.addHeader(HttpHeaders.SET_COOKIE, refreshCookie.toString());
@@ -131,42 +134,26 @@ public class AuthenticationController {
                 .build();
     }
 
-    // --- 3. ĐĂNG XUẤT (Nới lỏng) ---
     @PostMapping("/logout")
     APIResponse<?> logout(HttpServletRequest request, HttpServletResponse response) {
         String accessToken = null;
         String refreshToken = null;
 
         if (request.getCookies() != null) {
-            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+            for (Cookie cookie : request.getCookies()) {
                 if ("access_token".equals(cookie.getName())) accessToken = cookie.getValue();
                 if ("refresh_token".equals(cookie.getName())) refreshToken = cookie.getValue();
             }
         }
 
-        if (accessToken != null) {
-            try { authenticationService.logout(accessToken); } catch (Exception e) {}
-        }
-        if (refreshToken != null) {
-            try { authenticationService.logout(refreshToken); } catch (Exception e) {}
-        }
+        if (accessToken != null) try { authenticationService.logout(accessToken); } catch (Exception e) {}
+        if (refreshToken != null) try { authenticationService.logout(refreshToken); } catch (Exception e) {}
 
-        // Xóa Cookie (Cấu hình phải khớp với lúc tạo)
         ResponseCookie deleteAccess = ResponseCookie.from("access_token", "")
-                .httpOnly(true)
-                .secure(false)       // <--- SỬA
-                .path("/")
-                .maxAge(0)
-                .sameSite("Lax")     // <--- SỬA
-                .build();
+                .httpOnly(true).secure(false).path("/").maxAge(0).sameSite("Lax").build();
 
         ResponseCookie deleteRefresh = ResponseCookie.from("refresh_token", "")
-                .httpOnly(true)
-                .secure(false)       // <--- SỬA
-                .path("/")
-                .maxAge(0)
-                .sameSite("Lax")     // <--- SỬA
-                .build();
+                .httpOnly(true).secure(false).path("/").maxAge(0).sameSite("Lax").build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, deleteAccess.toString());
         response.addHeader(HttpHeaders.SET_COOKIE, deleteRefresh.toString());
@@ -174,12 +161,16 @@ public class AuthenticationController {
         return APIResponse.builder().message("Logout success").build();
     }
 
+    @PostMapping("/introspect")
+    APIResponse<IntrospectResponse> introspect(@RequestBody IntrospectRequest request) throws ParseException, JOSEException {
+        var result = authenticationService.introspect(request);
+        return APIResponse.<IntrospectResponse>builder().result(result).build();
+    }
+
     @PostMapping("/register")
     APIResponse<?> register(@Valid @RequestBody UserCreationRequest request) {
         authenticationService.registerStep1(request);
-        return APIResponse.builder()
-                .message("Register initiated. Please check your email for OTP.")
-                .build();
+        return APIResponse.builder().message("Register initiated. Check email for OTP.").build();
     }
 
     @PostMapping("/verify-registration")

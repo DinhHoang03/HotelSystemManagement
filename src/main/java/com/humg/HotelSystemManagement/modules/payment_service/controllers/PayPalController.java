@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.modules.payment_service.controllers;
 
+import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.SuccessfulPaymentResponse;
 import com.humg.HotelSystemManagement.modules.payment_service.resources.requests.PayPalOrderRequest;
 import com.humg.HotelSystemManagement.utils.APIResponse;
 import com.humg.HotelSystemManagement.modules.payment_service.services.PayPalService;
@@ -25,6 +26,23 @@ public class PayPalController {
         return APIResponse.<String>builder()
                 .result(payPalService.createOrder(request))
                 .message("Create order successfully")
+                .build();
+    }
+
+    // API 2: Xác nhận thanh toán (User quay lại từ PayPal) - CẦN THÊM CÁI NÀY
+    @PostMapping("/success")
+    // @PreAuthorize(...) // Tùy chọn: Có thể cần quyền user hoặc public tùy logic bảo mật của bạn
+    public APIResponse<SuccessfulPaymentResponse> successPay(
+            @RequestParam("paymentId") String paymentId,
+            @RequestParam("PayerID") String payerId,
+            @RequestParam("bookingId") String bookingId
+    ) {
+        // Gọi xuống service để thực hiện chốt đơn và lưu DB
+        SuccessfulPaymentResponse response = payPalService.executeOrder(paymentId, payerId, bookingId);
+
+        return APIResponse.<SuccessfulPaymentResponse>builder()
+                .result(response)
+                .message("Payment executed successfully")
                 .build();
     }
 }

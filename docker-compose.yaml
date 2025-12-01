@@ -58,4 +58,4 @@ services:
       SPRING_DATA_REDIS_HOST: redis_cache
 
       # Biến này sẽ được script entrypoint.sh tự điền đè lên, cứ khai báo cho vui
-      ZALO_CALLBACK_URL: "placeholder"
+      ZALO_CALLBACK_URL:

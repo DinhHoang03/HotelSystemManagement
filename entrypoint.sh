@@ -19,4 +19,4 @@ echo ">>> ZALO CALLBACK SETUP: $ZALO_CALLBACK_URL"
 
 # 4. Chạy ứng dụng Java
 echo ">>> DANG KHOI DONG SPRING BOOT..."
-exec java -jar app.jar
+exec java -DZALO_CALLBACK_URL="$NGROK_URL/zalopay/callback" -jar app.jar

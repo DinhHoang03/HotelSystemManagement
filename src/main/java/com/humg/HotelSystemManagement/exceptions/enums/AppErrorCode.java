@@ -29,7 +29,7 @@ public enum AppErrorCode {
     ROOM_NOT_AVAILABLE(1012, "Room is not avaiable now!", HttpStatus.BAD_REQUEST),
     INVALID_BOOKING_ROOM_ID(1013, "Invalid booking room id!", HttpStatus.BAD_REQUEST),
     INVALID_BOOKING_ITEM_ID(1014, "Invalid booking item id!", HttpStatus.BAD_REQUEST),
-    PAYMENT_CREATION_FAILED(1015, "Payment creation failed!", HttpStatus.BAD_REQUEST),
+    PAYMENT_FAILED(1015, "Payment failed!", HttpStatus.BAD_REQUEST),
     INVALID_AMOUNT(1016, "Invalid amount", HttpStatus.BAD_REQUEST),
     ZALOPAY_ERROR(1017, "ZaloPay API Error", HttpStatus.BAD_REQUEST),
     USER_NOT_APPROVE(1018, "You need admin approve to grand access to our system, please contact to admin to unlock your account", HttpStatus.BAD_REQUEST),

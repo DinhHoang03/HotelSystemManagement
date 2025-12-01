@@ -34,7 +34,11 @@
 	</dependencyManagement>
 
 	<dependencies>
-
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20231013</version>
+		</dependency>
 
 		<!-- Spring AI - ĐÃ SỬA: Artifact ID chuẩn -->
 		<dependency>

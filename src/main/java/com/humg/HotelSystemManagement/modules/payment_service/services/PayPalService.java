@@ -34,16 +34,19 @@ public class PayPalService {
     PayPalConfig payPalConfig;
     BookingRepository bookingRepository;
     BookingService bookingService;
-    EmailService emailService; // 1. Thêm EmailService để gửi mail giống ZaloPay
+    EmailService emailService;
 
-    // Define tỷ giá
+    // Define tỷ giá (Tốt nhất nên lấy từ DB cấu hình hoặc API tỷ giá thực)
     private static final double VND_TO_USD_RATE = 26000.0;
 
+    /**
+     * BƯỚC 1: TẠO PAYMENT LINK ĐỂ USER ĐI THANH TOÁN
+     */
     public String createOrder(PayPalOrderRequest request) throws PayPalRESTException {
         if (request == null) throw new AppException(AppErrorCode.REQUEST_IS_NULL);
 
         // Lấy Booking
-        String bookingId = request.getBookingBillId();
+        String bookingId = request.getBookingId();
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
@@ -51,11 +54,12 @@ public class PayPalService {
         BigDecimal usdTotal = BigDecimal.valueOf(booking.getGrandTotal())
                 .divide(BigDecimal.valueOf(VND_TO_USD_RATE), 2, RoundingMode.HALF_UP);
 
-        // Cấu hình giao dịch PayPal
+        // Cấu hình số tiền
         Amount amount = new Amount();
         amount.setCurrency("USD");
         amount.setTotal(usdTotal.toPlainString());
 
+        // Mô tả giao dịch
         Transaction transaction = new Transaction();
         transaction.setDescription("Payment for Booking #" + booking.getBookingId());
         transaction.setAmount(amount);
@@ -63,43 +67,29 @@ public class PayPalService {
         List<Transaction> transactions = new ArrayList<>();
         transactions.add(transaction);
 
+        // Phương thức thanh toán
         Payer payer = new Payer();
         payer.setPaymentMethod("paypal");
 
+        // Tạo đối tượng Payment
         Payment payment = new Payment();
         payment.setIntent("sale");
         payment.setPayer(payer);
         payment.setTransactions(transactions);
 
+        // Cấu hình Redirect URL (Nơi User quay về sau khi thao tác trên PayPal)
         RedirectUrls redirectUrls = new RedirectUrls();
         redirectUrls.setCancelUrl(payPalConfig.getCancelUrl());
-        // Vẫn nối bookingId vào để backup, dù đã xử lý xong
+
+        // Gắn bookingId vào returnUrl để Frontend biết đơn nào vừa thanh toán xong
         redirectUrls.setReturnUrl(payPalConfig.getSuccessUrl() + "?bookingId=" + bookingId);
+
         payment.setRedirectUrls(redirectUrls);
 
-        // Tạo payment trên PayPal
+        // Gửi request tạo Payment sang PayPal
         Payment createPayment = payment.create(apiContext);
 
-        // =========================================================================
-        // LOGIC AUTO SUCCESS (ĐỒNG BỘ VỚI ZALOPAY)
-        // =========================================================================
-
-        // 2. Gọi BookingService để chốt đơn ngay lập tức (Status -> PAID, Lưu Bill)
-        // Lưu ý: Dùng createPayment.getId() làm transactionId cho khớp với PayPal thật
-        SuccessfulPaymentResponse result = bookingService.processSuccessfulPayment(
-                bookingId,
-                createPayment.getId(),
-                booking.getGrandTotal(),
-                PaymentMethod.PAYPAL
-        );
-
-        // 3. Gửi email xác nhận ngay lập tức
-        sendBookingConfirmationEmail(result.getBooking(), result.getStatus());
-
-        log.info("AUTO-SUCCESS: PayPal Link Created & DB Updated for Booking {}", bookingId);
-
-        // =========================================================================
-
+        // Trả về link 'approval_url' cho Frontend redirect
         return createPayment.getLinks().stream()
                 .filter(links -> "approval_url".equals(links.getRel()))
                 .findFirst()
@@ -107,23 +97,81 @@ public class PayPalService {
                 .orElseThrow(() -> new AppException(AppErrorCode.ORDER_CREATE_FAILED));
     }
 
-    // Hàm execute này giờ chỉ để làm cảnh hoặc verify lại (vì đơn đã chốt ở trên rồi)
-    public Payment executeOrder(String paymentId, String payerId, String bookingId) {
-        // Logic thực thi thật sự có thể bỏ qua hoặc chỉ log info
-        // Nếu frontend gọi lại API này sau khi redirect, ta chỉ cần trả về OK
-        log.info("User completed PayPal flow for Booking {}. (Already processed in createOrder)", bookingId);
+    /**
+     * BƯỚC 2: XỬ LÝ KHI USER QUAY LẠI (EXECUTE & UPDATE DB)
+     * Hàm này được gọi từ Frontend sau khi PayPal redirect về
+     */
+    public SuccessfulPaymentResponse executeOrder(String paymentId, String payerId, String bookingId) {
+        // 1. Kiểm tra Booking trong DB trước (QUAN TRỌNG: Chống trùng lặp)
+        Booking booking = bookingRepository.findById(bookingId)
+                .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
-        // Nếu muốn chuẩn chỉnh, có thể gọi API PayPal execute để hoàn tất transaction bên phía PayPal
-        // để tiền thực sự trừ vào tài khoản Sandbox (nhưng không update DB của mình nữa)
+        // ==> FIX QUAN TRỌNG: Nếu đơn đã thanh toán rồi thì trả về Success luôn
+        // Tránh lỗi Frontend gọi 2 lần hoặc mạng lag
+        if (booking.getPaymentStatus() == PaymentStatus.COMPLETED
+                || booking.getPaymentStatus() == PaymentStatus.PAID) {
+
+            log.info("Booking {} was already paid. Returning success immediately to Frontend.", bookingId);
+
+            return SuccessfulPaymentResponse.builder()
+                    .booking(booking)
+                    .status(PaymentStatus.COMPLETED)
+                    .build();
+        }
+
         try {
+            // 2. Cấu hình execute request gửi lên PayPal để trừ tiền
             Payment payment = new Payment();
             payment.setId(paymentId);
+
             PaymentExecution paymentExecution = new PaymentExecution();
             paymentExecution.setPayerId(payerId);
-            return payment.execute(apiContext, paymentExecution);
+
+            // 3. Gọi API execute
+            Payment executedPayment = payment.execute(apiContext, paymentExecution);
+
+            // 4. Kiểm tra trạng thái trả về
+            if (executedPayment.getState().equals("approved")) {
+                log.info("PayPal Payment Approved. TransactionID: {}", paymentId);
+
+                // 5. UPDATE DB: Chuyển trạng thái sang PAID và tạo Payment Bill
+                SuccessfulPaymentResponse result = bookingService.processSuccessfulPayment(
+                        bookingId,
+                        paymentId, // Dùng paymentId làm mã giao dịch
+                        booking.getGrandTotal(),
+                        PaymentMethod.PAYPAL
+                );
+
+                // 6. Gửi email xác nhận (Bọc try-catch để an toàn)
+                // Nếu gửi mail lỗi thì vẫn coi là thanh toán thành công
+                try {
+                    sendBookingConfirmationEmail(result.getBooking(), result.getStatus());
+                } catch (Exception ex) {
+                    log.warn("Payment success but failed to send email for Booking {}: {}", bookingId, ex.getMessage());
+                }
+
+                return result;
+            } else {
+                log.error("PayPal Payment not approved. State: {}", executedPayment.getState());
+                throw new AppException(AppErrorCode.PAYMENT_FAILED);
+            }
+
         } catch (PayPalRESTException e) {
-            log.warn("Lỗi execute PayPal (nhưng DB đã update rồi nên kệ): {}", e.getMessage());
-            return null;
+            // Check nếu lỗi là do "Payment has already been done" (Trường hợp hiếm)
+            if (e.getMessage() != null &&
+                    (e.getMessage().contains("PAYMENT_ALREADY_DONE") || e.getMessage().contains("capture"))) {
+
+                log.info("PayPal reported payment already done provided for Booking {}", bookingId);
+
+                // Force update DB nếu cần thiết hoặc trả về success
+                return SuccessfulPaymentResponse.builder()
+                        .booking(booking)
+                        .status(PaymentStatus.COMPLETED)
+                        .build();
+            }
+
+            log.error("PayPal Execute Error: {}", e.getMessage());
+            throw new AppException(AppErrorCode.PAYMENT_FAILED);
         }
     }
 
@@ -131,9 +179,10 @@ public class PayPalService {
         if(status == PaymentStatus.COMPLETED) {
             try {
                 emailService.sendBookingConfirmationEmail(booking);
-                log.info("Email send successfully to {}", booking.getUser().getEmail());
+                log.info("Email sent successfully to {}", booking.getUser().getEmail());
             } catch (Exception e) {
-                log.error("Failed to send email: {}", e.getMessage());
+                // Chỉ ném lỗi để hàm gọi bên ngoài (executeOrder) bắt và log warning
+                throw new RuntimeException(e);
             }
         }
     }

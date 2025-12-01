@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.modules.payment_service.models.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
 import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
 import com.humg.HotelSystemManagement.utils.enums.PaymentMethod;
@@ -44,6 +45,8 @@ public class PaymentBill {
     // Link Payment với Booking để biết trả tiền cho đơn nào
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "booking_id", nullable = false)
+    @ToString.Exclude
+    @JsonIgnore
     Booking booking;
 
     // Giữ lại User để thống kê nhanh

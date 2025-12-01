@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 
 @Repository
@@ -13,4 +14,6 @@ public interface PaymentBillRepository extends JpaRepository<PaymentBill, String
 
     @Query("SELECT SUM(p.paidAmount) FROM PaymentBill p WHERE DATE(p.createAt) = :date")
     Long getTodayRenevue(LocalDate date);
+
+    Optional<PaymentBill> findByTransactionId(String transactionId);
 }

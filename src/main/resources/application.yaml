@@ -16,10 +16,11 @@ spring:
     openai:
       api-key:
       chat:
-        base-url: "https://generativelanguage.googleapis.com"
+        base-url: "https://generativelanguage.googleapis.com/v1beta/openai/"
         completions-path: "/v1beta/openai/chat/completions"
         options:
           model: gemini-2.0-flash
+          temperature: 0.7
   config:
     import: optional:application-secret.yaml
   mail:
@@ -67,9 +68,9 @@ paypal:
   mode: sandbox
   client-id:
   client-secret:
-  cancel-url: "https://localhost:8443/payment-cancel.html"
-  success-url: "https://localhost:8443/payment-success.html"
-  error-url: "https://localhost:8443/payment-error.html"
+  cancel-url: "http://localhost:5173/payment-cancel"
+  success-url: "http://localhost:5173/payment-result"
+  error-url: "http://localhost:5173/payment-error"
 
 zalo-pay:
   app-id:
@@ -77,13 +78,17 @@ zalo-pay:
   key2:
   create-order-url: "https://sb-openapi.zalopay.vn/v2/create"
   order-status-url: "https://sb-openapi.zalopay.vn/v2/query"
-  redirect-url: "http://localhost:8080/payment-success.html"
+  redirect-url: "http://localhost:5173/payment-result"
   callback-url: ${ZALO_CALLBACK_URL:http://localhost:8080/zalopay/callback}
 
 jwt:
   signerKey:
   valid-duration: 15 #in 15 minutes
-  refreshable-duration: 10080 #in 7 days
+  # Refresh Token mặc định (Không chọn Remember Me): 1 ngày (1440 phút)
+  refreshable-duration: 1440
+
+  # Refresh Token khi CÓ Remember Me: 14 ngày (20160 phút)
+  remember-me-duration: 20160
 
 minio:
   url: http://minio:9000

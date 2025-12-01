@@ -58,6 +58,7 @@ public class SecurityConfig {
 
             // 5. Payment Callback (ZaloPay gọi ngược lại)
             "/zalopay/callback/**",
+            "/zalopay/check-status/**",
 
             // 6. Upload file (Nếu muốn public ảnh thì mở, không thì thôi)
             "/api/v1/upload/**"
