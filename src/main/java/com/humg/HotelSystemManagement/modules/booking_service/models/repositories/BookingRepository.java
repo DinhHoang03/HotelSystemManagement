@@ -1,6 +1,8 @@
 package com.humg.HotelSystemManagement.modules.booking_service.models.repositories;
 
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
+import com.humg.HotelSystemManagement.modules.user_service.models.entities.User;
+import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
 import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,8 +17,7 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, String> {
 
-    // SỬA: Đổi Customer thành User
-    Page<Booking> findByUser_Id(String userId, Pageable pageable);
+    Page<Booking> findByUser(User user, Pageable pageable);
 
     List<Booking> findTop5ByOrderByBookingDateDesc();
 
@@ -44,6 +45,8 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
             "WHERE YEAR(b.bookingDate) = :year AND b.paymentStatus = 'COMPLETED' " +
             "GROUP BY MONTH(b.bookingDate)")
     List<Object[]> findMonthlyRevenueByYear(@Param("year") int year);
+
+    Page<Booking> findByUserAndBookingStatus(User user, BookingStatus status, Pageable pageable);
 
     // 3. Thống kê Booking theo loại phòng (Donut Chart)
     // Booking -> BookingRoom -> rooms (ManyToMany) -> RoomType

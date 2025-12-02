@@ -12,7 +12,8 @@ public enum RoomStatus {
     CLEANING("Phòng đang được dọn dẹp"),
     NEED_CLEANING("Phòng vừa có khách trả, cần dọn dẹp"),
     UNDER_MAINTENANCE("Phòng đang bảo trì, không thể đặt"),
-    OUT_OF_SERVICE("Phòng bị lỗi, không sử dụng được");
+    OUT_OF_SERVICE("Phòng bị lỗi, không sử dụng được"),
+    BOOKED("Phòng đã đặt");
 
     String description;
 

@@ -42,6 +42,7 @@ public class RoleSeeder implements CommandLineRunner {
                     "USER_PROFILE",
                     "PAYMENT_EXECUTE",
                     "AI_CHAT",
+                    "BOOKING_DELETE",
                     "FILES_UPLOAD", // Up avatar
                     "BILL_VIEW" // Xem hóa đơn của mình
             ));

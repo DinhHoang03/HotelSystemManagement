@@ -77,7 +77,7 @@ public class HotelOfferController {
     // 6. CẬP NHẬT DỊCH VỤ
     // Method PUT, Consumes Multipart để nhận file ảnh mới (nếu có)
     @PutMapping(value = "/update/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    @PreAuthorize("hasAuthority('OFFER_UPDATE')") // Nhớ thêm quyền này trong DB nếu chưa có
+    @PreAuthorize("hasAuthority('OFFER_UPDATE')")
     public APIResponse<HotelOfferResponse> update(
             @PathVariable String id,
             @RequestPart("data") HotelOfferRequest request, // Thông tin sửa đổi

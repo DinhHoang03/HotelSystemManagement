@@ -1,5 +1,6 @@
 package com.humg.HotelSystemManagement.modules.booking_service.models.repositories;
 
+import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingRoom;
 import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
 import org.springframework.data.domain.Page;

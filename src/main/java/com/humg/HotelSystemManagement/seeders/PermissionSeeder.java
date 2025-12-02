@@ -34,12 +34,15 @@ public class PermissionSeeder implements CommandLineRunner {
                     // === 2. DỊCH VỤ KHÁCH SẠN (Offer/Menu) ===
                     build("OFFER_CREATE", "Tạo dịch vụ ăn uống/spa (Admin)"),
                     build("OFFER_VIEW", "Xem menu dịch vụ (Public)"),
+                    build("OFFER_UPDATE", "Cập nhập menu dịch vụ"),
                     build("OFFER_DELETE", "Xóa dịch vụ (Admin)"),
+
 
                     // === 3. ĐẶT PHÒNG (Booking) ===
                     build("BOOKING_CREATE", "Đặt phòng mới (Customer)"),
                     build("BOOKING_VIEW", "Xem lịch sử/chi tiết đặt phòng"),
                     build("BOOKING_CANCEL", "Hủy đặt phòng"),
+                    build("BOOKING_DELETE", "Xóa đặt phòng"),
                     build("BOOKING_UPDATE", "Thêm dịch vụ vào đơn đặt phòng"),
 
                     // === 4. THANH TOÁN (Payment & Bill) ===
