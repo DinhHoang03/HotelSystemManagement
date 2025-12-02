@@ -63,6 +63,19 @@ public class BookingController {
                 .build();
     }
 
+    @GetMapping("/get-all")
+    @PreAuthorize("hasAuthority('SYSTEM_MANAGE')")
+    APIResponse<Page<BookingResponse>> getAllBookingByAdmin(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(required = false) String keyword
+    ) {
+        return APIResponse.<Page<BookingResponse>>builder()
+                .result(bookingService.getAllByAdmin(keyword, page, size))
+                .message("Get all bookings successfully")
+                .build();
+    }
+
     // 4. HỦY ĐƠN (Đã thêm check quyền sở hữu)
     @DeleteMapping("/del/{id}")
     @PreAuthorize("hasAuthority('BOOKING_CANCEL')")
@@ -135,6 +148,17 @@ public class BookingController {
         return APIResponse.<BookingResponse>builder()
                 .result(bookingService.checkIn(bookingId))
                 .message("Check-in successful")
+                .build();
+    }
+
+    // 7. KHÔI PHỤC ĐƠN (Restore - Từ CANCELLED sang PENDING/CONFIRMED)
+    @PutMapping("/restore/{bookingId}")
+    @PreAuthorize("hasAuthority('BOOKING_UPDATE') or hasAuthority('BOOKING_UPDATE')")
+    APIResponse<BookingResponse> restoreBooking(@PathVariable String bookingId) {
+        String username = SecurityContextHolder.getContext().getAuthentication().getName();
+        return APIResponse.<BookingResponse>builder()
+                .result(bookingService.restoreBooking(bookingId, username))
+                .message("Booking restored successfully. Please check payment status.")
                 .build();
     }
 

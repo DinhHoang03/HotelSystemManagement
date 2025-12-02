@@ -17,6 +17,14 @@ import java.util.List;
 @Repository
 public interface BookingRepository extends JpaRepository<Booking, String> {
 
+    @Query("SELECT b FROM Booking b " +
+            "JOIN b.user u " + // Join với bảng User để tìm theo tên/username
+            "WHERE (:keyword IS NULL OR :keyword = '' OR " +
+            "LOWER(b.bookingId) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " + // Tìm theo Booking ID
+            "LOWER(u.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +      // Tìm theo Tên khách hàng
+            "LOWER(u.username) LIKE LOWER(CONCAT('%', :keyword, '%'))) ")     // Tìm theo Username
+    Page<Booking> searchBookings(@Param("keyword") String keyword, Pageable pageable);
+
     Page<Booking> findByUser(User user, Pageable pageable);
 
     List<Booking> findTop5ByOrderByBookingDateDesc();

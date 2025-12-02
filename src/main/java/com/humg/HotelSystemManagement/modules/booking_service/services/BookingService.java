@@ -13,6 +13,8 @@ import com.humg.HotelSystemManagement.modules.booking_service.resources.response
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingResponse;
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingRoomResponse;
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.SuccessfulPaymentResponse;
+import com.humg.HotelSystemManagement.modules.user_service.models.entities.User;
+import com.humg.HotelSystemManagement.modules.user_service.models.repositories.UserRepository;
 import com.humg.HotelSystemManagement.modules.hotel_offer_service.models.entities.HotelOffers;
 import com.humg.HotelSystemManagement.modules.hotel_offer_service.models.repositories.HotelOffersRepository;
 import com.humg.HotelSystemManagement.modules.payment_service.models.entities.PaymentBill;
@@ -20,8 +22,6 @@ import com.humg.HotelSystemManagement.modules.payment_service.models.repositorie
 import com.humg.HotelSystemManagement.modules.room_service.models.entities.Room;
 import com.humg.HotelSystemManagement.modules.room_service.models.repositories.RoomRepository;
 import com.humg.HotelSystemManagement.modules.room_service.resources.responses.RoomResponse;
-import com.humg.HotelSystemManagement.modules.user_service.models.entities.User;
-import com.humg.HotelSystemManagement.modules.user_service.models.repositories.UserRepository;
 import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
 import com.humg.HotelSystemManagement.utils.enums.PaymentMethod;
 import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
@@ -79,7 +79,10 @@ public class BookingService {
         // Link Booking Rooms
         if (request.getBookingRoomIds() != null && !request.getBookingRoomIds().isEmpty()) {
             List<BookingRoom> rooms = bookingRoomRepository.findByUsernameAndBookingRoomIdIn(username, request.getBookingRoomIds());
-            if (rooms.size() != request.getBookingRoomIds().size()) throw new AppException(AppErrorCode.INVALID_BOOKING_DATA);
+
+            if (rooms.size() != request.getBookingRoomIds().size()) {
+                throw new AppException(AppErrorCode.INVALID_BOOKING_DATA);
+            }
 
             for (BookingRoom br : rooms) {
                 br.setBooking(savedBooking);
@@ -91,7 +94,10 @@ public class BookingService {
         // Link Booking Items
         if (request.getBookingItemIds() != null && !request.getBookingItemIds().isEmpty()) {
             List<BookingItems> items = bookingItemsRepository.findByUsernameAndBookingItemIdIn(username, request.getBookingItemIds());
-            if (items.size() != request.getBookingItemIds().size()) throw new AppException(AppErrorCode.INVALID_BOOKING_DATA);
+
+            if (items.size() != request.getBookingItemIds().size()) {
+                throw new AppException(AppErrorCode.INVALID_BOOKING_DATA);
+            }
 
             for (BookingItems bi : items) {
                 bi.setBooking(savedBooking);
@@ -104,20 +110,42 @@ public class BookingService {
         return mapToBookingResponse(bookingRepository.save(savedBooking));
     }
 
-    // --- 2. LẤY DANH SÁCH BOOKING (Đã Fix lỗi 400) ---
+    // --- 2. LẤY DANH SÁCH (All Status) ---
     public Page<BookingResponse> getAllBookingByUsername(String username, int page, int size) {
         Pageable pageable = PageRequest.of(page, size);
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
 
-        // FIX: Dùng findByUser (Object) thay vì findByUser_Id
         Page<Booking> result = bookingRepository.findByUser(user, pageable);
 
         if (result.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
         return result.map(this::mapToBookingResponse);
     }
 
-    // --- 3. CHI TIẾT BOOKING ---
+    public Page<BookingResponse> getAllByAdmin(String keyword, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Booking> result = bookingRepository.searchBookings(keyword, pageable);
+        if (result.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
+        return result.map(this::mapToBookingResponse);
+    }
+
+    // --- 3. LẤY DANH SÁCH ĐÃ HỦY ---
+    public Page<BookingResponse> getCancelledBookings(String username, int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
+
+        Page<Booking> cancelledPage = bookingRepository.findByUserAndBookingStatus(
+                user,
+                BookingStatus.CANCELLED,
+                pageable
+        );
+
+        if (cancelledPage.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
+        return cancelledPage.map(this::mapToBookingResponse);
+    }
+
+    // --- 4. XEM CHI TIẾT ---
     public BookingResponse getBookingById(String bookingId, String username) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
@@ -127,14 +155,13 @@ public class BookingService {
         return mapToBookingResponse(booking);
     }
 
-    // --- 4. HỦY BOOKING (Soft Delete - Trả phòng) ---
+    // --- 5. HỦY BOOKING (Soft Delete) ---
     @Transactional
     public BookingResponse cancelBooking(String bookingId, String username) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
         if (!booking.getUser().getUsername().equals(username)) {
-            // Nếu là Admin muốn hủy giùm thì có thể thêm logic check role tại đây
             throw new AppException(AppErrorCode.UNAUTHORIZED);
         }
 
@@ -144,7 +171,7 @@ public class BookingService {
 
         booking.setBookingStatus(BookingStatus.CANCELLED);
 
-        // Hủy phòng và NHẢ PHÒNG TRỐNG (AVAILABLE)
+        // Hủy phòng và NHẢ PHÒNG (AVAILABLE)
         if (booking.getBookingRooms() != null) {
             for (BookingRoom br : booking.getBookingRooms()) {
                 br.setBookingStatus(BookingStatus.CANCELLED);
@@ -163,49 +190,64 @@ public class BookingService {
         return mapToBookingResponse(bookingRepository.save(booking));
     }
 
-    // --- 5. KHÔI PHỤC BOOKING (Restore - Check phòng trống) ---
+    // --- 6. KHÔI PHỤC BOOKING (Restore - Mới Thêm) ---
     @Transactional
     public BookingResponse restoreBooking(String bookingId, String username) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
-        if (!booking.getUser().getUsername().equals(username)) throw new AppException(AppErrorCode.UNAUTHORIZED);
+        // Check quyền
+        if (!booking.getUser().getUsername().equals(username)) {
+            throw new AppException(AppErrorCode.UNAUTHORIZED);
+        }
 
+        // Chỉ khôi phục được đơn đã Hủy
         if (booking.getBookingStatus() != BookingStatus.CANCELLED) {
             throw new RuntimeException("Only CANCELLED bookings can be restored.");
         }
 
-        // Check xem các phòng cũ còn trống không
+        // --- CHECK PHÒNG TRỐNG (Quan trọng) ---
+        // Vì khi hủy ta đã nhả phòng ra, nên giờ phải check xem có ai đặt mất chưa
         if (booking.getBookingRooms() != null) {
             for (BookingRoom br : booking.getBookingRooms()) {
                 if (br.getRooms() != null) {
                     for (Room room : br.getRooms()) {
                         if (room.getRoomStatus() != RoomStatus.AVAILABLE) {
-                            throw new RuntimeException("Room " + room.getRoomNumber() + " is already taken. Cannot restore.");
+                            throw new RuntimeException("Room " + room.getRoomNumber() + " is no longer available. Cannot restore booking.");
                         }
+                        // Nếu phòng vẫn trống -> Đặt lại thành BOOKED
                         room.setRoomStatus(RoomStatus.BOOKED);
                     }
                     roomRepository.saveAll(br.getRooms());
                 }
+                // Khôi phục trạng thái BookingRoom về PENDING (chờ xử lý tiếp)
                 br.setBookingStatus(BookingStatus.PENDING);
             }
         }
 
+        // Khôi phục trạng thái BookingItems
         if (booking.getBookingItems() != null) {
             booking.getBookingItems().forEach(bi -> bi.setBookingStatus(BookingStatus.PENDING));
         }
 
+        // Khôi phục trạng thái Booking cha
         booking.setBookingStatus(BookingStatus.PENDING);
+
+        // Nếu đơn cũ đã thanh toán rồi thì có thể set lại CONFIRMED luôn, tùy logic nghiệp vụ
+        // Ở đây an toàn nhất là về PENDING để admin/user kiểm tra lại
+
         return mapToBookingResponse(bookingRepository.save(booking));
     }
 
-    // --- 6. XÓA VĨNH VIỄN (Hard Delete) ---
+    // --- 7. XÓA VĨNH VIỄN (Hard Delete) ---
     @Transactional
     public void deleteBookingPermanently(String bookingId, String username) {
         Booking booking = bookingRepository.findById(bookingId)
                 .orElseThrow(() -> new AppException(AppErrorCode.OBJECT_IS_NULL));
 
-        if (!booking.getUser().getUsername().equals(username)) throw new AppException(AppErrorCode.UNAUTHORIZED);
+        if (!booking.getUser().getUsername().equals(username)) {
+            throw new AppException(AppErrorCode.UNAUTHORIZED);
+        }
 
         if (booking.getBookingStatus() != BookingStatus.CANCELLED) {
             throw new RuntimeException("Only CANCELLED bookings can be deleted permanently.");
@@ -213,23 +255,7 @@ public class BookingService {
         bookingRepository.delete(booking);
     }
 
-    // --- 7. LẤY DANH SÁCH ĐÃ HỦY ---
-    public Page<BookingResponse> getCancelledBookings(String username, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size);
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new AppException(AppErrorCode.USER_NOT_EXISTED));
-
-        Page<Booking> cancelledPage = bookingRepository.findByUserAndBookingStatus(
-                user,
-                BookingStatus.CANCELLED,
-                pageable
-        );
-
-        if (cancelledPage.isEmpty()) throw new AppException(AppErrorCode.LIST_EMPTY);
-        return cancelledPage.map(this::mapToBookingResponse);
-    }
-
-    // --- 8. THANH TOÁN THÀNH CÔNG (Callback từ cổng thanh toán) ---
+    // --- 8. THANH TOÁN THÀNH CÔNG ---
     @Transactional
     public SuccessfulPaymentResponse processSuccessfulPayment(String bookingId, String transactionId, Long amount, PaymentMethod method) {
         Booking booking = bookingRepository.findById(bookingId)
@@ -272,7 +298,10 @@ public class BookingService {
             throw new RuntimeException("Booking must be CONFIRMED before Check-in");
         }
         booking.setBookingStatus(BookingStatus.CHECKED_IN);
-        if (booking.getBookingRooms() != null) booking.getBookingRooms().forEach(br -> br.setBookingStatus(BookingStatus.CHECKED_IN));
+
+        if (booking.getBookingRooms() != null) {
+            booking.getBookingRooms().forEach(br -> br.setBookingStatus(BookingStatus.CHECKED_IN));
+        }
 
         return mapToBookingResponse(bookingRepository.save(booking));
     }
@@ -313,7 +342,7 @@ public class BookingService {
                 if (br.getRooms() != null) {
                     br.getRooms().forEach(room -> {
                         room.setRoomStatus(RoomStatus.AVAILABLE);
-                        room.setClean(false); // Cần dọn dẹp
+                        room.setClean(false); // Đánh dấu phòng cần dọn dẹp
                     });
                     roomRepository.saveAll(br.getRooms());
                 }
