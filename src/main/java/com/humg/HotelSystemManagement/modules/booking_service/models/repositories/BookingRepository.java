@@ -1,6 +1,7 @@
 package com.humg.HotelSystemManagement.modules.booking_service.models.repositories;
 
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
+import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -32,4 +33,29 @@ public interface BookingRepository extends JpaRepository<Booking, String> {
     // Hàm đếm booking trong ngày
     @Query("SELECT COUNT(b) FROM Booking b WHERE b.bookingDate = :date")
     long countByBookingDate(@Param("date") LocalDate date);
+
+    // 1. Tổng doanh thu (Chỉ tính đơn đã thanh toán COMPLETED)
+    @Query("SELECT SUM(b.grandTotal) FROM Booking b WHERE b.paymentStatus = 'COMPLETED'")
+    Double calculateTotalRevenue();
+
+    // 2. Doanh thu theo tháng (Chart Analysis)
+    @Query("SELECT MONTH(b.bookingDate) as month, SUM(b.grandTotal) as total " +
+            "FROM Booking b " +
+            "WHERE YEAR(b.bookingDate) = :year AND b.paymentStatus = 'COMPLETED' " +
+            "GROUP BY MONTH(b.bookingDate)")
+    List<Object[]> findMonthlyRevenueByYear(@Param("year") int year);
+
+    // 3. Thống kê Booking theo loại phòng (Donut Chart)
+    // Booking -> BookingRoom -> rooms (ManyToMany) -> RoomType
+    @Query("SELECT rt.roomTypes, COUNT(b) " +
+            "FROM Booking b " +
+            "JOIN b.bookingRooms br " +
+            "JOIN br.rooms r " +
+            "JOIN r.roomType rt " +
+            "WHERE b.paymentStatus = 'COMPLETED' " +
+            "GROUP BY rt.roomTypes")
+    List<Object[]> countBookingsByRoomType();
+
+    // 4. Đếm tổng số booking thành công
+    long countByPaymentStatus(PaymentStatus status);
 }

@@ -1,8 +1,8 @@
-package com.humg.HotelSystemManagement.modules.customer_service.controllers;
+package com.humg.HotelSystemManagement.modules.user_service.controllers;
 
-import com.humg.HotelSystemManagement.modules.customer_service.resources.responses.DashboardMetric;
-import com.humg.HotelSystemManagement.modules.customer_service.resources.responses.RecentBookingResponse;
-import com.humg.HotelSystemManagement.modules.customer_service.services.AdminDashboardStatService;
+import com.humg.HotelSystemManagement.modules.user_service.resources.responses.DashboardMetric;
+import com.humg.HotelSystemManagement.modules.user_service.resources.responses.RecentBookingResponse;
+import com.humg.HotelSystemManagement.modules.user_service.services.AdminDashboardStatService;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Data;

@@ -14,7 +14,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 @RestController
-@RequestMapping("/offers") // Đổi path thành /api/v1/offers cho chuẩn REST
+@RequestMapping("/offers")
 @RequiredArgsConstructor
 public class HotelOfferController {
     private final HotelOfferService hotelService;

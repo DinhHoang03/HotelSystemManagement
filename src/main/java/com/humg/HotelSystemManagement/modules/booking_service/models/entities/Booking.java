@@ -1,6 +1,6 @@
 package com.humg.HotelSystemManagement.modules.booking_service.models.entities;
 
-import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
+import com.humg.HotelSystemManagement.modules.user_service.models.entities.User;
 import com.humg.HotelSystemManagement.modules.payment_service.models.entities.PaymentBill;
 import com.humg.HotelSystemManagement.utils.enums.BookingStatus;
 import com.humg.HotelSystemManagement.utils.enums.PaymentStatus;

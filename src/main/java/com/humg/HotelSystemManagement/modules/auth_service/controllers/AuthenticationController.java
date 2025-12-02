@@ -5,7 +5,7 @@ import com.humg.HotelSystemManagement.exceptions.exceptions.AppException;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.AuthenticationRequest;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.IntrospectRequest;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.requests.RefreshRequest;
-import com.humg.HotelSystemManagement.modules.customer_service.resources.requests.UserCreationRequest;
+import com.humg.HotelSystemManagement.modules.user_service.resources.requests.UserCreationRequest;
 import com.humg.HotelSystemManagement.modules.email_service.resources.requests.OTPRequest;
 import com.humg.HotelSystemManagement.utils.APIResponse;
 import com.humg.HotelSystemManagement.modules.auth_service.resources.responses.AuthenticationResponse;

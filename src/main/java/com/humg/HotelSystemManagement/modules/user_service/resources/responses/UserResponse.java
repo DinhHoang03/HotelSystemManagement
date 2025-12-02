@@ -1,4 +1,4 @@
-package com.humg.HotelSystemManagement.modules.customer_service.resources.responses;
+package com.humg.HotelSystemManagement.modules.user_service.resources.responses;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;

@@ -13,8 +13,8 @@ import com.humg.HotelSystemManagement.modules.booking_service.resources.response
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingResponse;
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.BookingRoomResponse;
 import com.humg.HotelSystemManagement.modules.booking_service.resources.responses.SuccessfulPaymentResponse;
-import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
-import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.UserRepository;
+import com.humg.HotelSystemManagement.modules.user_service.models.entities.User;
+import com.humg.HotelSystemManagement.modules.user_service.models.repositories.UserRepository;
 import com.humg.HotelSystemManagement.modules.hotel_offer_service.models.entities.HotelOffers;
 import com.humg.HotelSystemManagement.modules.hotel_offer_service.models.repositories.HotelOffersRepository;
 import com.humg.HotelSystemManagement.modules.payment_service.models.entities.PaymentBill;

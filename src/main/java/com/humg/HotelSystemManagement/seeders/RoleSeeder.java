@@ -39,8 +39,7 @@ public class RoleSeeder implements CommandLineRunner {
                     "BOOKING_VIEW",
                     "BOOKING_CANCEL",
                     "BOOKING_UPDATE", // Gọi đồ ăn/dịch vụ thêm
-                    "CUSTOMER_UPDATE",
-                    "CUSTOMER_PROFILE",
+                    "USER_PROFILE",
                     "PAYMENT_EXECUTE",
                     "AI_CHAT",
                     "FILES_UPLOAD", // Up avatar

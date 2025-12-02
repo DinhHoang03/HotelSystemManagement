@@ -1,8 +1,8 @@
 package com.humg.HotelSystemManagement.configs;
 
 import com.humg.HotelSystemManagement.modules.auth_service.models.entities.Role;
-import com.humg.HotelSystemManagement.modules.customer_service.models.entities.User;
-import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.UserRepository;
+import com.humg.HotelSystemManagement.modules.user_service.models.entities.User;
+import com.humg.HotelSystemManagement.modules.user_service.models.repositories.UserRepository;
 import com.humg.HotelSystemManagement.utils.enums.Gender;
 import com.humg.HotelSystemManagement.utils.enums.UserStatus;
 import com.humg.HotelSystemManagement.modules.auth_service.models.repositories.RoleRepository;

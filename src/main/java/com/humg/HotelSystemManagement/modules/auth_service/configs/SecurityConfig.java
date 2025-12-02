@@ -29,7 +29,7 @@ public class SecurityConfig {
 
     // --- CẬP NHẬT DANH SÁCH PUBLIC ---
     private static final String[] PUBLIC_API_ENDPOINTS = {
-            // 1. Auth & User
+            // 1. Auth
             "/auth/**",
 
             // 2. Room Service (Cho khách xem phòng)
@@ -51,17 +51,14 @@ public class SecurityConfig {
             "/type/info/**",        // Xem chi tiết loại phòng (MỚI)
 
             // 4. Hotel Offers (Menu dịch vụ)
-            "/api/v1/offers/list",
-            "/api/v1/offers/category/**",
+            "/offers/list",
+            "/offers/category/**",
 
             "/otp/**",
 
             // 5. Payment Callback (ZaloPay gọi ngược lại)
             "/zalopay/callback/**",
             "/zalopay/check-status/**",
-
-            // 6. Upload file (Nếu muốn public ảnh thì mở, không thì thôi)
-            "/api/v1/upload/**"
     };
 
     @Bean

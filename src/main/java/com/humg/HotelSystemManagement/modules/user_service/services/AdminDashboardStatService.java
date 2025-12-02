@@ -1,18 +1,17 @@
-package com.humg.HotelSystemManagement.modules.customer_service.services;
+package com.humg.HotelSystemManagement.modules.user_service.services;
 
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.Booking;
 import com.humg.HotelSystemManagement.modules.booking_service.models.entities.BookingRoom;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRepository;
 import com.humg.HotelSystemManagement.modules.booking_service.models.repositories.BookingRoomRepository;
-import com.humg.HotelSystemManagement.modules.customer_service.models.repositories.UserRepository;
-import com.humg.HotelSystemManagement.modules.customer_service.resources.responses.DashboardMetric;
-import com.humg.HotelSystemManagement.modules.customer_service.resources.responses.RecentBookingResponse;
+import com.humg.HotelSystemManagement.modules.user_service.models.repositories.UserRepository;
+import com.humg.HotelSystemManagement.modules.user_service.resources.responses.DashboardMetric;
+import com.humg.HotelSystemManagement.modules.user_service.resources.responses.RecentBookingResponse;
 import com.humg.HotelSystemManagement.modules.payment_service.models.repositories.PaymentBillRepository;
 import com.humg.HotelSystemManagement.modules.room_service.models.repositories.RoomRepository;
 import lombok.AccessLevel;
 import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.time.DayOfWeek;

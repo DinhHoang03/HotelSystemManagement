@@ -75,8 +75,6 @@ public class JwtCookieFilter extends OncePerRequestFilter {
 
                 // --- LOG QUAN TRỌNG NHẤT: KIỂM TRA QUYỀN ---
                 log.info(">>> Authorities extracted from Token: {}", authentication.getAuthorities());
-                // Bạn hãy tìm xem trong danh sách in ra này có chữ 'BOOKING_CREATE' không?
-                // ---------------------------------------------
 
                 // Nạp vào Security Context
                 SecurityContextHolder.getContext().setAuthentication(authentication);
